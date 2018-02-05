@@ -1,3 +1,8 @@
+TODO:
+
+convert depth to Flag
+
+
 # Opcodes
 
 ## 'Register' Selection
@@ -7,8 +12,8 @@
 - 3 : 4 : PC
 - 4 : 1 : MEM
 - 5 : 1 : IO
-- 6 : 1 : DEPTH Let's see if we can get away with not using this
-- 7 : 1 : LIT
+- 6 : 1 : FLAG (PUSH = Examine Flag) (POP = DROP) 
+- 7 : 1 : LIT (PUSH = Add data)(POP = Execute)
 
 ## Commands
 - 8 : +
@@ -30,3 +35,8 @@
 - OR
 - NOT
 - DROP
+
+# Need
+
+- NOOP?
+- 
