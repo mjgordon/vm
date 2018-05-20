@@ -4,7 +4,7 @@
 void setup();
 void run();
 
-void randomize();
+void setPixels();
 
 void execute(uint8_t opcode);
 

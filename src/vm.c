@@ -72,41 +72,38 @@ void setup() {
 
 void run() {
   while(PC < programLength) {
+    int of = time + 1024;
+    memory[of] = time & 0xF;
+    printf("%i %i %i %i\n",colors[memory[of]].channels[0],colors[memory[of]].channels[1],colors[memory[of]].channels[2],colors[memory[of]].channels[3]);
     uint8_t op = getNextOpcode();
     execute(op);
     time += 1;
-    //putPixel32(context.surface,time % 1024 + 30, 10,colors[9]);
+
   }
 
-  while(1) {
-    randomize();
-  }
-
-  //  SDL_UpdateWindowSurface(context.win);
-  //  SDL_RenderClear(context.ren);
-  //  SDL_RenderCopy(context.ren,context.tex,NULL,NULL);
-  //  SDL_RenderPresent(context.ren);
+  setPixels();
+  updateSDL();
+  //  randomize();
 
   getchar();
   cleanupSDL();
 }
 
-void randomize() {
-  for (int i =0; i < 1000; i++) {
-    int x = rand() % PAGE_SIZE;
-    int y = rand() % PAGE_SIZE;
-    int offset = (PAGE_SIZE * 3 * y) + (x * 3);
-    pixels[offset + 0] = rand() % 256;
-    pixels[offset + 1] = rand() % 256;
-    pixels[offset + 2] = rand() % 256;
-    pixels[offset + 3] = rand() % 256;
-
+void setPixels() {
+  for (int i = 0; i < 1024 * 1024; i++) {
+    int offset = i * 4;
+    pixels[offset + 0] = colors[memory[i]].channels[0];
+    pixels[offset + 1] = colors[memory[i]].channels[1];
+    pixels[offset + 2] = colors[memory[i]].channels[2];
+    pixels[offset + 3] = colors[memory[i]].channels[3];
   }
-  SDL_UpdateTexture(context.tex,NULL,&pixels[0],PAGE_SIZE * 3);
-  SDL_RenderCopy(context.ren,context.tex,NULL,NULL);
-  SDL_RenderPresent(context.ren);
-}
 
+  pixels[0] = 0;
+  pixels[1] = 0;
+  pixels[2] = 0;
+  pixels[2] = 255;
+  pixels[4] = 255;
+}
 
 void execute(uint8_t opcode) {
 

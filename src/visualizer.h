@@ -10,15 +10,17 @@ typedef struct {
   SDL_Texture *tex;
 } SDLContext;
 
+typedef union {
+  uint32_t integer;
+  uint8_t channels[4];
+} colorRGB;
+
 extern SDLContext context;
-extern uint32_t colors[];
+extern colorRGB colors[];
 extern uint8_t pixels[];
 
 void setupSDL();
+void updateSDL();
 void cleanupSDL();
-void randomize();
-
-void putPixel32_nolock(SDL_Surface * surface, int x, int y, uint32_t color);
-void putPixel32(SDL_Surface * surface, int x, int y, uint32_t color);
 
 #endif
