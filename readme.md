@@ -1,6 +1,6 @@
-TODO:
 
-convert depth to Flag
+
+
 
 
 # Opcodes
@@ -25,47 +25,3 @@ convert depth to Flag
 - E : NOR
 - F : MOVE
 
-
-# Folds
-
-- * (1 Mem)
-  _A
-  SUB 1
-  IF 0 GOTO _B
-  MEM POP
-  PEEK 0
-  ADD
-  MEM PUSH
-  GOTO _A
-  _B
-  FLAG POP
-
-- /
-- %
-
-- AND (1 mem)
-
-  MEM POP
-  PEEK 0
-  NOR
-  MEM PUSH
-  PEEK 0
-  NOR
-  NOR
-
-- OR
-
-  NOR
-  PEEK 0
-  NOR
-
-- NOT
-
-  PEEK 0
-  NOR
-
-# Need
-
-- NOOP?
-
-# ALU

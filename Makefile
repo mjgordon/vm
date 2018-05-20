@@ -15,10 +15,15 @@ DEPEXT		:= d
 OBJEXT		:= o
 
 #Flags, Libraries and Includes
-CFLAGS		:= -Wall -O2 -g
-LIB		:= 
+SDL_LIB = -L/usr/include -lSDL2
+SDL_INCLUDE = -I/usr/include
+CFLAGS		:= -Wall -O2 -g $(SDL_INCLUDE)
+LIB		:= $(SDL_LIB)
 INC		:= -I$(INCDIR) -I/usr/local/include
 INCDEP		:= -I$(INCDIR)
+
+
+
 
 #---------------------------------------------------------------------------------
 #DO NOT EDIT BELOW THIS LINE

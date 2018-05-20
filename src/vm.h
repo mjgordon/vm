@@ -4,6 +4,8 @@
 void setup();
 void run();
 
+void randomize();
+
 void execute(uint8_t opcode);
 
 void opAdd();
@@ -12,6 +14,8 @@ void opPush();
 void opPop();
 void opPeek();
 void opCond();
+void opNOR();
+void opMove();
 
 uint8_t getNextOpcode();
 

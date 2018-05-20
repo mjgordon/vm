@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "stack.h"
+#include "visualizer.h"
 
 #include "vm.h"
 
@@ -12,7 +13,7 @@
 #define OP_PC       0x3
 #define OP_MEM      0x4
 #define OP_IO       0x5
-#define OP_FLAG     0x6
+#define OP_RSTK     0x6
 #define OP_LIT      0x7
 #define OP_ADD      0x8
 #define OP_SUB      0x9
@@ -24,16 +25,18 @@
 #define OP_MOVE     0xF
 
 #define NB          16
-#define PAGE_SIZE   NB * NB * NB
-#define PAGE_COUNT  NB * NB * NB
+#define PAGE_SIZE   1024
+#define PAGE_COUNT  1024
 #define MEMORY_SIZE PAGE_SIZE * PAGE_COUNT
 
 uint8_t memory[MEMORY_SIZE];
 uint8_t *program;
 long programLength;
-struct Stack* stack;
 
-enum mode {MODE_COLOR,MODE_X,MODE_Y,MODE_PC,MODE_MEM,MODE_IO,MODE_FLAG,MODE_LIT};
+struct Stack* stack;
+struct Stack* rstack;
+
+enum mode {MODE_COLOR,MODE_X,MODE_Y,MODE_PC,MODE_MEM,MODE_IO,MODE_RSTK,MODE_LIT,MODE_ADD,MODE_SUB};
 
 enum mode machineMode = MODE_IO;
 
@@ -43,12 +46,18 @@ uint16_t REG_X;
 uint16_t REG_Y;
 uint8_t FLAG;
 
+uint16_t PEN_X = 0;
+uint16_t PEN_Y = 0;
+
 FILE *write_ptr;
 
+uint16_t time = 0;
+
 void setup() {
+  setupSDL();
   FILE *fileptr;
 
-  fileptr = fopen("program.b","rb");
+  fileptr = fopen("compiler/program.hxb","rb");
   fseek(fileptr,0,SEEK_END);
   programLength = ftell(fileptr);
   rewind(fileptr);
@@ -56,14 +65,46 @@ void setup() {
   fread(program,1,programLength,fileptr);
   fclose(fileptr);
   
-  stack = createStack(65535);
+  stack = createStack(65536);
+  rstack = createStack(65536);
+
 }
 
 void run() {
   while(PC < programLength) {
     uint8_t op = getNextOpcode();
     execute(op);
+    time += 1;
+    //putPixel32(context.surface,time % 1024 + 30, 10,colors[9]);
   }
+
+  while(1) {
+    randomize();
+  }
+
+  //  SDL_UpdateWindowSurface(context.win);
+  //  SDL_RenderClear(context.ren);
+  //  SDL_RenderCopy(context.ren,context.tex,NULL,NULL);
+  //  SDL_RenderPresent(context.ren);
+
+  getchar();
+  cleanupSDL();
+}
+
+void randomize() {
+  for (int i =0; i < 1000; i++) {
+    int x = rand() % PAGE_SIZE;
+    int y = rand() % PAGE_SIZE;
+    int offset = (PAGE_SIZE * 3 * y) + (x * 3);
+    pixels[offset + 0] = rand() % 256;
+    pixels[offset + 1] = rand() % 256;
+    pixels[offset + 2] = rand() % 256;
+    pixels[offset + 3] = rand() % 256;
+
+  }
+  SDL_UpdateTexture(context.tex,NULL,&pixels[0],PAGE_SIZE * 3);
+  SDL_RenderCopy(context.ren,context.tex,NULL,NULL);
+  SDL_RenderPresent(context.ren);
 }
 
 
@@ -88,17 +129,17 @@ void execute(uint8_t opcode) {
   case OP_IO:
     machineMode = MODE_IO;
     break;
-  case OP_FLAG:
-    machineMode = MODE_FLAG;
+  case OP_RSTK:
+    machineMode = MODE_RSTK;
     break;
   case OP_LIT:
     machineMode = MODE_LIT;
     break;
   case OP_ADD:
-    opAdd();
+    machineMode = MODE_ADD;
     break;
   case OP_SUB:
-    opSub();
+    machineMode = MODE_SUB;
     break;
   case OP_PUSH:
     opPush();
@@ -106,20 +147,36 @@ void execute(uint8_t opcode) {
   case OP_POP:
     opPop();
     break;
+  case OP_PEEK:
+    opPeek();
+    break;
+  case OP_COND:
+    opCond();
+    break;
+  case OP_NOR:
+    opNOR();
+    break;
+  case OP_MOVE:
+    opMove();
+    break;
   }
 }
 
 void opAdd() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
-  uint8_t output = (a + b) % 16;
+  uint8_t output = a + b;
+  FLAG = output >= 0xF;
+  output = output & 0xF;
   stackPush(stack,output);
 }
 
 void opSub() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
-  uint8_t output = (uint8_t)(a - b) % 16;
+  uint8_t output = a - b;
+  FLAG = output >= 0xF;
+  output = output & 0xF;
   stackPush(stack,output);
 }
 
@@ -156,12 +213,20 @@ void opPush() {
     stackPush(stack,getInput());
     break;
     
-  case MODE_FLAG:
-    stackPush(stack,FLAG);
+  case MODE_RSTK:
+    stackPush(stack,stackPop(rstack));
     break;
 
   case MODE_LIT:
     stackPush(stack,getNextOpcode());
+    break;
+
+  case MODE_ADD:
+    stackPush(stack,FLAG);
+    break;
+
+  case MODE_SUB:
+    stackPush(stack,FLAG);
     break;
   }
   
@@ -193,22 +258,69 @@ void opPop() {
     outputStack();
     break;
 
-  case MODE_FLAG:
-    stackPop(stack);
+  case MODE_RSTK:
+    stackPush(rstack,stackPop(stack));
     break;
 
   case MODE_LIT:
     execute(stackPop(stack));
     break;
+
+  case MODE_ADD:
+    opAdd();
+    break;
+
+  case MODE_SUB:
+    opSub();
+    break;
   }
 }
 
 void opPeek() {
-  stackPush(stack,stackPeek(stack,0));
+  uint8_t depth = getNextOpcode();
+  stackPush(stack,stackPeek(stack,depth));
 }
 
 void opCond() {
+  uint16_t destination = popNibble4();
+  uint8_t value = stackPop(stack);
+  if (value == 0) {
+    PC = destination;
+  }
+}
 
+void opNOR() {
+  uint8_t a = stackPop(stack);
+  uint8_t b = stackPop(stack);
+  uint8_t output = ~(a | b);
+
+  output = output & 0xF;
+  stackPush(stack,output);
+}
+
+void opMove() {
+  uint16_t x1 = PEN_X;
+  uint16_t x2 = REG_X;
+  uint16_t y1 = PEN_Y;
+  uint16_t y2 = REG_Y;
+  if (REG_X < PEN_X) {
+    uint16_t temp = x1;
+    x1 = x2;
+    x2 = temp;
+  }
+  double dx = x2 - x1;
+  double dy = y2 - y1;
+  double derr = abs(dy / dx);
+  double error = 0;
+  uint16_t y = 0;
+  for (uint16_t x = x1; x1 <= x2; x ++) {
+    memory[y * PAGE_SIZE + x] = REG_COLOR;
+    error = error + derr;
+    while (error >= 0.5) {
+      y = y + (dy / abs(dy));
+      error = error =- 1;
+    }
+  }
 }
 
 
@@ -283,9 +395,6 @@ int main() {
   
   setup();
   run();
-  //printf("%u\n",stackPop(stack));
-  //printf("%u\n",stackPop(stack));
-  printf("REG_X:%i\n",REG_X);
 
   fclose(write_ptr);
 }
