@@ -17,6 +17,10 @@ void opCond();
 void opNOR();
 void opMove();
 
+void plotVertical(uint16_t x1, uint16_t y1, uint16_t y2);
+void plotLineLow(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+void plotLineHigh(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+
 uint8_t getNextOpcode();
 
 uint8_t extractNibble0(uint16_t input);

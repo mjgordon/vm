@@ -72,18 +72,14 @@ void setup() {
 
 void run() {
   while(PC < programLength) {
-    int of = time + 1024;
-    memory[of] = time & 0xF;
-    printf("%i %i %i %i\n",colors[memory[of]].channels[0],colors[memory[of]].channels[1],colors[memory[of]].channels[2],colors[memory[of]].channels[3]);
     uint8_t op = getNextOpcode();
     execute(op);
     time += 1;
-
   }
 
+  
   setPixels();
   updateSDL();
-  //  randomize();
 
   getchar();
   cleanupSDL();
@@ -97,12 +93,6 @@ void setPixels() {
     pixels[offset + 2] = colors[memory[i]].channels[2];
     pixels[offset + 3] = colors[memory[i]].channels[3];
   }
-
-  pixels[0] = 0;
-  pixels[1] = 0;
-  pixels[2] = 0;
-  pixels[2] = 255;
-  pixels[4] = 255;
 }
 
 void execute(uint8_t opcode) {
@@ -230,17 +220,22 @@ void opPush() {
 }
 
 void opPop() {
+  uint16_t temp = 0;
   switch(machineMode) {
   case MODE_COLOR:
     REG_COLOR = stackPop(stack);
     break;
 
   case MODE_X:
-    REG_X = popNibble3();
+    temp = popNibble3();
+    if (temp >= PAGE_SIZE) temp = PAGE_SIZE - 1;
+    REG_X = temp;
     break;
 
   case MODE_Y:
-    REG_Y = popNibble3();
+    temp = popNibble3();
+    if (temp >= PAGE_COUNT) temp = PAGE_COUNT - 1;
+    REG_Y = temp;
     break;
 
   case MODE_PC:
@@ -296,31 +291,87 @@ void opNOR() {
 }
 
 void opMove() {
+  
   uint16_t x1 = PEN_X;
-  uint16_t x2 = REG_X;
   uint16_t y1 = PEN_Y;
+  uint16_t x2 = REG_X;
   uint16_t y2 = REG_Y;
-  if (REG_X < PEN_X) {
-    uint16_t temp = x1;
-    x1 = x2;
-    x2 = temp;
+
+  PEN_X = REG_X;
+  PEN_Y = REG_Y;
+  
+  uint8_t mode = stackPop(stack);
+  if (mode == 0) return;
+
+  if (abs(x2-x1) == 0) {
+    plotVertical(x1,y1,y2);
   }
-  double dx = x2 - x1;
-  double dy = y2 - y1;
-  double derr = abs(dy / dx);
-  double error = 0;
-  uint16_t y = 0;
-  for (uint16_t x = x1; x1 <= x2; x ++) {
-    memory[y * PAGE_SIZE + x] = REG_COLOR;
-    error = error + derr;
-    while (error >= 0.5) {
-      y = y + (dy / abs(dy));
-      error = error =- 1;
-    }
+  else if (abs(y2-y1) < abs(x2-x1)) {
+    if (x1 > x2) plotLineLow(x2,y2,x1,y1);
+    else plotLineLow(x1,y1,x2,y2);
+  }
+  else {
+    if (y1 > y2) plotLineHigh(x2,y2,x1,y1);
+    else plotLineHigh(x1,y1,x2,y2);
+  }
+  
+}
+
+void plotVertical(uint16_t x1, uint16_t y1, uint16_t y2) {
+  if (y2 < y1) {
+    uint16_t temp = y2;
+    y2 = y1;
+    y1 = temp;
+  }
+
+  for (uint16_t y = y1; y <= y2; y++) {
+    //if (REG_COLOR == 15) printf("%i\n",y * PAGE_SIZE + x1);
+    memory[y * PAGE_SIZE + x1] = REG_COLOR;
   }
 }
 
+void plotLineLow(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
+  int dx = x2 - x1;
+  int dy = y2 - y1;
+  uint16_t yi = 1;
+  if (dy < 0) {
+    yi = -1;
+    dy = -dy;
+  }
+  int D = (2 * dy) - dx;
+  uint16_t y = y1;
 
+  for (uint16_t x = x1; x <= x2; x++) {
+    memory[y * PAGE_SIZE + x] = REG_COLOR;
+    if (D > 0) {
+      y = y + yi;
+      D = D - (2 * dx);
+    }
+    D = D + (2 * dy);
+  }
+
+}
+
+void plotLineHigh(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
+  int dx = x2 - x1;
+  int dy = y2 - y1;
+  uint16_t xi = 1;
+  if (dx < 0) {
+    xi = -1;
+    dx = -dx;
+  }
+  int D = (2 * dx) - dy;
+  uint16_t x = x1;
+
+  for (uint16_t y = y1; y < y2; y++) {
+    memory[y * PAGE_SIZE + x] = REG_COLOR;
+    if (D > 0) {
+      x = x + xi;
+      D = D - (2 * dy);
+    }
+    D = D + (2 * dx);
+  }
+}
 
 uint8_t getNextOpcode() {
   uint8_t opcode = program[PC];

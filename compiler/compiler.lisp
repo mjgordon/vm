@@ -1,8 +1,11 @@
 (load "~/lisp/quicklisp/setup.lisp")
 (load "dictionary.lisp")
+(load "util-assembler.lisp")
 
 (ql:quickload "split-sequence" :silent t)
 (ql:quickload "alexandria" :silent t)
+
+
 
 (defun get-file (filename)
   "Load a source file as a collection of strings"
@@ -11,18 +14,36 @@
        while line
        collect line)))
 
+(defun generate-label-table (lines)  
+  "Splits lines to one list of words, removes and logs label tags"
+  (defparameter *label-table* (make-hash-table :test 'eq))
+  (setf lines
+	(mapcan (lambda (line)
+		  (split-sequence:split-sequence #\Space line))
+		(remove-lines lines)))
+
+  (let ((count 0))
+    (remove-if (lambda (word)
+		 (cond ((char= (char word 0) #\@) (progn (setf (gethash (subseq word 1) *label-table*) count)
+							 (print count)
+							 t))
+		       ((char= (char word 0) #\>) (progn (incf count 4)
+							 nil))
+		       (t (progn (incf count) nil))))
+	       lines)))
+ 
+  
 (defun convert-to-symbols (lines)
   (mapcar (lambda (line)
-	    (setf line (split-sequence:split-sequence #\Space line))
 	    (mapcar (lambda (word)
 		      (if (numberp (read-from-string word))
 			  (read-from-string word)
 			  (intern word)))
-		    line))
+		    (split-sequence:split-sequence #\Space line)))
 	  lines))
   
 
-(defun preprocess (lines)
+(defun unroll (lines)
   "Very dumb right now, will just unroll certain keywords into lists of other opcodes"
 
   (setf lines (alexandria:flatten lines))
@@ -54,7 +75,7 @@
 	      lines))))
 
 (defun compile-hex (filename)
-  (write-bytecode (preprocess (convert-to-symbols (get-file filename)))))
+  (write-bytecode (unroll (convert-to-symbols (generate-label-table (get-file filename))))))
 
 
 (compile-hex (cadr sb-ext:*posix-argv*))

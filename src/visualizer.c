@@ -29,7 +29,7 @@ void setupSDL() {
     return;
   }
   
-  context.win = SDL_CreateWindow("VM",100,100,1000,1000,SDL_WINDOW_SHOWN);
+  context.win = SDL_CreateWindow("VM",100,100,1024,1024,SDL_WINDOW_SHOWN);
   if (!context.win){
     printf("windowNope\n");
     SDL_Quit();
