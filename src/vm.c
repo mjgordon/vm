@@ -31,7 +31,7 @@
 
 uint8_t memory[MEMORY_SIZE];
 uint8_t *program;
-long programLength;
+uint16_t programLength;
 
 struct Stack* stack;
 struct Stack* rstack;
@@ -60,6 +60,7 @@ void setup() {
   fileptr = fopen("compiler/program.hxb","rb");
   fseek(fileptr,0,SEEK_END);
   programLength = ftell(fileptr);
+  printf("Loaded program length: %i\n",programLength);
   rewind(fileptr);
   program = (uint8_t *)malloc((programLength)*sizeof(char));
   fread(program,1,programLength,fileptr);
@@ -75,8 +76,10 @@ void run() {
     uint8_t op = getNextOpcode();
     execute(op);
     time += 1;
+    //printf("%i %i\n",op,stack -> top);
   }
 
+  printf("%i operations\n",time);
   
   setPixels();
   updateSDL();
@@ -325,7 +328,6 @@ void plotVertical(uint16_t x1, uint16_t y1, uint16_t y2) {
   }
 
   for (uint16_t y = y1; y <= y2; y++) {
-    //if (REG_COLOR == 15) printf("%i\n",y * PAGE_SIZE + x1);
     memory[y * PAGE_SIZE + x1] = REG_COLOR;
   }
 }
