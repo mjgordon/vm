@@ -9,11 +9,11 @@
   (remove-if #'comment-string-p (remove-if #'empty-string-p lines)))
 
 (defun convert-address (address)
-  (print address)
-  (print (list (logand (ash address -12) #xF)
+  ;(print address)
+  (list (logand (ash address -12) #xF)
 	'PUSH
 	(logand (ash address -8) #xF)
 	'PUSH
 	(logand (ash address -4) #xF)
 	'PUSH
-	(logand address #xF))))
+	(logand address #xF)))

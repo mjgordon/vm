@@ -6,7 +6,6 @@
 #include "visualizer.h"
 
 #include "vm.h"
-
 #define OP_COLOR    0x0
 #define OP_X        0x1
 #define OP_Y        0x2
@@ -53,6 +52,13 @@ FILE *write_ptr;
 
 uint16_t time = 0;
 
+void test() {
+  printf("==========\n");
+  printf("PC: %i\n",PC);
+  printf("Stack: %i\n",(stack -> top) + 1);
+  getchar();
+}
+
 void setup() {
   setupSDL();
   FILE *fileptr;
@@ -76,7 +82,7 @@ void run() {
     uint8_t op = getNextOpcode();
     execute(op);
     time += 1;
-    //printf("%i %i\n",op,stack -> top);
+    //test();
   }
 
   printf("%i operations\n",time);
@@ -156,7 +162,7 @@ void opAdd() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
   uint8_t output = a + b;
-  FLAG = output >= 0xF;
+  FLAG = output > 0xF;
   output = output & 0xF;
   stackPush(stack,output);
 }
@@ -427,11 +433,13 @@ uint16_t popNibble4() {
 }
 
 uint8_t getInput() {
-  //This is temporary
-  uint8_t input;
-  printf("Input Value:");
-  scanf("%hhu",&input);
-  return(input % 16);
+  uint8_t input = 0;
+  printf("Input Color Value: ");
+  //scanf("%hhu",&input);
+  char st[1024];
+  fgets( st, sizeof(st), stdin );
+  sscanf(st, "%hhu", &input );
+  return(input & 0xF);
 }
 
 void outputStack() {

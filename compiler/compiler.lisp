@@ -34,19 +34,11 @@
 	      sym))
 	  lines))
 
-(defun unroll (lines)
-  "Very dumb right now, will just unroll certain keywords into lists of other opcodes"
-  (let ((dictionary (get-dictionary)) (flag nil))
-    (setf lines
-	  (mapcar (lambda (item)
-		    (let ((hashvalue (gethash item dictionary)))
-		      (if (eq hashvalue nil)
-			  item
-			  (progn (setf flag t) hashvalue))))
-		  lines))
-    (if flag
-	(setf lines(unroll lines)))
-    lines))
+(defun expand-tokens (tokens)
+  (let ((expansion (expand-pass tokens)))
+    (if (car expansion)
+	(expand-tokens (rest expansion))
+	(rest expansion))))
 
 (defun resolve-labels (tokens)
   (let ((count 0))
@@ -82,7 +74,8 @@
 	      tokens))))
 
 (defun compile-hex (filename)
-  (write-bytecode (resolve-labels (unroll (generate-tables (get-file filename))))))
+  (write-bytecode (resolve-labels (expand-tokens (generate-tables (get-file filename)))))
+  nil)
 
 
-(compile-hex (cadr sb-ext:*posix-argv*))
+;(compile-hex (cadr sb-ext:*posix-argv*))
