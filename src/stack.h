@@ -3,7 +3,7 @@
 
 // A structure to represent a stack
 struct Stack {
-  uint8_t top;
+  int top;
   unsigned capacity;
   uint8_t* array;
 };

@@ -5,10 +5,10 @@
 # calls and exits, then goes to end label
 
 CALL >COLOR_TEST
-CALL >PC_TEST
-CALL >MEM_TEST
-CALL >IO_TEST
-CALL >SUB_TEST
+#CALL >PC_TEST
+#CALL >MEM_TEST
+#CALL >IO_TEST
+#CALL >SUB_TEST
 
 GOTO >END
 
@@ -255,9 +255,11 @@ RET
 # Basic I/O
 # 0 1 2 4 5 7 8 A B C
 # Similar output as mem test, but asks for color first, and also writes that value to the output file
+# Note this only will do output at the moment
 
 @IO_TEST
-IO PUSH PEEK 0 POP
+#IO PUSH PEEK 0 POP
+LIT PUSH 10 PEEK 0 IO POP
 LIT
 PUSH 0 PUSH 4 PUSH 0
 PUSH 0 PUSH 14 PUSH 0
@@ -293,7 +295,8 @@ LIT PUSH 2 SUB POP
 SUB PUSH
 LIT PUSH >SUB_TEST_B
 COND
-GOTO >SUB_TEST_C
-@SUB_TEST_C
+
+RET
+
 
 @END

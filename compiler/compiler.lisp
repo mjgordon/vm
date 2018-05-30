@@ -81,4 +81,4 @@
   nil)
 
 
-;(compile-hex (cadr sb-ext:*posix-argv*))
+(compile-hex (cadr sb-ext:*posix-argv*))

@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "stack.h"
 #include "visualizer.h"
 
@@ -51,12 +52,7 @@ uint16_t PEN_Y = 0;
 FILE *write_ptr;
 
 uint16_t time = 0;
-
-void test() {
-  printf("==========\n");
-  printf("PC: %i\n",PC);
-  printf("Stack: %i\n",(stack -> top) + 1);
-}
+int optionUnroll = 0;
 
 void setup() {
   setupSDL();
@@ -70,10 +66,11 @@ void setup() {
   program = (uint8_t *)malloc((programLength)*sizeof(char));
   fread(program,1,programLength,fileptr);
   fclose(fileptr);
+
+  write_ptr = fopen("output.bin","wb+");
   
   stack = createStack(65536);
   rstack = createStack(65536);
-
 }
 
 void run() {
@@ -81,16 +78,27 @@ void run() {
     uint8_t op = getNextOpcode();
     execute(op);
     time += 1;
-    //test();
   }
-
-  printf("%i operations\n",time);
-
-  test();
   
   setPixels();
   updateSDL();
+}
 
+void finish() {
+  printf("==========\n");
+  printf("%i operations\n",time);
+  printf("PC: %i\n",PC);
+  printf("Stack: %i\n",(stack -> top) + 1);
+
+  if (optionUnroll && !stackIsEmpty(stack)) {
+    printf("\nUnrolling Stack: %i\n",stack->top + 1);
+    while(!stackIsEmpty(stack)) {
+      printf("s: %i\n",stackPop(stack));
+    }
+  }
+
+  fclose(write_ptr);
+  
   getchar();
   cleanupSDL();
 }
@@ -175,7 +183,7 @@ void opSub() {
   FLAG = output >= 0xF;
   output = output & 0xF;
   stackPush(stack,output);
-  printf("SUB: %i %i %i %i\n",a, b, output, FLAG);
+  //printf("SUB: %i %i %i %i\n",a, b, output, FLAG);
 }
 
 void opPush() {
@@ -467,11 +475,21 @@ void outputStack() {
 }
 
 
-int main() {
-  write_ptr = fopen("output.bin","wb+");
+int main(int argc, char* argv[]) {
+  int opt;
+  while((opt = getopt(argc,argv,"u")) != -1) {
+    switch(opt) {
+    case 'u':
+      optionUnroll = 1;
+      break;
+    }
+  }
+  
+
   
   setup();
   run();
+  finish();
 
-  fclose(write_ptr);
+
 }
