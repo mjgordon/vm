@@ -69,7 +69,10 @@
     (let ((bytecodes (get-bytecodes)))
       (mapcar (lambda (token)
 		(if (symbolp token)
-		    (write-byte (gethash token bytecodes) stream)
+		    (let ((byte (gethash token bytecodes)))
+		      (if byte
+			  (write-byte (gethash token bytecodes) stream)
+			  (format t "Bad token: ~a" token)))
 		    (write-byte token stream)))
 	      tokens))))
 

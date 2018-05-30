@@ -248,7 +248,9 @@ void opPop() {
     break;
 
   case MODE_PC:
+    printf("Popped PC from %i to ", PC);
     PC = popNibble4();
+    printf("%i\n",PC);
     break;
 
   case MODE_MEM:
@@ -315,6 +317,9 @@ void opMove() {
   if (abs(x2-x1) == 0) {
     plotVertical(x1,y1,y2);
   }
+  if (abs(y2-y1) == 0) {
+    plotHorizontal(x1,x2,y1);
+  }
   else if (abs(y2-y1) < abs(x2-x1)) {
     if (x1 > x2) plotLineLow(x2,y2,x1,y1);
     else plotLineLow(x1,y1,x2,y2);
@@ -335,6 +340,18 @@ void plotVertical(uint16_t x1, uint16_t y1, uint16_t y2) {
 
   for (uint16_t y = y1; y <= y2; y++) {
     memory[y * PAGE_SIZE + x1] = REG_COLOR;
+  }
+}
+
+void plotHorizontal(uint16_t x1, uint16_t x2, uint16_t y1) {
+  if (x2 < x1) {
+    uint16_t temp = x2;
+    x2 = x1;
+    x1 = temp;
+  }
+
+  for (uint16_t x = x1; x <= x2; x++) {
+    memory[y1 * PAGE_SIZE + x] = REG_COLOR;
   }
 }
 

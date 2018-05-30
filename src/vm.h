@@ -18,6 +18,7 @@ void opNOR();
 void opMove();
 
 void plotVertical(uint16_t x1, uint16_t y1, uint16_t y2);
+void plotHorizontal(uint16_t x1, uint16_t x2, uint16_t y1);
 void plotLineLow(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 void plotLineHigh(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 

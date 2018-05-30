@@ -37,7 +37,7 @@
 	      (RET
 	       ((RSTK PUSH PUSH PUSH PUSH PC POP) nil))
 	      (CALL
-	       ((PC PUSH LIB PUSH B ADD POP RSTK POP LIT PUSH A ADD PUSH POP POP RSTK POP POP POP GOTO)  nil))
+	       ((PC PUSH LIT PUSH 14 ADD POP RSTK POP LIT PUSH 1 ADD PUSH POP POP RSTK POP POP POP GOTO)  nil))
 	      (GOTO
 	       ((LIT PUSH)  (PC POP)))))
     (lambda (tokens)
