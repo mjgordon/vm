@@ -56,7 +56,6 @@ void test() {
   printf("==========\n");
   printf("PC: %i\n",PC);
   printf("Stack: %i\n",(stack -> top) + 1);
-  getchar();
 }
 
 void setup() {
@@ -86,6 +85,8 @@ void run() {
   }
 
   printf("%i operations\n",time);
+
+  test();
   
   setPixels();
   updateSDL();
@@ -170,10 +171,11 @@ void opAdd() {
 void opSub() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
-  uint8_t output = a - b;
+  uint8_t output = b - a;
   FLAG = output >= 0xF;
   output = output & 0xF;
   stackPush(stack,output);
+  printf("SUB: %i %i %i %i\n",a, b, output, FLAG);
 }
 
 void opPush() {

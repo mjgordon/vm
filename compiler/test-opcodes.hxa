@@ -1,5 +1,5 @@
 # ==============================================
-# RSTK
+# RSTK (and addition flag)
 # 0 
 # Calls all other tests sequentially with what will be the defs for
 # calls and exits, then goes to end label
@@ -8,6 +8,7 @@ CALL >COLOR_TEST
 CALL >PC_TEST
 CALL >MEM_TEST
 CALL >IO_TEST
+CALL >SUB_TEST
 
 GOTO >END
 
@@ -273,5 +274,26 @@ MEM POP PUSH X PUSH LIT PUSH 2 ADD POP X POP
 
 RET
 
+# ==============================================
+# Subtraction and subtraction flag
+# 0 1 2 4 5 7 8 A B C
+# Similar to mem test, but starts at end of line of dots and works backwards. Uses cond.
+
+@SUB_TEST
+LIT
+PUSH 10
+PUSH 0 PUSH 4 PUSH 15
+PUSH 1 PUSH 0 PUSH 0
+Y POP
+@SUB_TEST_B
+X POP
+MEM POP PUSH
+X PUSH
+LIT PUSH 2 SUB POP
+SUB PUSH
+LIT PUSH >SUB_TEST_B
+COND
+GOTO >SUB_TEST_C
+@SUB_TEST_C
 
 @END
