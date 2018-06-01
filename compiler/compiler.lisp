@@ -34,10 +34,10 @@
 	      sym))
 	  lines))
 
-(defun expand-tokens (tokens)
-  (let ((expansion (expand-pass tokens)))
+(defun expand-tokens (tokens &optional (expander (get-dictionary-expander)))
+  (let ((expansion (expand-pass tokens expander)))
     (if (car expansion)
-	(expand-tokens (rest expansion))
+	(expand-tokens (rest expansion) expander)
 	(rest expansion))))
 
 (defun resolve-labels (tokens)
@@ -79,7 +79,6 @@
 (defun compile-hex (filename)
   (write-bytecode (resolve-labels (expand-tokens (generate-tables (get-file filename)))))
   (mapcar (lambda (key)
-	    (nop)
 	    (format t "~a ~a ~%" key (gethash key *label-table*)))
 	  (loop for key being the hash-keys of *label-table* collect key))
   nil)

@@ -1,6 +1,5 @@
-(defun expand-pass (tokens)
-  (let* ((expander (get-dictionary-expander))
-	(expansion (recursive-expand-pass tokens expander () nil)))
+(defun expand-pass (tokens expander)
+  (let ((expansion (recursive-expand-pass tokens expander () nil)))
     (cons (car expansion)
 	  (apply #'append (reverse (rest expansion))))))
 
