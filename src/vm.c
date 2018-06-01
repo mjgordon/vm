@@ -78,6 +78,7 @@ void run() {
     uint8_t op = getNextOpcode();
     execute(op);
     time += 1;
+    //printf("%i\n",stack->top + 1);
   }
   
   setPixels();
@@ -308,6 +309,7 @@ void opNOR() {
   uint8_t output = ~(a | b);
 
   output = output & 0xF;
+  //printf("NOR: %i %i %i\n",a, b, output);
   stackPush(stack,output);
 }
 

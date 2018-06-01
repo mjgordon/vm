@@ -78,6 +78,10 @@
 
 (defun compile-hex (filename)
   (write-bytecode (resolve-labels (expand-tokens (generate-tables (get-file filename)))))
+  (mapcar (lambda (key)
+	    (nop)
+	    (format t "~a ~a ~%" key (gethash key *label-table*)))
+	  (loop for key being the hash-keys of *label-table* collect key))
   nil)
 
 
