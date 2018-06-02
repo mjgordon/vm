@@ -1,8 +1,7 @@
 # ==============================================
 # RSTK (and addition flag)
-# 0 
-# Calls all other tests sequentially with what will be the defs for
-# calls and exits, then goes to end label
+# Calls all other tests sequentially with the CALL expansion; 
+# each test ends with a RET expansion, then GOTO's the end of the file
 
 CALL >COLOR_TEST
 CALL >PC_TEST
@@ -14,9 +13,9 @@ CALL >NOR_TEST
 GOTO >END
 
 # ==============================================
-# COLORS + MOVE
-# 0 1 2 7 A B F
+# COLOR MODE + MOVE COMMAND
 # Draws breshenham lines in all quadrants, in all available colors
+# Color 0 is black so will not be visible. 
 
 # Go to start
 @COLOR_TEST
@@ -202,7 +201,6 @@ RET
 
 # ==============================================
 # PC Mode
-# 0 1 2 3 7 A B F
 # Sets color to green, moves PC to label past instruction to turn color red, draws line.
 
 @PC_TEST
@@ -230,8 +228,8 @@ RET
 
 # ==============================================
 # ADD mode and addition flag
-# 0 1 2 4 7 8 A B 
 # Move to position, put a color into memory and copy it out again, move two pixels over and repeat
+# Uses cond to know when to end
 
 @ADD_TEST
 LIT
@@ -240,7 +238,7 @@ PUSH 0 PUSH 4 PUSH 0
 PUSH 0 PUSH 10 PUSH 4
 Y POP
 X POP
-PEEK 0 IO POP MEM POP
+DUP IO POP MEM POP
 @ADD_TEST_B
 MEM PUSH X PUSH
 LIT PUSH 2 ADD POP
@@ -253,8 +251,7 @@ RET
 
 # ==============================================
 # SUB mode and subtraction flag
-# 0 1 2 4 5 7 8 A B C
-# Similar to mem test, but starts at end of line of dots and works backwards. Uses cond.
+# Similar to ADD test, but starts at end of line of dots and works backwards. Uses cond.
 
 @SUB_TEST
 LIT
@@ -263,7 +260,7 @@ PUSH 0 PUSH 4 PUSH 15
 PUSH 0 PUSH 10 PUSH 8
 Y POP
 X POP
-PEEK 0 IO POP MEM POP
+DUP IO POP MEM POP
 @SUB_TEST_B
 MEM PUSH X PUSH
 LIT PUSH 2 SUB POP
@@ -277,8 +274,7 @@ RET
 
 # ==============================================
 # PEEK Command
-# 
-# 
+# Pushes a sequence of colors, then uses PEEK to add that backwards onto the stack
 
 @PEEK_TEST
 LIT
@@ -302,8 +298,8 @@ RET
 
 # ==============================================
 # NOR command and logic folds
-# 
-# 
+# Lays down the expected results on one line, puts test case results for
+# nor, not, or, and on the next line
 
 @NOR_TEST
 LIT
@@ -387,9 +383,8 @@ MEM POP LIT PUSH 0 PUSH 5 PUSH 2 X POP
 LIT PUSH 9
 MEM POP LIT PUSH 0 PUSH 5 PUSH 3 X POP
 
-
-
 RET
+
 
 @END
 
