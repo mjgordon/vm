@@ -33,13 +33,17 @@
 	      (OR
 	       ((NOR DUP NOR)  nil))
 	      (NOT
-	       ((DUP NOR)  nil))
+	       ((DUP NOR)  nil)) 
 	      (DUP
 	       ((PEEK 0)  nil))
 	      (RET
 	       ((RSTK PUSH PUSH PUSH PUSH PC POP) nil))
 	      (CALL
-	       ((PC PUSH LIT PUSH 13 ADD POP RSTK POP LIT PUSH 1 ADD PUSH POP POP RSTK POP POP POP GOTO)  nil))
+	       ((LIT PUSH +29 RSTK PUSH PUSH PUSH PUSH GOTO)  nil))
+	      (DROP
+	       ((COLOR PUSH RSTK POP COLOR POP RSTK PUSH COLOR POP) nil))
+	      (SWAP
+	       ((PEEK 1 RSTK POP POP DROP RSTK PUSH PUSH) nil))
 	      (GOTO
 	       ((LIT PUSH)  (PC POP)))))
     (lambda (tokens)

@@ -6,10 +6,16 @@
 
 (ql:quickload "split-sequence" :silent t)
 
-(defparameter *label-table* (make-hash-table :test 'eq))
-(defparameter *call-table* (make-hash-table :test 'eq))
+
 (defparameter *label-list* ())
-(defparameter *call-list* ())
+(defparameter *label-table* (make-hash-table :test 'eq))
+
+(defparameter *ref-list* ())
+(defparameter *ref-table* (make-hash-table :test 'eq))
+
+(defparameter *return-table* (make-hash-table :test 'eq))
+
+
 
 
 (defun get-file (filename)
@@ -29,10 +35,15 @@ while recording lists of label tags and references."
 		(remove-lines lines)))
 
   (mapcar (lambda (word)
-	    (let ((sym (intern word)))
-	      (cond ((char= (char word 0) #\@) (setf *label-list* (adjoin sym *label-list*)))
-		    ((char= (char word 0) #\>) (progn (setf (gethash sym *call-table*) (intern (substitute #\@ #\> word)))
-						      (setf *call-list* (adjoin sym *call-list*))))
+	    (let ((sym (intern word)) (ch0 (char word 0)))
+	      (cond ((char= ch0 #\@) (setf *label-list* (adjoin sym *label-list*)))
+		    ((char= ch0 #\>) (progn (setf (gethash sym *ref-table*) (intern (substitute #\@ #\> word)))
+					    (setf *ref-list* (adjoin sym *ref-list*))))
+		    ((char= ch0 #\+) (let ((offset 0))
+				       (progn (setf sym (gensym))
+					      (when (> (length word) 1)
+						(setf offset (read-from-string (subseq word 1))))
+					      (setf (gethash sym *return-table*) offset))))
 		    ((numberp (read-from-string word)) (setf sym (read-from-string word)))
 		    (t sym))
 	      sym))
@@ -52,18 +63,23 @@ while recording lists of label tags and references."
   (let ((count 0))
     (setf tokens
 	  (remove-if (lambda (token)
+		       (print token)
 		       (cond ((member token *label-list*) (progn (setf (gethash token *label-table*) count)
 								 t))
-			     ((member token *call-list*) (progn (incf count 7)
-								nil))
+			     ((gethash token *return-table*) (progn (incf (gethash token *return-table*) count)
+								    (incf count 7)
+								    nil))
+			     ((member token *ref-list*) (progn (incf count 7)
+							       nil))
 			     (t (progn (incf count)
 				       nil))))
 		     tokens)))
+  (print tokens)
   (mapcan (lambda (token)
-	    (if (member token *call-list*)
-		(convert-address (gethash (gethash token *call-table*) *label-table*))
-		(list token)))
-	  tokens))	      
+	    (cond ((member token *ref-list*) (convert-address (gethash (gethash token *ref-table*) *label-table*)))
+		  ((gethash token *return-table*) (convert-address (gethash token *return-table*)))
+		  (t (list token))))
+	  tokens))
 		       
 
 (defun write-bytecode (tokens)
@@ -93,4 +109,4 @@ while recording lists of label tags and references."
 
 
 ;;; Only called when run from bash
-(compile-hex (cadr sb-ext:*posix-argv*))
+;(compile-hex (cadr sb-ext:*posix-argv*))

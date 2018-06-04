@@ -1,0 +1,262 @@
+WHERE I'M AT:
+
++ Symbols only get noticed when converting strings to symbols. The call expansion uses one, but everything's already symbols by then. Resolve?
+
+
+* TODO
+** v001 Basic VM and assembler [13/13]
+- [X] +/- Become modes
+- [X] Flag mode becomes RSTK mode.  
+- [X] More efficient horizontal breshenham
+- [X] Add vertical breshenham
+- [X] Accept blank lines in assembly
+- [X] Proper comments in assembly
+- [X] Change way labels are handled, intern earlier
+- [X] write emacs mode for .hxa
+- [X] Finalize how calls and returns are handled when using RSTK, see above
+- [X] Only create one dictionary per session. 
+- [X] Finalize .hxa color-scheme - different color for rolled entries, cond should be same as goto?
+- [X] Finalize test documentation
+- [X] Finalize assembler documentation
+
+*** TEST : test-opcodes.hxa [20/20]
+- [X] 0 : 1 : COLOR
+- [X] 1 : 3 : X
+- [X] 2 : 3 : Y
+- [X] 3 : 4 : PC
+- [X] 4 : 1 : MEM
+- [X] 5 : 1 : IO
+- [X] 6 : 1 : RSTK
+- [X] 7 : 1 : LIT
+- [X] 8 : 2 -> 1 : +
+- [X] 9 : 2 -> 1 : -
+
+- [X] A : PUSH
+- [X] B : POP
+- [X] C : PEEK
+- [X] D : COND
+- [X] E : NOR
+- [X] F : DRAW
+
+EXPANSIONS
+- [X] NOT
+- [X] OR
+- [X] AND
+- [X] DUP
+
+
+
+** v002 Additions to assembler and dictionary [3/18]
+- [ ] MULT expansion
+- [ ] DIV expansion
+- [ ] MOD expansion
+- [X] DROP expansion
+- [X] SWAP expansion
+- [X] Implement + symbol in assembler
+- [ ] Redefine CALL to use +
+- [ ] Redo how the dictionary handle wraps to allow multiple arguments
+- [ ] Expansion types : (X) Always expands (C) Always Calls (_) Assembler decides
+- [ ] Replace EXECUTE with DROP
+- [ ] Add program-run timer into vm
+- [ ] Add stack analysis in fast way
+- [ ] Assembler reports time taken
+- [ ] Assembler reports depth of expand tokens recursion
+- [ ] Make label tables not global. 
+- [ ] Assembler outputs file with same name as input
+- [ ] Optimize vm as possible
+- [ ] Fast vs small assembly : expand tokens vs call a single expansion of the token
+
+*** TEST : test-opcodes.hxa [/]
+- [ ] MULT
+- [ ] DIV
+- [ ] MOD 
+- [ ] DROP
+- [ ] SWAP 
+
+
+* BUGS
+
+* Documentation
+** Links:
+https://www.vttoth.com/CMS/projects/13-4-bit-processor/134-viktors-amazing-4-bit-processor-architecture
+https://github.com/qeedquan/turtle/blob/master/src/util.c
+
+
+** General
+Screen Storage:
+80x25char @ 8x12 px = 640 x 300 px
+2000 char @ 2nb = 4000 nb or roughly one page, can put alu etc in the remaining 96.
+
+2nb = 256 values. Need 7 bits for 128 standard ascii.
+Can either have full 256 ascii or use last bit as color.
+
+Font Storage:
+8x12 Mem rect Per Character. 8*128 = 1024 cells wide naively, 12,288 total or 3 pages
+Or, 128 characters in 4 32-character blocks. Each bit per cell describes whether that pixel is on or off in each block. So: 8*32 = 256 cells wide, 3072 total (fits in one page).
+Decoding might be slow though?
+
+Variables:
+Pointer = 8nb (1 : nb length, 1 : some other flag? , 3 : page, 3 : location)
+512 Pointers per page.
+
+-Maybe LIT POP shouldn't be EXECUTE. Not sure how useful this is in the long run. Then LIT POP could be DROP and it could be less hacky and ugly 
+
+
+** Symbols
+@   : Label, assembler stores its position in a hashmap.
+>   : Label reference, assembler replacing with same named label position
++   : Anonymous/unique label, assembler stores its position in a hashmap with a gensym.
++32 : Stores the anonymous label with the associated offset. Used in calls
+
+** Opcodes
+B : ∆ : MNMNC  : DESCRIPTION
+
+0 : 1 : COLOR  : Color of line drawn with DRAW
+1 : 3 : X      : Position in 'page' of memory dealt with. Destination x for draw.
+2 : 3 : Y      : 'Page' of memory dealt with. Destination y for draw
+3 : 4 : PC     : PUSH to view use current PC. POP to set PC (e.g. goto)
+4 : 1 : MEM    : Load / Set a position in memory determined by X and Y
+5 : 1 : IO     : PUSH to read a NB, POP to write a NB
+6 : 1 : RSTK   : A second stack. Used by various expansions for a return stack
+7 : 1 : LIT    : Push to put the next NB on the stack. Pop to ?(execute top NB / drop top NB)
+8 : 2->1 : +   : POP to add top two NB. PUSH to use carry flag of last operation
+9 : 2->1 : -   : POP to sub top two NB. PUSH to use underflow flag of last operation
+
+A : N : PUSH   : Push selected register/etc onto the stack
+B : N : POP    : Pop the stack into the selected register/etc
+C : 1 : PEEK   : Copy part of the stack to the top of the stack
+D : 5 : COND   : Go to the address at the top 4 positions of the stack if the 5th stack position is 0
+E : 2->1 : NOR : Performs a logical NOR on the top two stack positions
+F : 1 : DRAW   : Draws a line of COLOR between the last position and X/Y if the top position is 1. Else just move.
+
+** Expansion mnemonics
+
+- MNEMONIC       : STACK ∆   : DESCRIPTION
+
+*** ADDITION
+AD4C  W X Y Z  : (0)  (0)  : Add 4 digits constant. Wraps 4 variables
+AD4C' X        : (-1) (+1) : AD4C utility. Wraps 1 variable. 
+
+*** MULTIPLICATION
+MULT           : (0)  (0)  : Multiplies two digits. 
+
+*** PROGRAM FLOW
+GOTO >ADDR     : (0)  (0)  : Moves PC directly 
+CALL >ADDR     : (0)  (+4) : Puts a return position on the RSTK, moves PC to >ADDR position
+RETURN         : (0)  (-4) : Moves PC back to top position on the RSTK
+
+*** Expansions available as CALLS : (anything bigger than 25 opcodes)
+MULT
+MULT2
+
+
+** Expansion Definitions
+*** ADDITION
+# ABCD (data) + WXYZ (constant) - ignores final carry
+_AD4C W X Y Z                   (A B C D) ()
+LIT PUSH 0 RSTK POP             (A B C D) (0)
+_ADD4_CONSTANT_SINGLE Z         (A B C) (D+Z FZ)
+_ADD4_CONSTANT_SINGLE Y         (A B) (D+Z C+Y FY)
+_ADD4_CONSTANT_SINGLE X         (A) (D+Z C+Y B+X FX)
+_ADD4_CONSTANT_SINGLE W         () (D+Z C+Y B+X A+W FW)
+RSTK PUSH DROP                  () (D+Z C+Y B+X A+W)
+RSTK PUSH PUSH PUSH             (A+W B+X C+Y D+Z) ()
+_RESULT                         (0) (0)
+
+
+# A X are next two digits to add. R is the most recent result. F is the most recent carry flag.
+_AD4C X                         (A) (F)
+LIT PUSH X ADD POP              (A+X) (F)
+ADD PUSH RSTK PUSH              (A+X F2 F) ()
+SWAP RSTK POP                   (A+X F) (F2)
+ADD POP                         (A+X') (F2)
+ADD PUSH RSTK PUSH              (A+X' F3 F2) ()
+ADD POP SWAP RSTK POP POP       () (A+X' F2')
+_RESULT                         (-1) (+1)
+
+*** MULTIPLICATION
+# A and B are the factors. P and R are the digits of the product
+# AxB = PR
+_MULT                           (A B) ()
+RSTK POP POP LIT PUSH 0 0       (0 0) (B A)
+@0                              (P R) (B A)
+RSTK PUSH DUP                   (P R A A) (B)
+RSTK PUSH DUP                   (P R A A B B) ()
+LIT PUSH >1                     (P R A A B B >1) ()
+COND(>1)                        (P R A A B) ()
+LIT PUSH 1                      (P R A A B 1) ()
+SUB POP                         (P R A A B-1) ()
+RSTK POP POP                    (P R A) (B-1 A)
+ADD POP                         (P R+A) (B-1 A)
+RSTK POP ADD PUSH               (P F) (B-1 A R+A)
+POP RSTK PUSH                   (P+F R+A) (B-1 A)
+GOTO >0
+@1                              (P R A A 0) ()
+DROP DROP DROP                  (P R) ()
+_RESULT                         (0) (0)
+
+# Multiplies 0xAB and 0xCD
+# Result should be 0xMNOP
+# K is carry placeholders here
+     AB
+x    CD
+=======
+   0123
+
+
+@MULT2                          (A B C D) ()
+RSTK POP PEEK 2 PEEK 3          (A B C A B) (D)
+RSTK POP POP                    (A B C) (D B A)
+CALL >MULT2B                    (O0 O1 O2) (D B A)
+RSTK PUSH PUSH PUSH             (O0 O1 O2 A B D) ()
+CALL >MULT2B                    (O0 O1 O2 O1 O2 O3) ()
+RSTK POP POP                    (O0 O1 O2 O1) (O3 O2)
+SWAP RSTK POP                   (O0 O1 O1) (O3 O2 O2)
+ADD+                            (O0 O1) (O3 O2 O2)
+RSTK PUSH PUSH                  (O0 O1 O2 O2) (O3)
+ADD+                            (O0 O1 O2)
+
+
+
+
+@ADD+                           (A B B) ()
+ADD POP RSTK POP ADD PUSH       (A F) (B)
+ADD POP RSTK PUSH               (A B) ()
+
+
+@MULT2B                         (A B C) ()
+RSTK POP SWAP RSTK PUSH         (B A C) ()
+DUP RSTK POP                    (B A C) (C)
+MULT                            (B K T) (C)
+PEEK 2 RSTK POP POP POP         (B) (C B T K)
+DROP RSTK PUSH PUSH PUSH PUSH   (K T B C) ()
+MULT                            (K T K T) ()
+RSTK POP ADD POP                (O0 O1) (O2)
+RSTK POP ADD PUSH               (O0 F)    (O2 O1)
+RSTK POP ADD POP RSTK PUSH PUSH (O0 O1 O2) ()
+RET
+
+
+*** Program Flow
+
+# Reminder: PUSH >ADDR is automatically converted to the correct address
+_GOTO >ADDR                     () ()
+LIT PUSH >ADDR                  (A B C D) ()
+PC POP                          () ()
+_RESULT                         (0) (0)
+
+
+# Pushes the current PC to RSTK, plus a constant equal to the size of the expansion itself
+# Where 00XY is the call size
+_CALL >ADDR                     () ()
+LIT PUSH +29                    (A B C+1 D+13) ()
+RSTK PUSH PUSH PUSH PUSH        () (D+Y C+X B A)
+GOTO >ADDR                      () (D+Y C+X+F B A)
+_RESULT                         (0) (+4)
+
+
+# Where ABCD is the adjusted call point
+_RETURN                         () (D C B A)
+RSTK PUSH PUSH PUSH PUSH        (A B C D) ()
+PC POP                          () ()
+_RESULT                         (0) (-4)
