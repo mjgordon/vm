@@ -27,38 +27,78 @@
   "Returns a function to get the expansion of a folded opcode. The hashmap is enclosed"
   (let ((definitions (make-hash-table :test 'eq)))
     (mapcar (lambda (def)
-	      (setf (gethash (car def) definitions) (cadr def)))
-	    '((AND
-	       ((MEM POP DUP NOR PUSH DUP NOR NOR)  nil))
-	      (OR
-	       ((NOR DUP NOR)  nil))
-	      (NOT
-	       ((DUP NOR)  nil)) 
-	      (DUP
-	       ((PEEK 0)  nil))
-	      (RET
-	       ((RSTK PUSH PUSH PUSH PUSH PC POP) nil))
-	      (CALL
-	       ((LIT PUSH +29 RSTK PUSH PUSH PUSH PUSH GOTO)  nil))
+	      (setf (gethash (car def) definitions) (cdr def)))
+	    '(
+	      ;; STACK OPERATIONS
 	      (DROP
-	       ((COLOR PUSH RSTK POP COLOR POP RSTK PUSH COLOR POP) nil))
+	       (LIT POP))
+	      (DUP
+	       (PEEK 0))
 	      (SWAP
-	       ((PEEK 1 RSTK POP POP DROP RSTK PUSH PUSH) nil))
+	       (PEEK 1 RSTK POP POP DROP RSTK PUSH PUSH))
+	      ;; LOGIC
+	      (AND
+	       (MEM POP DUP NOR PUSH DUP NOR NOR))
+	      (OR
+	       (NOR DUP NOR))
+	      (NOT
+	       (DUP NOR))
+	      ;; MULTIPLICATION
+	      (MULT
+	       (RSTK POP POP LIT PUSH 0 0
+		%0 RSTK PUSH DUP RSTK PUSH DUP LIT PUSH >1 COND
+		LIT PUSH 1 SUB POP RSTK POP POP ADD POP RSTK POP ADD PUSH POP RSTK PUSH GOTO >0
+		%1 DROP DROP DROP)
+	       local-labels)
+	      ;; PROGRAM FLOW
 	      (GOTO
-	       ((LIT PUSH)  (PC POP)))))
+	       (LIT PUSH)
+	       next-token
+	       (PC POP))
+	      (CALL
+	       (LIT PUSH)
+	       offset-label
+	       23
+	       (RSTK POP POP POP POP GOTO))	      
+	      (RET
+	       (RSTK PUSH PUSH PUSH PUSH PC POP))
+	      ))
     (lambda (tokens)
       (let* ((token (car tokens))
 	     (next (cdr tokens))
 	     (value (gethash token definitions))
 	     (def (car value))
-	     (complex (not (eq (cadr value) nil))))
+	     (type (cadr value)))
 	(cond ((not def) (cons nil (list token)))
-	      (complex (cons t (append def (list next) (cadr value))))
-	      (t (cons nil def)))))))
+	      ((eq type 'next-token) (cons t (append def (list next) (caddr value))))
+	      ((eq type 'offset-label) (let ((sym (gensym)))
+					 (insert-return-map sym (caddr value))
+					 (cons nil (append def (list sym) (cadddr value)))))
+	      ((eq type 'local-labels) (let ((l0 (gensym))
+					     (l1 (gensym))
+					     (l2 (gensym))
+					     (r0 (gensym))
+					     (r1 (gensym))
+					     (r2 (gensym)))
+					 (insert-label-set (list l0 l1 l2))
+					 (insert-ref-set (list r0 r1 r2))
+					 (insert-ref-map r0 l0)
+					 (insert-ref-map r1 l1)
+					 (insert-ref-map r2 l2)
+					 (cons nil (mapcar (lambda (token)
+							     (cond ((eq token '%0) l0)
+								   ((eq token '%1) l1)
+								   ((eq token '%2) l2)
+								   ((eq token '>0) r0)
+								   ((eq token '>1) r1)
+								   ((eq token '>2) r2)
+								   (t token)))
+							   def))))
+					 (t (cons nil def)))))))
 
 
 (defun get-bytecodes ()
-  "Returns a hashtable of the bytecodes and their associated mnemonics"
+  "Returns a hashtable of the mnemonic symbols to their associated bytecodes"
   (let ((bytecodes (make-hash-table :test 'eq)))
     (mapcar #'(lambda (def)
 		(setf (gethash (car def) bytecodes) (cadr def)))

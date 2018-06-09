@@ -3,12 +3,13 @@
 # Calls all other tests sequentially with the CALL expansion; 
 # each test ends with a RET expansion, then GOTO's the end of the file
 
-CALL >COLOR_TEST
-CALL >PC_TEST
-CALL >ADD_TEST
-CALL >SUB_TEST
-CALL >PEEK_TEST
-CALL >NOR_TEST
+#CALL >COLOR_TEST
+#CALL >PC_TEST
+#CALL >ADD_TEST
+#CALL >SUB_TEST
+#CALL >PEEK_TEST
+#CALL >NOR_TEST
+CALL >MULT_TEST
 
 GOTO >END
 
@@ -385,6 +386,12 @@ MEM POP LIT PUSH 0 PUSH 5 PUSH 3 X POP
 
 RET
 
+
+@MULT_TEST
+
+LIT PUSH 0 PUSH 0 MULT IO POP POP
+
+RET
 
 @END
 

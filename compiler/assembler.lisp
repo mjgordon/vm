@@ -36,14 +36,14 @@ while recording lists of label tags and references."
 
   (mapcar (lambda (word)
 	    (let ((sym (intern word)) (ch0 (char word 0)))
-	      (cond ((char= ch0 #\@) (setf *label-list* (adjoin sym *label-list*)))
-		    ((char= ch0 #\>) (progn (setf (gethash sym *ref-table*) (intern (substitute #\@ #\> word)))
-					    (setf *ref-list* (adjoin sym *ref-list*))))
+	      (cond ((char= ch0 #\@) (insert-label-set sym))
+		    ((char= ch0 #\>) (progn (insert-ref-map sym (intern (substitute #\@ #\> word)))
+					    (insert-ref-set sym)))
 		    ((char= ch0 #\+) (let ((offset 0))
 				       (progn (setf sym (gensym))
 					      (when (> (length word) 1)
 						(setf offset (read-from-string (subseq word 1))))
-					      (setf (gethash sym *return-table*) offset))))
+					      (insert-return-map sym offset))))
 		    ((numberp (read-from-string word)) (setf sym (read-from-string word)))
 		    (t sym))
 	      sym))
@@ -63,8 +63,7 @@ while recording lists of label tags and references."
   (let ((count 0))
     (setf tokens
 	  (remove-if (lambda (token)
-		       (print token)
-		       (cond ((member token *label-list*) (progn (setf (gethash token *label-table*) count)
+		       (cond ((member token *label-list*) (progn (insert-label-map token count)
 								 t))
 			     ((gethash token *return-table*) (progn (incf (gethash token *return-table*) count)
 								    (incf count 7)
@@ -74,7 +73,6 @@ while recording lists of label tags and references."
 			     (t (progn (incf count)
 				       nil))))
 		     tokens)))
-  (print tokens)
   (mapcan (lambda (token)
 	    (cond ((member token *ref-list*) (convert-address (gethash (gethash token *ref-table*) *label-table*)))
 		  ((gethash token *return-table*) (convert-address (gethash token *return-table*)))
@@ -93,8 +91,8 @@ while recording lists of label tags and references."
 		(if (symbolp token)
 		    (let ((byte (gethash token bytecodes)))
 		      (if byte
-			  (write-byte (gethash token bytecodes) stream)
-			  (format t "Bad token: ~a" token)))
+			  (write-byte byte stream)
+			  (format t "Bad token: ~a ~%" token)))
 		    (write-byte token stream)))
 	      tokens))))
 
@@ -102,11 +100,8 @@ while recording lists of label tags and references."
 (defun compile-hex (filename)
   "Composites all previous assembly steps. Reports any feedback"
   (write-bytecode (resolve-labels (expand-tokens (generate-tables (get-file filename)))))
-  (mapcar (lambda (key)
-	    (format t "~a ~a ~%" key (gethash key *label-table*)))
-	  (loop for key being the hash-keys of *label-table* collect key))
   nil)
 
 
 ;;; Only called when run from bash
-;(compile-hex (cadr sb-ext:*posix-argv*))
+(compile-hex (cadr sb-ext:*posix-argv*))

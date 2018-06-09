@@ -1,3 +1,5 @@
+;; Predicates
+
 (defun empty-string-p (string)
   "Predicate for whether a string is empty"
   (string= string ""))
@@ -19,3 +21,40 @@
 	(logand (ash address -4) #xF)
 	'PUSH
 	(logand address #xF)))
+
+(defun print-table (table)
+  (mapcar (lambda (key)
+	    (format t "~a ~a ~%" key (gethash key table)))
+	  (loop for key being the hash-keys of table collect key)))
+
+
+
+;; Working with token sets and tables
+(defmacro insert-set (set-name)
+  `(let ((tokens (if (listp input)
+		     input
+		     (list input))))
+     (mapcar (lambda (token)
+	       (setf ,set-name (adjoin token ,set-name)))
+	     tokens)))
+  
+(defmacro insert-map (map-name)
+  `(setf (gethash key ,map-name) def))
+
+(defun insert-label-set (input)
+  (insert-set *label-list*))
+
+(defun insert-ref-set (input)
+  (insert-set *ref-list*))
+
+(defun insert-label-map (key def)
+  (insert-map *label-table*))
+
+(defun insert-ref-map (key def)
+  (insert-map *ref-table*))
+
+(defun insert-return-map (key def)
+  (insert-map *return-table*))
+  
+
+  

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "io.h"
 #include "stack.h"
 #include "visualizer.h"
 
@@ -53,6 +54,7 @@ FILE *write_ptr;
 
 uint16_t time = 0;
 int optionUnroll = 0;
+int optionOutputBytes = 0;
 
 void setup() {
   setupSDL();
@@ -277,7 +279,8 @@ void opPop() {
     break;
 
   case MODE_LIT:
-    execute(stackPop(stack));
+    stackPop(stack);
+    //execute(stackPop(stack));
     break;
 
   case MODE_ADD:
@@ -473,16 +476,24 @@ uint8_t getInput() {
 
 void outputStack() {
   uint8_t output = stackPop(stack);
-  fwrite(&output,1,1,write_ptr);
+  if (optionOutputBytes) {
+    outputBytes(output);
+  }
+  else {
+    fwrite(&output,1,1,write_ptr);
+  }
 }
 
 
 int main(int argc, char* argv[]) {
   int opt;
-  while((opt = getopt(argc,argv,"u")) != -1) {
+  while((opt = getopt(argc,argv,"uo")) != -1) {
     switch(opt) {
     case 'u':
       optionUnroll = 1;
+      break;
+    case 'o':
+      optionOutputBytes = 1;
       break;
     }
   }
