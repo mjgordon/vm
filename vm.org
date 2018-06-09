@@ -43,8 +43,9 @@ EXPANSIONS
 
 
 
-** v002 Additions to assembler and dictionary [6/18]
-- [ ] MULT expansion
+** v002 Additions to assembler and dictionary [9/24]
+- [X] MULT expansion
+- [ ] MULT2 expansion
 - [ ] DIV expansion
 - [ ] MOD expansion
 - [X] DROP expansion
@@ -56,19 +57,21 @@ EXPANSIONS
 - [X] Replace EXECUTE with DROP
 - [ ] Add program-run timer into vm
 - [ ] Add stack analysis in fast way
-- [ ] Assembler reports time taken
+- [X] Assembler reports time taken
 - [ ] Assembler reports depth of expand tokens recursion
-- [ ] Make label tables not global. 
+- [X] Clear sets and maps at start of assembly 
 - [ ] Assembler outputs file with same name as input
 - [ ] Optimize vm as possible
 - [ ] Fast vs small assembly : expand tokens vs call a single expansion of the token
-- [ ] Popping an empty stack
+- [ ] Option for popping empty stack: returns 0 or next program item
 - [ ] Output modes
 - [ ] Rename label and ref lists as sets in code
 - [ ] Rename tables as maps in code
+- [ ] Window should catch keypressed to close
 
-*** TEST : test-opcodes.hxa [/]
-- [ ] MULT
+*** TEST : test-opcodes.hxa [1/5]
+- [X] MULT
+- [ ] MULT2
 - [ ] DIV
 - [ ] MOD 
 - [ ] DROP
@@ -208,8 +211,8 @@ _RESULT                         (-1) (+1)
 # A and B are the factors. P and R are the digits of the product
 # AxB = PR
 _MULT                           (A B) ()
-RSTK POP POP LIT PUSH 0 0       (0 0) (B A)
-@0                              (P R) (B A)
+RSTK POP POP LIT PUSH 0 PUSH 0  (0 0) (B A)
+%0                              (P R) (B A)
 RSTK PUSH DUP                   (P R A A) (B)
 RSTK PUSH DUP                   (P R A A B B) ()
 LIT PUSH >1                     (P R A A B B >1) ()
@@ -221,7 +224,7 @@ ADD POP                         (P R+A) (B-1 A)
 RSTK POP ADD PUSH               (P F) (B-1 A R+A)
 POP RSTK PUSH                   (P+F R+A) (B-1 A)
 GOTO >0
-@1                              (P R A A 0) ()
+%1                              (P R A A 0) ()
 DROP DROP DROP                  (P R) ()
 _RESULT                         (0) (0)
 

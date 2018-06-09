@@ -71,8 +71,8 @@ void setup() {
 
   write_ptr = fopen("output.bin","wb+");
   
-  stack = createStack(65536);
-  rstack = createStack(65536);
+  stack = createStack("data",65536);
+  rstack = createStack("rstk",65536);
 }
 
 void run() {
@@ -88,7 +88,7 @@ void run() {
 }
 
 void finish() {
-  printf("==========\n");
+  printf("=== RESULTS ===\n");
   printf("%i operations\n",time);
   printf("PC: %i\n",PC);
   printf("Stack: %i\n",(stack -> top) + 1);
@@ -261,9 +261,9 @@ void opPop() {
     break;
 
   case MODE_PC:
-    printf("Popped PC from %i to ", PC);
+    //printf("Popped PC from %i to ", PC);
     PC = popNibble4();
-    printf("%i\n",PC);
+    //printf("%i\n",PC);
     break;
 
   case MODE_MEM:
@@ -498,11 +498,7 @@ int main(int argc, char* argv[]) {
     }
   }
   
-
-  
   setup();
   run();
   finish();
-
-
 }

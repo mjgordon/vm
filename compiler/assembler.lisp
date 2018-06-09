@@ -29,6 +29,7 @@
 (defun generate-tables (lines)
   "Removes comments and blank lines, splits lines into one list of words. Converts to tokens, 
 while recording lists of label tags and references."
+  (clear-maps)
   (setf lines
 	(mapcan (lambda (line)
 		  (split-sequence:split-sequence #\Space line))
@@ -99,7 +100,7 @@ while recording lists of label tags and references."
 
 (defun compile-hex (filename)
   "Composites all previous assembly steps. Reports any feedback"
-  (write-bytecode (resolve-labels (expand-tokens (generate-tables (get-file filename)))))
+  (time (write-bytecode (resolve-labels (expand-tokens (generate-tables (get-file filename))))))
   nil)
 
 

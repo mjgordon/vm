@@ -14,8 +14,8 @@ void outputBytes(uint8_t nb) {
   }
   else {
     outputBytesBuffer.nbB = nb;
-
-    printf("%i\n",(outputBytesBuffer.nbA<<4) + outputBytesBuffer.nbB);
+    
+    printf("Output Byte : %i : %i : %i\n",outputBytesBuffer.nbB,outputBytesBuffer.nbA,(outputBytesBuffer.nbB<<4) + outputBytesBuffer.nbA);
     
     outputBytesBuffer.nbA = 0;
     outputBytesBuffer.nbB = 0;

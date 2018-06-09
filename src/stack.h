@@ -6,9 +6,10 @@ struct Stack {
   int top;
   unsigned capacity;
   uint8_t* array;
+  char* name;
 };
 
-struct Stack* createStack(unsigned capacity);
+struct Stack* createStack(char* name, unsigned capacity);
 int stackIsFull(struct Stack* stack);
 int stackIsEmpty(struct Stack* stack);
 void stackPush(struct Stack* stack, uint8_t item);

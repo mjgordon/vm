@@ -30,6 +30,13 @@
 
 
 ;; Working with token sets and tables
+(defun clear-maps ()
+  (setf *label-list* ())
+  (setf *label-table* (make-hash-table :test 'eq))
+  (setf *ref-list* ())
+  (setf *ref-table* (make-hash-table :test 'eq))
+  (setf *return-table* (make-hash-table :test 'eq)))
+
 (defmacro insert-set (set-name)
   `(let ((tokens (if (listp input)
 		     input
