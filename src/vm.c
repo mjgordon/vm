@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 #include "io.h"
 #include "stack.h"
@@ -52,9 +53,14 @@ uint16_t PEN_Y = 0;
 
 FILE *write_ptr;
 
-uint16_t time = 0;
+uint16_t cycles = 0;
+
+long startMillis;
+long endMillis;
+
 int optionUnroll = 0;
 int optionOutputBytes = 0;
+int optionOutputInt4 = 0;
 
 void setup() {
   setupSDL();
@@ -79,7 +85,7 @@ void run() {
   while(PC < programLength) {
     uint8_t op = getNextOpcode();
     execute(op);
-    time += 1;
+    cycles += 1;
     //printf("%i\n",stack->top + 1);
   }
   
@@ -89,7 +95,8 @@ void run() {
 
 void finish() {
   printf("=== RESULTS ===\n");
-  printf("%i operations\n",time);
+  printf("Execution took %li ms\n",endMillis - startMillis);
+  printf("%i operations\n",cycles);
   printf("PC: %i\n",PC);
   printf("Stack: %i\n",(stack -> top) + 1);
 
@@ -479,15 +486,28 @@ void outputStack() {
   if (optionOutputBytes) {
     outputBytes(output);
   }
+  else if (optionOutputInt4) {
+    outputInt4(output);
+  }
   else {
     fwrite(&output,1,1,write_ptr);
   }
 }
 
 
+long getMillis() {
+  long ms;
+  //  time_t s;
+  struct timespec spec;
+  clock_gettime(CLOCK_REALTIME, &spec);
+  //s = spec.tv_sec;
+  ms = round(spec.tv_nsec / 1.0e6);
+  return ms;
+}
+
 int main(int argc, char* argv[]) {
   int opt;
-  while((opt = getopt(argc,argv,"uo")) != -1) {
+  while((opt = getopt(argc,argv,"uoi")) != -1) {
     switch(opt) {
     case 'u':
       optionUnroll = 1;
@@ -495,10 +515,15 @@ int main(int argc, char* argv[]) {
     case 'o':
       optionOutputBytes = 1;
       break;
+    case 'i':
+      optionOutputInt4 = 1;
+      break;
     }
   }
   
   setup();
+  startMillis = getMillis();
   run();
+  endMillis = getMillis();
   finish();
 }

@@ -60,7 +60,7 @@ cleaner: clean
 
 #Link
 $(TARGET): $(OBJECTS)
-	$(CC) -o $(TARGETDIR)/$(TARGET) $^ $(LIB)
+	$(CC) -o $(TARGETDIR)/$(TARGET) $^ $(LIB) -lm
 
 #Compile
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)

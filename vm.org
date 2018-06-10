@@ -43,7 +43,7 @@ EXPANSIONS
 
 
 
-** v002 Additions to assembler and dictionary [9/24]
+** v002 Additions to assembler and dictionary [10/24]
 - [X] MULT expansion
 - [ ] MULT2 expansion
 - [ ] DIV expansion
@@ -53,10 +53,11 @@ EXPANSIONS
 - [X] Implement + symbol in assembler
 - [X] Redefine CALL to use +
 - [X] Dictionary can now call different functions during expansion (e.g. +)
-- [ ] Expansion types : (X) Always expands (C) Always Calls (_) Assembler decides
+- [ ] Expansion symbol ! : assembler chooses to expand it or make it a call
+- [ ] Assembler modes for : fastest, smallest, optimize/compromise
 - [X] Replace EXECUTE with DROP
-- [ ] Add program-run timer into vm
 - [ ] Add stack analysis in fast way
+- [ ] Add program-run timer into vm
 - [X] Assembler reports time taken
 - [ ] Assembler reports depth of expand tokens recursion
 - [X] Clear sets and maps at start of assembly 
@@ -64,10 +65,12 @@ EXPANSIONS
 - [ ] Optimize vm as possible
 - [ ] Fast vs small assembly : expand tokens vs call a single expansion of the token
 - [ ] Option for popping empty stack: returns 0 or next program item
-- [ ] Output modes
+- [X] Output mode: bytes
+- [ ] Output mode: int4
 - [ ] Rename label and ref lists as sets in code
 - [ ] Rename tables as maps in code
 - [ ] Window should catch keypressed to close
+- [ ] Unify the way special symbols in code vs dictionary expansion are handled
 
 *** TEST : test-opcodes.hxa [1/5]
 - [X] MULT
@@ -89,7 +92,7 @@ https://github.com/qeedquan/turtle/blob/master/src/util.c
 ** General
 Screen Storage:
 80x25char @ 8x12 px = 640 x 300 px
-2000 char @ 2nb = 4000 nb or roughly one page, can put alu etc in the remaining 96.
+2000 char @ 2nb = 4000 nb or roughly 4 pages
 
 2nb = 256 values. Need 7 bits for 128 standard ascii.
 Can either have full 256 ascii or use last bit as color.
@@ -103,8 +106,6 @@ Variables:
 Pointer = 8nb (1 : nb length, 1 : some other flag? , 3 : page, 3 : location)
 512 Pointers per page.
 
--Maybe LIT POP shouldn't be EXECUTE. Not sure how useful this is in the long run. Then LIT POP could be DROP and it could be less hacky and ugly 
-
 
 ** Symbols
 @   : Label, assembler stores its position in a hashmap.
@@ -112,6 +113,7 @@ Pointer = 8nb (1 : nb length, 1 : some other flag? , 3 : page, 3 : location)
 >   : Label reference, assembler replacing with same named label position
 +   : Anonymous/unique label, assembler stores its position in a hashmap with a gensym.
 +32 : Stores the anonymous label with the associated offset. Used in calls
+!   : Assembler can choose whether to expand the token locally or call its in-place expansion
 
 ** Opcodes
 B : ∆ : MNMNC  : DESCRIPTION
@@ -206,6 +208,11 @@ ADD PUSH RSTK PUSH              (A+X' F3 F2) ()
 ADD POP SWAP RSTK POP POP       () (A+X' F2')
 _RESULT                         (-1) (+1)
 
+# ADD with carry. Ignores if next digit would overflow
+_ADDC                           (A B B) ()
+ADD POP RSTK POP ADD PUSH       (A F) (B)
+ADD POP RSTK PUSH               (A+F B) ()
+_RESULT                         (-1) (0)
 
 *** MULTIPLICATION
 # A and B are the factors. P and R are the digits of the product
@@ -234,40 +241,35 @@ _RESULT                         (0) (0)
      AB
 x    CD
 =======
+   MNOP
    0123
 
-
-_MULT2                          (A B C D) ()
-RSTK POP PEEK 2 PEEK 3          (A B C A B) (D)
+_MULT22                         (A B C D) ()
+RSTK POP PEEK 2 PEEK 2          (A B C A B) (D)
 RSTK POP POP                    (A B C) (D B A)
-CALL >MULT2B                    (O0 O1 O2) (D B A)
-RSTK PUSH PUSH PUSH             (O0 O1 O2 A B D) ()
-CALL >MULT2B                    (O0 O1 O2 O1 O2 O3) ()
-RSTK POP POP                    (O0 O1 O2 O1) (O3 O2)
-SWAP RSTK POP                   (O0 O1 O1) (O3 O2 O2)
-ADD+                            (O0 O1) (O3 O2 O2)
-RSTK PUSH PUSH                  (O0 O1 O2 O2) (O3)
-ADD+                            (O0 O1 O2)
+MULT21                          (M N O) (D B A)
+RSTK PUSH PUSH PUSH             (M N O A B D) ()
+MULT21                          (M Na Oa Nb Ob P) ()
+RSTK POP POP                    (M Na Oa Nb) (P Ob)
+SWAP RSTK POP                   (M Na Nb) (P Ob Oa)
+ADDC                            (M+F N) (P Ob Oa)
+RSTK PUSH PUSH                  (M+F N Oa Ob) (P)
+ADDC                            (M+F N+F O) (P)
+RSTK PUSH                       (M+F N+F O P) ()
+_RESULT                         (0) (0)
 
 
-
-
-@ADD+                           (A B B) ()
-ADD POP RSTK POP ADD PUSH       (A F) (B)
-ADD POP RSTK PUSH               (A B) ()
-
-
-@MULT2B                         (A B C) ()
+_MULT21                         (A B C) ()
 RSTK POP SWAP RSTK PUSH         (B A C) ()
 DUP RSTK POP                    (B A C) (C)
 MULT                            (B K T) (C)
 PEEK 2 RSTK POP POP POP         (B) (C B T K)
 DROP RSTK PUSH PUSH PUSH PUSH   (K T B C) ()
 MULT                            (K T K T) ()
-RSTK POP ADD POP                (O0 O1) (O2)
-RSTK POP ADD PUSH               (O0 F)    (O2 O1)
-RSTK POP ADD POP RSTK PUSH PUSH (O0 O1 O2) ()
-RET
+RSTK POP ADD POP                (M N) (O)
+RSTK POP ADD PUSH               (M F) (O N)
+ADD POP RSTK PUSH PUSH          (M+F N O) ()
+_RESULT                         (0) (0)
 
 
 *** PROGRAM FLOW
