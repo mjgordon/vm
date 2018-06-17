@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <math.h>
+#include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,6 +10,7 @@
 #include "visualizer.h"
 
 #include "vm.h"
+
 #define OP_COLOR    0x0
 #define OP_X        0x1
 #define OP_Y        0x2
@@ -40,7 +42,7 @@ struct Stack* rstack;
 
 enum mode {MODE_COLOR,MODE_X,MODE_Y,MODE_PC,MODE_MEM,MODE_IO,MODE_RSTK,MODE_LIT,MODE_ADD,MODE_SUB};
 
-enum mode machineMode = MODE_IO;
+enum mode machineMode = MODE_COLOR;
 
 uint16_t PC = 0;
 uint8_t REG_COLOR;
@@ -51,22 +53,17 @@ uint8_t FLAG;
 uint16_t PEN_X = 0;
 uint16_t PEN_Y = 0;
 
-FILE *write_ptr;
-
 uint16_t cycles = 0;
 
 long startMillis;
 long endMillis;
 
-int optionUnroll = 0;
-int optionOutputBytes = 0;
-int optionOutputInt4 = 0;
+SDL_Event event;
 
 void setup() {
   setupSDL();
   FILE *fileptr;
-
-  fileptr = fopen("compiler/program.hxb","rb");
+  fileptr = fopen("compiler/test-math.hxb","rb");
   fseek(fileptr,0,SEEK_END);
   programLength = ftell(fileptr);
   printf("Loaded program length: %i\n",programLength);
@@ -75,7 +72,7 @@ void setup() {
   fread(program,1,programLength,fileptr);
   fclose(fileptr);
 
-  write_ptr = fopen("output.bin","wb+");
+  initializeIO();
   
   stack = createStack("data",65536);
   rstack = createStack("rstk",65536);
@@ -86,30 +83,37 @@ void run() {
     uint8_t op = getNextOpcode();
     execute(op);
     cycles += 1;
-    //printf("%i\n",stack->top + 1);
+    //printf("MODE:%i\n",machineMode);
+    //printf("OP:%i\n",op);  
+    //printf("STACK:%i\n\n",stack->top + 1);
   }
-  
+
   setPixels();
   updateSDL();
 }
 
 void finish() {
+  finishIO();
   printf("=== RESULTS ===\n");
   printf("Execution took %li ms\n",endMillis - startMillis);
   printf("%i operations\n",cycles);
   printf("PC: %i\n",PC);
   printf("Stack: %i\n",(stack -> top) + 1);
 
-  if (optionUnroll && !stackIsEmpty(stack)) {
+  if (flagUnroll && !stackIsEmpty(stack)) {
     printf("\nUnrolling Stack: %i\n",stack->top + 1);
     while(!stackIsEmpty(stack)) {
       printf("s: %i\n",stackPop(stack));
     }
   }
+  while (1) {
+    if (SDL_WaitEvent(&event)) {
+      if (event.type == SDL_QUIT) {
+	break;
+      }
+    }
+  }
 
-  fclose(write_ptr);
-  
-  getchar();
   cleanupSDL();
 }
 
@@ -190,10 +194,9 @@ void opSub() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
   uint8_t output = b - a;
-  FLAG = output >= 0xF;
+  FLAG = output > 0xF;
   output = output & 0xF;
   stackPush(stack,output);
-  //printf("SUB: %i %i %i %i\n",a, b, output, FLAG);
 }
 
 void opPush() {
@@ -278,7 +281,7 @@ void opPop() {
     break;
 
   case MODE_IO:
-    outputStack();
+    output(stackPop(stack));
     break;
 
   case MODE_RSTK:
@@ -481,18 +484,7 @@ uint8_t getInput() {
   return(input & 0xF);
 }
 
-void outputStack() {
-  uint8_t output = stackPop(stack);
-  if (optionOutputBytes) {
-    outputBytes(output);
-  }
-  else if (optionOutputInt4) {
-    outputInt4(output);
-  }
-  else {
-    fwrite(&output,1,1,write_ptr);
-  }
-}
+
 
 
 long getMillis() {
@@ -507,20 +499,19 @@ long getMillis() {
 
 int main(int argc, char* argv[]) {
   int opt;
-  while((opt = getopt(argc,argv,"uoi")) != -1) {
+  while((opt = getopt(argc,argv,"upf")) != -1) {
     switch(opt) {
     case 'u':
-      optionUnroll = 1;
+      flagUnroll = 1;
       break;
-    case 'o':
-      optionOutputBytes = 1;
-      break;
-    case 'i':
-      optionOutputInt4 = 1;
+    case 'p':
+      flagOutputPrint = 1;
+    case 'f':
+      flagOutputFile = 1;
       break;
     }
   }
-  
+
   setup();
   startMillis = getMillis();
   run();

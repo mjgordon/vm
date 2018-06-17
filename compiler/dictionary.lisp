@@ -37,23 +37,35 @@
 	      (SWAP
 	       (PEEK 1 RSTK POP POP DROP RSTK PUSH PUSH))
 	      ;; LOGIC
+	      (TRUE
+	       (LIT PUSH >0 COND
+		LIT PUSH 15
+		GOTO >1
+		%0
+		LIT PUSH 0
+		%1)
+	       local-labels 2)
 	      (AND
 	       (MEM POP DUP NOR PUSH DUP NOR NOR))
 	      (OR
 	       (NOR DUP NOR))
 	      (NOT
 	       (DUP NOR))
-	      ;; ADDITION
-	      (ADDC
+	      ;; MATH : ADDITION
+	      (ADD21
 	       (ADD POP RSTK POP ADD PUSH ADD
 		ADD POP RSTK PUSH))
-	      ;; MULTIPLICATION
+
+	      ;; MATH : SUBTRACTION
+	      (SUB21
+	       (SUB POP RSTK POP SUB PUSH SUB POP RSTK PUSH))
+	      ;; MATH : MULTIPLICATION
 	      (MULT
 	       (RSTK POP POP LIT PUSH 0 PUSH 0
 		%0 RSTK PUSH DUP RSTK PUSH DUP LIT PUSH >1 COND
 		LIT PUSH 1 SUB POP RSTK POP POP ADD POP RSTK POP ADD PUSH POP RSTK PUSH GOTO >0
 		%1 DROP DROP DROP)
-	       local-labels)
+	       local-labels 2)
 	      (MULT21
 	       (RSTK POP SWAP RSTK PUSH DUP RSTK POP MULT
 		PEEK 2 RSTK POP POP POP DROP RSTK PUSH PUSH PUSH PUSH MULT
@@ -63,9 +75,38 @@
 	      (MULT22
 	       (RSTK POP PEEK 2 PEEK 2 RSTK POP POP MULT21
 		RSTK PUSH PUSH PUSH MULT21
-		RSTK POP POP SWAP RSTK POP ADDC
-		RSTK PUSH PUSH ADDC
+		RSTK POP POP SWAP RSTK POP ADD21
+		RSTK PUSH PUSH ADD21
 		RSTK PUSH))
+	      ;; MATH : DIVISION
+	      (DIV
+	       (DUP LIT PUSH 1 SUB POP
+		DROP SUB PUSH TRUE NOT LIT PUSH >1 COND
+		DUP RSTK POP POP POP LIT PUSH 0
+		RSTK PUSH PUSH
+		%0
+		SUB POP RSTK POP SUB PUSH TRUE NOT LIT PUSH >2 COND
+		LIT PUSH 1 ADD POP RSTK PUSH PUSH DUP RSTK POP GOTO >0
+		%1
+		DROP DROP LIT PUSH 0 PUSH 0 PUSH 1 GOTO >3
+		%2
+		RSTK PUSH PUSH DROP DROP LIT PUSH 1 PUSH 0
+		%3
+		SUB POP DROP)
+	       local-labels 4)
+	      (DIV21
+	       (DUP LIT PUSH 1 SUB POP DROP SUB PUSH TRUE NOT LIT PUSH >1 COND
+		DUP RSTK POP POP POP POP LIT PUSH 0 PUSH 0 RSTK PUSH PUSH PUSH
+		%0
+		SUB21 RSTK POP POP SUB PUSH TRUE NOT LIT PUSH >2 COND
+		LIT PUSH 1 ADD21 RSTK PUSH PUSH PUSH DUP RSTK POP GOTO >0
+		%1
+		DROP DROP DROP LIT PUSH 0 PUSH 0 PUSH 0 PUSH 1 GOTO >3
+		%2
+		RSTK PUSH PUSH PUSH DROP DROP DROP LIT PUSH 1 PUSH 0
+		%3
+		SUB POP DROP)
+	       local-labels 4)
 	      ;; PROGRAM FLOW
 	      (GOTO
 	       (LIT PUSH)
@@ -73,11 +114,19 @@
 	       (PC POP))
 	      (CALL
 	       (LIT PUSH)
-	       offset-label
-	       23
+	       offset-label 23
 	       (RSTK POP POP POP POP GOTO))	      
 	      (RET
 	       (RSTK PUSH PUSH PUSH PUSH PC POP))
+	      ;; IO
+	      (OUT
+	       (LIT PUSH 1 IO POP POP))
+	      (OUT8
+	       (LIT PUSH 2 IO POP POP POP))
+	      (OUT12
+	       (LIT PUSH 3 IO POP POP POP POP))
+	      (OUT16
+	       (LIT PUSH 4 IO POP POP POP POP POP))
 	      ))
     (lambda (tokens)
       (let* ((token (car tokens))
@@ -88,29 +137,22 @@
 	(cond ((not def) (cons nil (list token)))
 	      ((eq type 'next-token) (cons t (append def (list next) (caddr value))))
 	      ((eq type 'offset-label) (let ((sym (gensym)))
-					 (insert-return-map sym (caddr value))
+					 (insert-return-table sym (caddr value))
 					 (cons nil (append def (list sym) (cadddr value)))))
-	      ((eq type 'local-labels) (let ((l0 (gensym))
-					     (l1 (gensym))
-					     (l2 (gensym))
-					     (r0 (gensym))
-					     (r1 (gensym))
-					     (r2 (gensym)))
-					 (insert-label-set (list l0 l1 l2))
-					 (insert-ref-set (list r0 r1 r2))
-					 (insert-ref-map r0 l0)
-					 (insert-ref-map r1 l1)
-					 (insert-ref-map r2 l2)
+	      ((eq type 'local-labels) (let* ((local-count (caddr value))
+					      (local-symbols (pair-tree-create (get-gensyms (* local-count 2))))
+					      (local-names (get-local-names local-count)))
+					 (mapcar (lambda (local-symbol)
+						   (insert-label-set (car local-symbol))
+						   (insert-ref-set (cadr local-symbol))
+						   (apply #'insert-ref-table (reverse local-symbol)))						 local-symbols)
 					 (cons nil (mapcar (lambda (token)
-							     (cond ((eq token '%0) l0)
-								   ((eq token '%1) l1)
-								   ((eq token '%2) l2)
-								   ((eq token '>0) r0)
-								   ((eq token '>1) r1)
-								   ((eq token '>2) r2)
-								   (t token)))
+							     (let ((position (pair-tree-find token local-names)))
+							       (if position
+								   (pair-tree-retrieve position local-symbols)
+								   token)))
 							   def))))
-					 (t (cons nil def)))))))
+	      (t (cons nil def)))))))
 
 
 (defun get-bytecodes ()

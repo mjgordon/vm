@@ -1,6 +1,18 @@
 
-
 * TODO
+** Notation:
+- B : Bug
+- C : Generic Change
+- F : New Feature
+- O : Optimize
+- R : Refactor
+- T : Test
+
+- AS : Assembler
+- CM : Compiler
+- VM : Virtual machine
+- PR : Project structure
+
 ** v001 Basic VM and assembler [13/13]
 - [X] +/- Become modes
 - [X] Flag mode becomes RSTK mode.  
@@ -40,47 +52,60 @@ EXPANSIONS
 - [X] OR
 - [X] AND
 - [X] DUP
+  
+** v002 Additions to assembler and dictionary [22/34]
+- [X] F AS : MULT expansion
+- [X] F AS : MULT21 expansion
+- [X] F AS : MULT22 expansion
+- [X] F AS : DIV expansion
+- [X] F AS : DIV21 expansion
+- [ ] F AS : DIV22 expansion
+- [ ] F AS : MOD expansion
+- [X] F AS : DROP expansion
+- [X] F AS : SWAP expansion
+- [X] F AS : '+' Symbol for relative labels
+- [X] C AS : Redefine CALL to use +
+- [X] F AS : '%' Symbol for local labels
+- [X] C AS : Make implementation of local labels smoother (definition requests # of gensyms)
+- [X] C AS : Dictionary can now call different functions during expansion (e.g. +)
+- [X] C VM : Replace EXECUTE with DROP
+- [ ] F VM : Add stack analysis in fast way
+- [X] F VM : Reports execution time
+- [X] F AS : Reports assembly time
+- [X] F AS : Reports depth of expand token recursion
+- [X] C AS : Clear sets and maps at start of assembly 
+- [X] C AS : Assembler outputs file with same name as input
+- [ ] C VM : Read program file name as argument
+- [ ] F VM : Adaptive output mode
+- [X] C VM : Make struct backend for output less stupid
+- [X] R AS : Rename label and ref lists as sets in code
+- [X] B VM : SDL window propery exits on close command
+- [ ] R AS : Unify the way special symbols in code vs dictionary expansion are handled
+- [ ] R PR : hxa/hxb files should live in their own top level project directory. Others should write/read from there
+- [ ] F AS : Token cleanup step: step through and remove redundant mode commands (e.g. the result of DROP DROP DROP)
+- [X] T AS : Move math unit tests into their own file
+- [ ] B VM : Compiler warnings in vm.c
+- [ ] B VM : ^C Doesn't exit when stuck in infinite loop
+- [ ] O VM : Look for obvious optimizations
+- [ ] Cleanup and document 
 
-
-
-** v002 Additions to assembler and dictionary [10/24]
-- [X] MULT expansion
-- [ ] MULT2 expansion
-- [ ] DIV expansion
-- [ ] MOD expansion
-- [X] DROP expansion
-- [X] SWAP expansion
-- [X] Implement + symbol in assembler
-- [X] Redefine CALL to use +
-- [X] Dictionary can now call different functions during expansion (e.g. +)
-- [ ] Expansion symbol ! : assembler chooses to expand it or make it a call
-- [ ] Assembler modes for : fastest, smallest, optimize/compromise
-- [X] Replace EXECUTE with DROP
-- [ ] Add stack analysis in fast way
-- [ ] Add program-run timer into vm
-- [X] Assembler reports time taken
-- [ ] Assembler reports depth of expand tokens recursion
-- [X] Clear sets and maps at start of assembly 
-- [ ] Assembler outputs file with same name as input
-- [ ] Optimize vm as possible
-- [ ] Fast vs small assembly : expand tokens vs call a single expansion of the token
-- [ ] Option for popping empty stack: returns 0 or next program item
-- [X] Output mode: bytes
-- [ ] Output mode: int4
-- [ ] Rename label and ref lists as sets in code
-- [ ] Rename tables as maps in code
-- [ ] Window should catch keypressed to close
-- [ ] Unify the way special symbols in code vs dictionary expansion are handled
-
-*** TEST : test-opcodes.hxa [1/5]
+*** TEST : test-opcodes.hxa [2/6]
 - [X] MULT
-- [ ] MULT2
+- [X] MULT22
 - [ ] DIV
+- [ ] DIV22
 - [ ] MOD 
 - [ ] DROP
 - [ ] SWAP 
-
-
+  
+** v003 [0/2]
+- [ ] R VM : Rename all opPush etc. functions to execPush etc. 
+- [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array
+- [ ] S AS : use parse-integer instead of read-from-string
+- [ ] R AS : get-dictionary-expander is fugly. Separate dictionary definition from expander function
+- [ ] F AS : Expansion symbol ! : assembler chooses to expand it or make it a call
+- [ ] F AS : Modes for : fastest, smallest, optimize/compromise
+  
 * BUGS
 
 * Documentation
@@ -129,8 +154,8 @@ B : ∆ : MNMNC  : DESCRIPTION
 8 : 2->1 : ADD : POP to add top two NB. PUSH to use carry flag of last operation
 9 : 2->1 : SUB : POP to sub top two NB. PUSH to use underflow flag of last operation
 
-A : N : PUSH   : Push selected register/etc onto the stack
-B : N : POP    : Pop the stack into the selected register/etc
+A : N : PUSH   : Push selected mode location onto the stack
+B : N : POP    : Pop the stack into the selected mode location
 C : 1 : PEEK   : Copy part of the stack to the top of the stack
 D : 5 : COND   : Go to the address at the top 4 positions of the stack if the 5th stack position is 0
 E : 2->1 : NOR : Performs a logical NOR on the top two stack positions
@@ -145,26 +170,38 @@ DROP           : (-1) (0)  : Removes the top item of the stack
 DUP            : (+1) (0)  : Copies the top item of the stack
 SWAP           : (0)  (0)  : Swaps the top two items on the stack
 
-*** LOGIC
+*** LOGIC & COMPARISON
 AND            : (-1) ()   : Performs a bitwise AND on the top two nb
 OR             : (-1) ()   : Performs a bitwise OR on the top two nb
 NOT            : (-1) ()   : Performs a bitwise NOT on the top two nb
+TRUE           : (0)  (0)  : Converts the top of the stack to F (logical T) if not 0 (logical F)
 
-*** ADDITION
-AD4C  W X Y Z  : (0)  (0)  : Add 4 digits constant. Wraps 4 variables
-AD4C' X        : (-1) (+1) : AD4C utility. Wraps 1 variable. 
+*** MATH : ADDITION
+ADD21          : (-1) ()   : Adds a one digit-number to a two-digit number
 
-*** MULTIPLICATION
-MULT           : (0)  (0)  : Multiplies two digits. 
+*** MATH : SUBTRACTION
+SUB21          : (-1) (0)  : Subtracts a one-digit number from a two-digit number
+
+*** MATH : MULTIPLICATION
+MULT           : (0)  (0)  : Multiplies two one-digit numbers
+MULT21         : (0)  (0)  : Multiplies a two-digit number by a one-digit numer
+MULT22         : (0)  (0)  : Multiplies a two-digit number by a two-digit number
+
+
+*** MATH : DIVISION
+DIV            : (-1) (0)  : Divides a one-digit number by a one digit number. Sets FLAG if /0
+DIV21          : (-1) (0)  : Divides a two-digit number by a one-digit number. Sets FLAG if /0
 
 *** PROGRAM FLOW
-GOTO >ADDR     : (0)  (0)  : Moves PC directly 
-CALL >ADDR     : (0)  (+4) : Puts a return position on the RSTK, moves PC to >ADDR position
+GOTO >ADDR     : (0)  (0)  : Moves PC directly to >ADDR
+CALL >ADDR     : (0)  (+4) : Puts a return position on the RSTK, moves PC to >ADDR
 RET            : (0)  (-4) : Moves PC back to top position on the RSTK
 
-*** Expansions available as CALLS : (anything bigger than 25 opcodes)
-MULT
-MULT2
+*** IO
+OUT            : (-1) (0)  : Outputs 1 nb from the stack
+OUTINT8        : (-2) (0)  : Outputs 2 nb from the stack, formatted as an int
+OUTINT12       : (-3) (0)  : Outputs 3 nb from the stack, formatted as an int
+OUTINT16       : (-4) (0)  : Outputs 4 nb from the stack, formatted as an int
 
 
 ** Expansion Definitions
@@ -184,34 +221,30 @@ DROP                            () (A B)
 RSTK PUSH PUSH                  (B A) ()
 _RESULT                         (0) (0)
 
+*** LOGIC AND COMPARISON
+
+_TRUE                           (A) ()
+LIT PUSH >0 COND                () ()
+LIT PUSH 15                     (15) ()
+GOTO >1                         () ()
+%0
+LIT PUSH 0                      (0) ()
+%1
+_RESULT                         (0) (0)                   
 
 *** ADDITION
-# ABCD (data) + WXYZ (constant) - ignores final carry
-_AD4C W X Y Z                   (A B C D) ()
-LIT PUSH 0 RSTK POP             (A B C D) (0)
-_ADD4_CONSTANT_SINGLE Z         (A B C) (D+Z FZ)
-_ADD4_CONSTANT_SINGLE Y         (A B) (D+Z C+Y FY)
-_ADD4_CONSTANT_SINGLE X         (A) (D+Z C+Y B+X FX)
-_ADD4_CONSTANT_SINGLE W         () (D+Z C+Y B+X A+W FW)
-RSTK PUSH DROP                  () (D+Z C+Y B+X A+W)
-RSTK PUSH PUSH PUSH             (A+W B+X C+Y D+Z) ()
-_RESULT                         (0) (0)
-
-
-# A X are next two digits to add. R is the most recent result. F is the most recent carry flag.
-_AD4C_CONSTANT_SINGLE X         (A) (F)
-LIT PUSH X ADD POP              (A+X) (F)
-ADD PUSH RSTK PUSH              (A+X F2 F) ()
-SWAP RSTK POP                   (A+X F) (F2)
-ADD POP                         (A+X') (F2)
-ADD PUSH RSTK PUSH              (A+X' F3 F2) ()
-ADD POP SWAP RSTK POP POP       () (A+X' F2')
-_RESULT                         (-1) (+1)
-
 # ADD with carry. Ignores if next digit would overflow
-_ADDC                           (A B B) ()
-ADD POP RSTK POP ADD PUSH       (A F) (B)
-ADD POP RSTK PUSH               (A+F B) ()
+_ADD21                          (A B C) ()
+ADD POP RSTK POP ADD PUSH       (A F) (B+C)
+ADD POP RSTK PUSH               (A+F B+C) ()
+_RESULT                         (-1) (0)
+
+*** SUBTRACTION
+
+_SUB21                          (A B C) ()
+SUB POP                         (A B-C) ()
+RSTK POP SUB PUSH               (A F) (B-C)
+SUB POP RSTK PUSH               (A-F B-C) ()
 _RESULT                         (-1) (0)
 
 *** MULTIPLICATION
@@ -252,9 +285,9 @@ RSTK PUSH PUSH PUSH             (M N O A B D) ()
 MULT21                          (M Na Oa Nb Ob P) ()
 RSTK POP POP                    (M Na Oa Nb) (P Ob)
 SWAP RSTK POP                   (M Na Nb) (P Ob Oa)
-ADDC                            (M+F N) (P Ob Oa)
+ADD21                            (M+F N) (P Ob Oa)
 RSTK PUSH PUSH                  (M+F N Oa Ob) (P)
-ADDC                            (M+F N+F O) (P)
+ADD21                            (M+F N+F O) (P)
 RSTK PUSH                       (M+F N+F O P) ()
 _RESULT                         (0) (0)
 
@@ -270,6 +303,71 @@ RSTK POP ADD POP                (M N) (O)
 RSTK POP ADD PUSH               (M F) (O N)
 ADD POP RSTK PUSH PUSH          (M+F N O) ()
 _RESULT                         (0) (0)
+
+*** DIVISION
+
+# A is dividend, B is divisor, Q is quotient, F is underflow flag
+# SUB underflow flag is set to 1 if attempting to divide by zero, created by subbing M and N at the end
+# Uses one more GOTO than MULT, but only for the rarer divide by zero cases
+_DIV                            (A B) ()
+DUP LIT PUSH 1 SUB POP          (A B B-1) ()
+DROP SUB PUSH TRUE NOT          (A B !F) ()
+LIT PUSH >1 COND                (A B) ()
+DUP RSTK POP POP POP LIT PUSH 0 (0) (B B A)
+RSTK PUSH PUSH                  (0 A B) (B)
+%0                              (Q A B) (B)
+SUB POP                         (Q A-B) (B)
+RSTK POP SUB PUSH               (Q F) (B A-B)
+TRUE NOT                        (Q !F) (B A-B)
+LIT PUSH >2                     (Q !F >2) (B A-B)
+COND (>2)                       (Q) (B A-B)
+LIT PUSH 1 ADD POP              (Q) (B A-B)
+RSTK PUSH PUSH                  (Q A-B B) ()
+DUP RSTK POP                    (Q A-B B) (B)
+GOTO >0 
+%1                              (A B) ()
+DROP DROP                       () ()
+LIT PUSH 0 PUSH 1 PUSH 2        (0 1 2) ()
+GOTO >3
+%2                              (Q) (B A-B)
+RSTK PUSH PUSH                  (Q A-B B) () ()
+DROP DROP                       (Q) ()
+LIT PUSH 2 PUSH 1               (Q 2 1) ()
+%3                              (Q M N) ()
+SUB POP DROP                    (Q) ()
+_RESULT                         (-1) ()
+
+# AB is divident. C is divisor. Q is quotient, F is underflow fla
+_DIV21                          (A B C) ()
+DUP LIT PUSH 1 SUB POP          (A B C C -1) ()
+DROP SUB PUSH TRUE NOT          (A B C !F) ()
+LIT PUSH >1 COND                (A B C)
+DUP RSTK POP POP POP POP        () (C C B A)
+LIT PUSH 0 PUSH 0               (0 0) (C C B A)
+RSTK PUSH PUSH PUSH             (0 0 A B C) (C)
+%0
+SUB21                           (Q R A-F B-C) (C)
+RSTK POP POP SUB PUSH           (Q R F) (C B-C A-F)
+TRUE NOT                        (Q R !F) (C B-C A-F)
+LIT PUSH >2                     (Q R !F >2) (C B-C A-F)
+COND (>2)                       (Q R) (C B-C A-F)
+LIT PUSH 1 ADD21                (Q R) (C B-C A-F)
+RSTK PUSH PUSH PUSH             (Q R A-F B-C C) ()
+DUP RSTK POP                    (Q R A-F B-C C) (C) 
+GOTO >0
+%1                              (A B C)
+DROP DROP DROP                  ()
+LIT PUSH 0 PUSH 0 PUSH 1 PUSH 2 (0 0 1 2) ()
+GOTO >3
+%2 
+RSTK PUSH PUSH PUSH             (Q R A-F B-C C) ()
+DROP DROP DROP                  (Q R) ()
+LIT PUSH 2 PUSH 1               (Q R 2 1) ()
+%3
+SUB POP DROP                    (Q R) ()
+_RESULT                         (-1) ()
+
+
 
 
 *** PROGRAM FLOW
@@ -295,3 +393,6 @@ _RETURN                         () (D C B A)
 RSTK PUSH PUSH PUSH PUSH        (A B C D) ()
 PC POP                          () ()
 _RESULT                         (0) (-4)
+*** IO
+
+
