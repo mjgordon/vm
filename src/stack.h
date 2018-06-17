@@ -15,6 +15,6 @@ int stackIsEmpty(struct Stack* stack);
 void stackPush(struct Stack* stack, uint8_t item);
 uint8_t stackPop(struct Stack* stack);
 uint8_t stackPeek(struct Stack* stack,int position);
-
+int stackGetMaxDepth(struct Stack* stack);
 
 #endif

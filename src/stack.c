@@ -12,6 +12,9 @@ struct Stack* createStack(char* name,unsigned capacity) {
   stack->top = -1;
   stack->array = (uint8_t*) malloc(stack->capacity * sizeof(char));
   stack->name = name;
+  for (int i = 0; i < capacity; i++) {
+    stack->array[i] = 255;
+  }
   return stack;
 }
 
@@ -46,4 +49,16 @@ uint8_t stackPeek(struct Stack* stack,int position) {
   if (stackIsEmpty(stack))
     return 0;
   return stack->array[stack->top - position];
+}
+
+/**
+   Every position in stack is seeded with 255 to begin. Because legitimate values should never be more than 15, 
+   We know that the first 255 we come across will be the point where top hasn't touched
+   Thus, no extra work is taken during run time.
+ */
+int stackGetMaxDepth(struct Stack* stack) {
+  for (int i = 0; i < stack->capacity; i++) {
+    if (stack->array[i] == 255) return(i);
+  }
+  return(-1);
 }

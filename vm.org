@@ -53,7 +53,7 @@ EXPANSIONS
 - [X] AND
 - [X] DUP
   
-** v002 Additions to assembler and dictionary [22/34]
+** v002 Additions to assembler and dictionary [25/34]
 - [X] F AS : MULT expansion
 - [X] F AS : MULT21 expansion
 - [X] F AS : MULT22 expansion
@@ -69,14 +69,14 @@ EXPANSIONS
 - [X] C AS : Make implementation of local labels smoother (definition requests # of gensyms)
 - [X] C AS : Dictionary can now call different functions during expansion (e.g. +)
 - [X] C VM : Replace EXECUTE with DROP
-- [ ] F VM : Add stack analysis in fast way
+- [X] F VM : Add stack analysis in fast way
 - [X] F VM : Reports execution time
 - [X] F AS : Reports assembly time
 - [X] F AS : Reports depth of expand token recursion
 - [X] C AS : Clear sets and maps at start of assembly 
 - [X] C AS : Assembler outputs file with same name as input
-- [ ] C VM : Read program file name as argument
-- [ ] F VM : Adaptive output mode
+- [X] F VM : Read program file name as argument
+- [X] F VM : Adaptive output mode
 - [X] C VM : Make struct backend for output less stupid
 - [X] R AS : Rename label and ref lists as sets in code
 - [X] B VM : SDL window propery exits on close command
@@ -105,6 +105,7 @@ EXPANSIONS
 - [ ] R AS : get-dictionary-expander is fugly. Separate dictionary definition from expander function
 - [ ] F AS : Expansion symbol ! : assembler chooses to expand it or make it a call
 - [ ] F AS : Modes for : fastest, smallest, optimize/compromise
+- [ ] F VM : Create heatmap export of bytecode program (as a compile option)
   
 * BUGS
 

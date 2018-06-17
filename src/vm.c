@@ -60,13 +60,16 @@ long endMillis;
 
 SDL_Event event;
 
+char* filename;
+
 void setup() {
   setupSDL();
   FILE *fileptr;
-  fileptr = fopen("compiler/test-math.hxb","rb");
+  printf("Opened program : %s\n",filename);
+  fileptr = fopen(filename,"rb");
   fseek(fileptr,0,SEEK_END);
   programLength = ftell(fileptr);
-  printf("Loaded program length: %i\n",programLength);
+  printf("Program length: %i\n",programLength);
   rewind(fileptr);
   program = (uint8_t *)malloc((programLength)*sizeof(char));
   fread(program,1,programLength,fileptr);
@@ -98,14 +101,27 @@ void finish() {
   printf("Execution took %li ms\n",endMillis - startMillis);
   printf("%i operations\n",cycles);
   printf("PC: %i\n",PC);
-  printf("Stack: %i\n",(stack -> top) + 1);
-
+  printf("Data stack max depth: %i\n",stackGetMaxDepth(stack));
+  printf("Return stack max depth: %i\n",stackGetMaxDepth(rstack));
+  
+  printf("Data stack final depth: %i\n",(stack -> top) + 1);
   if (flagUnroll && !stackIsEmpty(stack)) {
-    printf("\nUnrolling Stack: %i\n",stack->top + 1);
+    printf(" Unrolling data stack:\n");
     while(!stackIsEmpty(stack)) {
-      printf("s: %i\n",stackPop(stack));
+      printf(" %i",stackPop(stack));
     }
+    printf("\n");
   }
+
+  printf("Return stack final depth: %i\n",(rstack -> top) + 1);
+  if (flagUnroll && !stackIsEmpty(rstack)) {
+    printf(" Unrolling return stack:\n");
+    while(!stackIsEmpty(rstack)) {
+      printf(" %i",stackPop(rstack));
+    }
+    printf("\n");
+  }
+  
   while (1) {
     if (SDL_WaitEvent(&event)) {
       if (event.type == SDL_QUIT) {
@@ -271,9 +287,7 @@ void opPop() {
     break;
 
   case MODE_PC:
-    //printf("Popped PC from %i to ", PC);
     PC = popNibble4();
-    //printf("%i\n",PC);
     break;
 
   case MODE_MEM:
@@ -290,7 +304,6 @@ void opPop() {
 
   case MODE_LIT:
     stackPop(stack);
-    //execute(stackPop(stack));
     break;
 
   case MODE_ADD:
@@ -499,15 +512,17 @@ long getMillis() {
 
 int main(int argc, char* argv[]) {
   int opt;
-  while((opt = getopt(argc,argv,"upf")) != -1) {
+  while((opt = getopt(argc,argv,"upof:")) != -1) {
     switch(opt) {
     case 'u':
       flagUnroll = 1;
       break;
     case 'p':
       flagOutputPrint = 1;
-    case 'f':
+    case 'o':
       flagOutputFile = 1;
+    case 'f':
+      filename = optarg;
       break;
     }
   }
