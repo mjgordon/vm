@@ -63,7 +63,6 @@ SDL_Event event;
 char* filename;
 
 void setup() {
-  setupSDL();
   FILE *fileptr;
   printf("Opened program : %s\n",filename);
   fileptr = fopen(filename,"rb");
@@ -72,13 +71,19 @@ void setup() {
   printf("Program length: %i\n",programLength);
   rewind(fileptr);
   program = (uint8_t *)malloc((programLength)*sizeof(char));
-  fread(program,1,programLength,fileptr);
+  if (fread(program,1,programLength,fileptr) == 0) {
+    printf("Failed to read file");
+    fclose(fileptr);
+    exit(1);
+  }
   fclose(fileptr);
 
   initializeIO();
   
   stack = createStack("data",65536);
   rstack = createStack("rstk",65536);
+
+  setupSDL();
 }
 
 void run() {
@@ -86,9 +91,6 @@ void run() {
     uint8_t op = getNextOpcode();
     execute(op);
     cycles += 1;
-    //printf("MODE:%i\n",machineMode);
-    //printf("OP:%i\n",op);  
-    //printf("STACK:%i\n\n",stack->top + 1);
   }
 
   setPixels();
@@ -492,8 +494,9 @@ uint8_t getInput() {
   printf("Input Color Value: ");
   //scanf("%hhu",&input);
   char st[1024];
-  fgets( st, sizeof(st), stdin );
-  sscanf(st, "%hhu", &input );
+  if (  fgets( st, sizeof(st), stdin )) {
+    sscanf(st, "%hhu", &input );
+  }
   return(input & 0xF);
 }
 

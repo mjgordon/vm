@@ -103,7 +103,7 @@ while recording lists of label tags and references."
 
 (defun compile-hex (filename)
   "Composites all previous assembly steps. Reports any feedback"
-  (let ((output-filename (concatenate 'string (subseq filename 0 (position #\. filename)) ".hxb")))
+  (let ((output-filename (concatenate 'string (subseq filename 0 (search ".hxa" filename)) ".hxb")))
     (time (write-bytecode (resolve-labels (expand-tokens (generate-tables (get-file filename)))) output-filename)))
   nil)
 

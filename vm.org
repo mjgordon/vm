@@ -53,7 +53,7 @@ EXPANSIONS
 - [X] AND
 - [X] DUP
   
-** v002 Additions to assembler and dictionary [25/34]
+** v002 Additions to assembler and dictionary [27/34]
 - [X] F AS : MULT expansion
 - [X] F AS : MULT21 expansion
 - [X] F AS : MULT22 expansion
@@ -81,11 +81,10 @@ EXPANSIONS
 - [X] R AS : Rename label and ref lists as sets in code
 - [X] B VM : SDL window propery exits on close command
 - [ ] R AS : Unify the way special symbols in code vs dictionary expansion are handled
-- [ ] R PR : hxa/hxb files should live in their own top level project directory. Others should write/read from there
+- [X] R PR : hxa/hxb files should live in their own top level project directory. Others should write/read from there
 - [ ] F AS : Token cleanup step: step through and remove redundant mode commands (e.g. the result of DROP DROP DROP)
 - [X] T AS : Move math unit tests into their own file
-- [ ] B VM : Compiler warnings in vm.c
-- [ ] B VM : ^C Doesn't exit when stuck in infinite loop
+- [X] B VM : Compiler warnings in vm.c
 - [ ] O VM : Look for obvious optimizations
 - [ ] Cleanup and document 
 
@@ -106,6 +105,8 @@ EXPANSIONS
 - [ ] F AS : Expansion symbol ! : assembler chooses to expand it or make it a call
 - [ ] F AS : Modes for : fastest, smallest, optimize/compromise
 - [ ] F VM : Create heatmap export of bytecode program (as a compile option)
+- [ ] F VM : Dumb update cycle, call update pixels every e.g. 1000 operations. This should fix ->
+- [ ] B VM : ^C Doesn't exit when stuck in infinite loop
   
 * BUGS
 
