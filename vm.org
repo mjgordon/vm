@@ -7,6 +7,7 @@ Note : This file is intended to be viewed in org mode with org-indent-mode turne
 - F : New Feature
 - O : Optimize
 - R : Refactor
+- S : Security
 - T : Test
 
 - AS : Assembler
@@ -55,14 +56,17 @@ EXPANSIONS
 - [X] AND
 - [X] DUP
   
-** v002 Additions to assembler and dictionary [27/34]
+** v002 Additions to assembler and dictionary [33/36]
 - [X] F AS : MULT expansion
 - [X] F AS : MULT21 expansion
 - [X] F AS : MULT22 expansion
 - [X] F AS : DIV expansion
 - [X] F AS : DIV21 expansion
-- [ ] F AS : DIV22 expansion
-- [ ] F AS : MOD expansion
+- [X] F AS : DIV22 expansion
+- [X] F AS : MOD expansion
+- [X] F AS : MOD21 expansion
+- [X] F AS : MOD22 expansion
+- [X] F AS : ZERO2 expansion
 - [X] F AS : DROP expansion
 - [X] F AS : SWAP expansion
 - [X] F AS : '+' Symbol for relative labels
@@ -82,39 +86,47 @@ EXPANSIONS
 - [X] C VM : Make struct backend for output less stupid
 - [X] R AS : Rename label and ref lists as sets in code
 - [X] B VM : SDL window propery exits on close command
-- [ ] R AS : Unify the way special symbols in code vs dictionary expansion are handled
 - [X] R PR : hxa/hxb files should live in their own top level project directory. Others should write/read from there
-- [ ] F AS : Token cleanup step: step through and remove redundant mode commands (e.g. the result of DROP DROP DROP)
+- [X] F AS : Token cleanup step: step through and remove redundant mode commands (e.g. the result of DROP DROP DROP)
 - [X] T AS : Move math unit tests into their own file
 - [X] B VM : Compiler warnings in vm.c
 - [ ] O VM : Look for obvious optimizations
+- [ ] F PR : Update hxa emacs mode
 - [ ]   PR : Cleanup and document 
 
-*** TEST : test-math.hxa [4/6]
+*** TEST : test-math.hxa [8/8]
 - [X] MULT
 - [X] MULT22
 - [X] DIV
 - [X] DIV21
-- [ ] DIV22
-- [ ] MOD 
+- [X] DIV22
+- [X] MOD 
+- [X] MOD21
+- [X] MOD22
   
 ** v003 [0/11]
 - [ ] R VM : Rename all opPush etc. functions to execPush etc. 
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array
 - [ ] S AS : use parse-integer instead of read-from-string
 - [ ] R AS : get-dictionary-expander is fugly. Separate dictionary definition from expander function
-- [ ] F AS : Expansion symbol ! : assembler chooses to expand it or make it a call
-- [ ] F AS : Modes for : fastest, smallest, optimize/compromise
 - [ ] F VM : Export heatmap file of bytecode program (as a compile option)
 - [ ] F VM : Dumb update cycle, call update pixels every e.g. 1000 operations. This should fix ->
 - [ ] B VM : ^C Doesn't exit when stuck in infinite loop
 - [ ] C PR : Write decent README.md
 - [ ] F AS : Export mapping file of hxb bytes to hxa original. May get wacky when linking eventually 
+- [ ] B AS : Properly handle trailing whitespace at end of lines
+- [ ] R AS : more clearly differentiate symbols for local and globabl references and labels @ > % etc
+- [ ] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
 
+  
 * Documentation
 ** Links:
 https://www.vttoth.com/CMS/projects/13-4-bit-processor/134-viktors-amazing-4-bit-processor-architecture
 https://github.com/qeedquan/turtle/blob/master/src/util.c
+
+** Editor
+*** .hxa
+elisp snippet for generating the hxa-mode emacs rule for expansions:
 
 
 ** General
@@ -137,11 +149,11 @@ Pointer = 8nb (1 : nb length, 1 : some other flag? , 3 : page, 3 : location)
 
 ** Symbols
 @   : Label, assembler stores its position in a hashmap.
-%   : Local label, the assembler will turn every expanded instance into a unique label 
->   : Label reference, assembler replacing with same named label position
+>   : Label reference, assembler replaces with final address of associated @ label
+@%  : Local label, the assembler will turn every expanded instance into a unique label 
+>%  : Label reference, assembler replaces with final address of associated @% label in that expansion
 +   : Anonymous/unique label, assembler stores its position in a hashmap with a gensym.
 +32 : Stores the anonymous label with the associated offset. Used in calls
-!   : Assembler can choose whether to expand the token locally or call its in-place expansion
 
 ** Opcodes
 B : ∆ : MNMNC  : DESCRIPTION
@@ -178,6 +190,7 @@ AND            : (-1) ()   : Performs a bitwise AND on the top two nb
 OR             : (-1) ()   : Performs a bitwise OR on the top two nb
 NOT            : (-1) ()   : Performs a bitwise NOT on the top two nb
 TRUE           : (0)  (0)  : Converts the top of the stack to F (logical T) if not 0 (logical F)
+ZERO2          : (-1) ()   : Returns a one-digit zero if the two-digit number is zero
 
 *** MATH : ADDITION
 ADD21          : (-1) ()   : Adds a one digit-number to a two-digit number
@@ -196,6 +209,11 @@ MULT22         : (0)  (0)  : Multiplies a two-digit number by a two-digit number
 DIV            : (-1) (0)  : Divides a one-digit number by a one digit number. Sets FLAG if /0
 DIV21          : (-1) (0)  : Divides a two-digit number by a one-digit number. Sets FLAG if /0
 DIV22          : (-2) (0)  : Divides a two-digit number by a two-digit number. Sets FLAG if /0
+
+*** MATH : MODULO
+MOD            : (-1) (0)  : Takes the modulo of a one-digit number and a one-digit number
+MOD21          : (-1) (0)  : Takes the modulo of a two-digit number and a one-digit number
+MOD22          : (-2) (0)  : Takes the modulo of a two-digit number and a two-digit number
 
 *** PROGRAM FLOW
 GOTO >ADDR     : (0)  (0)  : Moves PC directly to >ADDR
@@ -245,12 +263,25 @@ LIT PUSH 0                      (0) ()
 %1
 _RESULT                         (0) (0)                   
 
+# Returns a one digit zero if the two digit number is zero
+_ZERO2                          (A B) ()
+ADD POP                         (A+B) ()
+ADD PUSH POP                    (A+B+F) ()
+_RESULT                         (-1) (0)
+
 *** ADDITION
 # ADD with carry. Ignores if next digit would overflow
 _ADD21                          (A B C) ()
 ADD POP RSTK POP ADD PUSH       (A F) (B+C)
 ADD POP RSTK PUSH               (A+F B+C) ()
 _RESULT                         (-1) (0)
+
+_ADD22                          (A B C D) ()
+SWAP RSTK POP                   (A B D) (C)
+ADD21                           (A+F B+D) (C)
+RSTK PUSH SWAP RSTK POP         (A+F C) (B+D)
+ADD POP RSTK PUSH               (A+F+C B+D) ()
+_RESULT                         (-2) (0)
 
 *** SUBTRACTION
 
@@ -263,8 +294,12 @@ _RESULT                         (-1) (0)
 _SUB22                          (A B C D) ()
 SWAP RSTK POP                   (A B D) (C)
 SUB21                           (A-F B-D) (C)
-RSTK PUSH SWAP RSTK POP         (A-F C) (B-D)
-SUB POP RSTK PUSH               (A-C B-D) ()
+RSTK PUSH SWAP                  (A-F C B-D) ()
+SUB PUSH RSTK POP POP           (A-F C) (F B-D)
+SUB POP RSTK PUSH               (A-C B-D) (F)
+LIT PUSH 0                      (A-C B-D 0) (F)
+SUB PUSH RSTK PUSH ADD POP      (A-C B-D 0 F1+F2) ()
+SUB POP DROP                    (A-C B-D) ()
 _RESULT                         (-2) (0)
 
 *** MULTIPLICATION
@@ -416,6 +451,56 @@ _RESULT                         (-2) ()
 
 
 
+*** MODULO
+
+_MOD                            (A B) ()
+DUP LIT PUSH >1 COND            (A B) ()
+DUP RSTK POP                    (A B) (B)
+%0
+SUB POP                         (A-B) (B)
+SUB PUSH TRUE NOT               (A-B !F) (B)
+LIT PUSH >2 COND                (A-B) (B)
+RSTK PUSH DUP RSTK POP          (A-B B) (B)
+GOTO >0
+%1
+RSTK POP                        (A) (B)
+%2
+RSTK PUSH ADD POP               (-R+B) ()
+_RESULT                         (-1) (0)
+
+# Takes the modulo of a two digit number and a one digit number
+_MOD21                          (A B C) ()
+DUP LIT PUSH >1 COND            (A B C) ()
+DUP RSTK POP                    (A B C) (C)
+%0
+SUB21                           (A-F B-C) (C)
+SUB PUSH TRUE NOT               (A-F B-C !F) (C)
+LIT PUSH >2 COND                (A-F B-C) (C)
+RSTK PUSH DUP RSTK POP          (A-F B-C C) (C)
+GOTO >0
+%1
+RSTK POP                        (A B) (C)
+%2
+RSTK PUSH ADD21                 (A+C B+C) ()
+_RESULT                         (-1) ()
+
+# Returns the modulo of a two-digit number and a two-digit number
+_MOD22                          (A B C D) ()
+PEEK 1 PEEK 1 ZERO2             (A B C D Z) ()
+LIT PUSH >1 COND                (A B C D) ()
+PEEK 1 PEEK 1 RSTK POP POP      (A B C D) (D C)
+%0
+SUB22                           (A-C B-D) (D C)
+SUB PUSH TRUE NOT               (A-C B-D !F) (D C)
+LIT PUSH >2 COND                (A-C B-D) (D C)
+RSTK PUSH PUSH PEEK 1 PEEK 1    (A-C B-D C D C D) ()
+RSTK POP POP                    (A-C B-D C D) (D C)
+GOTO >0
+%1
+RSTK POP POP                    (A B) (D C)
+%2
+RSTK PUSH PUSH ADD22            (A+C B+D) ()
+_RESULT                         (-2) ()
 
 *** PROGRAM FLOW
 

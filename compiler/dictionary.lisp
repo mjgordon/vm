@@ -51,16 +51,21 @@
 	       (NOR DUP NOR))
 	      (NOT
 	       (DUP NOR))
+	      (ZERO2
+	       (ADD POP PUSH POP))
 	      ;; MATH : ADDITION
 	      (ADD21
 	       (ADD POP RSTK POP ADD PUSH ADD
 		ADD POP RSTK PUSH))
+	      (ADD22
+	       (SWAP RSTK POP ADD21 RSTK PUSH SWAP RSTK POP ADD POP RSTK PUSH))
 
 	      ;; MATH : SUBTRACTION
 	      (SUB21
 	       (SUB POP RSTK POP SUB PUSH SUB POP RSTK PUSH))
 	      (SUB22
-	       (SWAP RSTK POP SUB21 RSTK PUSH SWAP RSTK POP SUB POP RSTK PUSH))
+	       (SWAP RSTK POP SUB21 RSTK PUSH SWAP SUB PUSH RSTK POP POP SUB POP RSTK PUSH LIT PUSH 0
+		SUB PUSH RSTK PUSH ADD POP SUB POP DROP))
 	      ;; MATH : MULTIPLICATION
 	      (MULT
 	       (RSTK POP POP LIT PUSH 0 PUSH 0
@@ -109,7 +114,7 @@
 		SUB POP DROP)
 	       local-labels 4)
 	      (DIV22
-	       (PEEK 1 PEEK 1 ADD POP ADD PUSH POP LIT PUSH >1 COND
+	       (PEEK 1 PEEK 1 ZERO2 LIT PUSH >1 COND
 		PEEK 1 PEEK 1 RSTK POP POP POP POP POP POP LIT PUSH 0 PUSH 0 RSTK PUSH PUSH PUSH PUSH
 		%0
 		SUB22 RSTK POP POP SUB PUSH TRUE NOT LIT PUSH >2 COND
@@ -122,6 +127,37 @@
 		%3
 		SUB POP DROP)
 	       local-labels 4)
+	      ;; MATH : MODULO
+	      (MOD
+	       (DUP LIT PUSH >1 COND
+		DUP RSTK POP
+		%0
+		SUB POP SUB PUSH TRUE NOT LIT PUSH >2 COND
+		RSTK PUSH DUP RSTK POP GOTO >0
+		%1 RSTK POP
+		%2 RSTK PUSH ADD POP)
+	       local-labels 3)
+
+	      (MOD21
+	       (DUP LIT PUSH >1 COND
+		DUP RSTK POP
+		%0
+		SUB21 SUB PUSH TRUE NOT LIT PUSH >2 COND
+		RSTK PUSH DUP RSTK POP GOTO >0
+		%1 RSTK POP
+		%2 RSTK PUSH ADD21)
+	       local-labels 3)
+	      
+	      (MOD22
+	       (PEEK 1 PEEK 1 ZERO2 LIT PUSH >1 COND
+		PEEK 1 PEEK 1 RSTK POP POP
+		%0
+		SUB22 SUB PUSH TRUE NOT LIT PUSH >2 COND
+		RSTK PUSH PUSH PEEK 1 PEEK 1 RSTK POP POP GOTO >0
+		%1 RSTK POP POP
+		%2 RSTK PUSH PUSH ADD22)
+	       local-labels 3)
+	      
 	      ;; PROGRAM FLOW
 	      (GOTO
 	       (LIT PUSH)
@@ -160,7 +196,8 @@
 					 (mapcar (lambda (local-symbol)
 						   (insert-label-set (car local-symbol))
 						   (insert-ref-set (cadr local-symbol))
-						   (apply #'insert-ref-table (reverse local-symbol)))						 local-symbols)
+						   (apply #'insert-ref-table (reverse local-symbol)))
+						 local-symbols)
 					 (cons nil (mapcar (lambda (token)
 							     (let ((position (pair-tree-find token local-names)))
 							       (if position

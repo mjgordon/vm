@@ -60,6 +60,23 @@ while recording lists of label tags and references."
 	  (format t "Expansion took ~s passes~%" depth)
 	  (rest expansion)))))
 
+(defun strip-redundant-modes (tokens)
+  (let ((mode-tokens '(COLOR X Y PC MEM IO RSTK LIT ADD SUB))
+	(strip-count 0)
+	(current-token nil))
+    (setf tokens (remove-if (lambda (token)
+			      (cond ((or (member token *label-set*) (member token *ref-set*))
+				     (setf current-token nil))
+				    ((member token mode-tokens)
+				     (if current-token
+					 (if (eq token current-token)
+					     (incf strip-count)
+					     (progn (setf current-token token) nil))
+					 (progn (setf current-token token) nil)))))
+			    tokens))
+    (format t "~a redundant tokens stripped~%" strip-count))
+  tokens)
+			   
 
 (defun resolve-labels (tokens)
   "Finds label tag locations and replaces label references with these locations"
@@ -104,10 +121,10 @@ while recording lists of label tags and references."
 (defun compile-hex (filename)
   "Composites all previous assembly steps. Reports any feedback"
   (let ((output-filename (concatenate 'string (subseq filename 0 (search ".hxa" filename)) ".hxb")))
-    (print output-filename)
-    (time (write-bytecode (resolve-labels (expand-tokens (generate-tables (get-file filename)))) output-filename)))
+    (time (write-bytecode (resolve-labels (strip-redundant-modes (expand-tokens (generate-tables (get-file filename))))) output-filename)))
   nil)
 
 
 ;;; Only called when run from bash
 (compile-hex (cadr sb-ext:*posix-argv*))
+
