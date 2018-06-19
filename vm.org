@@ -1,3 +1,4 @@
+Note : This file is intended to be viewed in org mode with org-indent-mode turned on
 
 * TODO
 ** Notation:
@@ -11,9 +12,10 @@
 - AS : Assembler
 - CM : Compiler
 - VM : Virtual machine
-- PR : Project structure
+- PR : Project
 
 ** v001 Basic VM and assembler [13/13]
+- Various untracked work 
 - [X] +/- Become modes
 - [X] Flag mode becomes RSTK mode.  
 - [X] More efficient horizontal breshenham
@@ -86,29 +88,28 @@ EXPANSIONS
 - [X] T AS : Move math unit tests into their own file
 - [X] B VM : Compiler warnings in vm.c
 - [ ] O VM : Look for obvious optimizations
-- [ ] Cleanup and document 
+- [ ]   PR : Cleanup and document 
 
-*** TEST : test-opcodes.hxa [2/6]
+*** TEST : test-math.hxa [4/6]
 - [X] MULT
 - [X] MULT22
-- [ ] DIV
+- [X] DIV
+- [X] DIV21
 - [ ] DIV22
 - [ ] MOD 
-- [ ] DROP
-- [ ] SWAP 
   
-** v003 [0/2]
+** v003 [0/11]
 - [ ] R VM : Rename all opPush etc. functions to execPush etc. 
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array
 - [ ] S AS : use parse-integer instead of read-from-string
 - [ ] R AS : get-dictionary-expander is fugly. Separate dictionary definition from expander function
 - [ ] F AS : Expansion symbol ! : assembler chooses to expand it or make it a call
 - [ ] F AS : Modes for : fastest, smallest, optimize/compromise
-- [ ] F VM : Create heatmap export of bytecode program (as a compile option)
+- [ ] F VM : Export heatmap file of bytecode program (as a compile option)
 - [ ] F VM : Dumb update cycle, call update pixels every e.g. 1000 operations. This should fix ->
 - [ ] B VM : ^C Doesn't exit when stuck in infinite loop
-  
-* BUGS
+- [ ] C PR : Write decent README.md
+- [ ] F AS : Export mapping file of hxb bytes to hxa original. May get wacky when linking eventually 
 
 * Documentation
 ** Links:
@@ -183,6 +184,7 @@ ADD21          : (-1) ()   : Adds a one digit-number to a two-digit number
 
 *** MATH : SUBTRACTION
 SUB21          : (-1) (0)  : Subtracts a one-digit number from a two-digit number
+SUB22          : (-2) (0)  : Subtracts a two-digit number from a two-digit number
 
 *** MATH : MULTIPLICATION
 MULT           : (0)  (0)  : Multiplies two one-digit numbers
@@ -193,6 +195,7 @@ MULT22         : (0)  (0)  : Multiplies a two-digit number by a two-digit number
 *** MATH : DIVISION
 DIV            : (-1) (0)  : Divides a one-digit number by a one digit number. Sets FLAG if /0
 DIV21          : (-1) (0)  : Divides a two-digit number by a one-digit number. Sets FLAG if /0
+DIV22          : (-2) (0)  : Divides a two-digit number by a two-digit number. Sets FLAG if /0
 
 *** PROGRAM FLOW
 GOTO >ADDR     : (0)  (0)  : Moves PC directly to >ADDR
@@ -207,6 +210,14 @@ OUTINT16       : (-4) (0)  : Outputs 4 nb from the stack, formatted as an int
 
 
 ** Expansion Definitions
+
+  _EXPANSION_NAME                 (DATA STACK ON ENTRY) (RETURN STACK ON ENTRY)
+  ...
+  OPERATIONS                      (DATA STACK STATE) (RETURN STACK STATE)
+  ...
+  _RESULTS                        (∆ DATA STACK) (∆ RETURN STACK)
+
+
 *** STACK OPERATION
 _DROP                           (A) ()
 LIT POP                         () ()
@@ -248,6 +259,13 @@ SUB POP                         (A B-C) ()
 RSTK POP SUB PUSH               (A F) (B-C)
 SUB POP RSTK PUSH               (A-F B-C) ()
 _RESULT                         (-1) (0)
+
+_SUB22                          (A B C D) ()
+SWAP RSTK POP                   (A B D) (C)
+SUB21                           (A-F B-D) (C)
+RSTK PUSH SWAP RSTK POP         (A-F C) (B-D)
+SUB POP RSTK PUSH               (A-C B-D) ()
+_RESULT                         (-2) (0)
 
 *** MULTIPLICATION
 # A and B are the factors. P and R are the digits of the product
@@ -312,9 +330,7 @@ _RESULT                         (0) (0)
 # SUB underflow flag is set to 1 if attempting to divide by zero, created by subbing M and N at the end
 # Uses one more GOTO than MULT, but only for the rarer divide by zero cases
 _DIV                            (A B) ()
-DUP LIT PUSH 1 SUB POP          (A B B-1) ()
-DROP SUB PUSH TRUE NOT          (A B !F) ()
-LIT PUSH >1 COND                (A B) ()
+DUP LIT PUSH >1 COND            (A B) ()
 DUP RSTK POP POP POP LIT PUSH 0 (0) (B B A)
 RSTK PUSH PUSH                  (0 A B) (B)
 %0                              (Q A B) (B)
@@ -329,21 +345,19 @@ DUP RSTK POP                    (Q A-B B) (B)
 GOTO >0 
 %1                              (A B) ()
 DROP DROP                       () ()
-LIT PUSH 0 PUSH 1 PUSH 2        (0 1 2) ()
+LIT PUSH 0 PUSH 0 PUSH 1        (0 0 1) ()
 GOTO >3
 %2                              (Q) (B A-B)
 RSTK PUSH PUSH                  (Q A-B B) () ()
 DROP DROP                       (Q) ()
-LIT PUSH 2 PUSH 1               (Q 2 1) ()
+LIT PUSH 1 PUSH 0               (Q 1 0) ()
 %3                              (Q M N) ()
 SUB POP DROP                    (Q) ()
 _RESULT                         (-1) ()
 
-# AB is divident. C is divisor. Q is quotient, F is underflow fla
+# AB is dividend. C is divisor. Q is quotient, F is underflow flag
 _DIV21                          (A B C) ()
-DUP LIT PUSH 1 SUB POP          (A B C C -1) ()
-DROP SUB PUSH TRUE NOT          (A B C !F) ()
-LIT PUSH >1 COND                (A B C)
+DUP LIT PUSH >1 COND            (A B C) ()
 DUP RSTK POP POP POP POP        () (C C B A)
 LIT PUSH 0 PUSH 0               (0 0) (C C B A)
 RSTK PUSH PUSH PUSH             (0 0 A B C) (C)
@@ -357,17 +371,48 @@ LIT PUSH 1 ADD21                (Q R) (C B-C A-F)
 RSTK PUSH PUSH PUSH             (Q R A-F B-C C) ()
 DUP RSTK POP                    (Q R A-F B-C C) (C) 
 GOTO >0
-%1                              (A B C)
-DROP DROP DROP                  ()
-LIT PUSH 0 PUSH 0 PUSH 1 PUSH 2 (0 0 1 2) ()
+%1                              (A B C) ()
+DROP DROP DROP                  () ()
+LIT PUSH 0 PUSH 0 PUSH 0 PUSH 1 (0 0 0 1) ()
 GOTO >3
 %2 
 RSTK PUSH PUSH PUSH             (Q R A-F B-C C) ()
 DROP DROP DROP                  (Q R) ()
-LIT PUSH 2 PUSH 1               (Q R 2 1) ()
+LIT PUSH 1 PUSH 0               (Q R 1 0) ()
 %3
 SUB POP DROP                    (Q R) ()
 _RESULT                         (-1) ()
+
+# AB is dividend. CD is divisor. QR is quotient, F is underflow flag
+_DIV22                          (A B C D) ()
+PEEK 1 PEEK 1 ADD POP           (A B C D C+D) ()
+ADD PUSH POP                    (A B C D C+D+F) ()
+LIT PUSH >1 COND                (A B C D) ()
+PEEK 1 PEEK 1 RSTK POP POP      (A B C D) (D C)
+POP POP POP POP                 () (D C D C B A)
+LIT PUSH 0 PUSH 0               (0 0) (D C D C B A)
+RSTK PUSH PUSH PUSH PUSH        (0 0 A B C D) (D C)
+%0
+SUB22                           (Q R A-C B-D) (D C)
+RSTK POP POP SUB PUSH           (Q R F) (D C B-D A-C)
+TRUE NOT                        (Q R !F) (D C B-D A-C)
+LIT PUSH >2                     (Q R !F >2) (D C B-D A-C)
+COND(>2)                        (Q R) (D C B-D A-C)
+LIT PUSH 1 ADD21                (Q R) (D C B-D A-C)
+RSTK PUSH PUSH PUSH PUSH        (Q R A-C B-D C D) ()
+PEEK 1 PEEK 1 RSTK POP POP      (Q R A-C B-D C D) (D C)
+GOTO >0
+%1                              (A B C D) ()
+DROP DROP DROP DROP             () ()
+LIT PUSH 0 PUSH 0 PUSH 0 PUSH 1 (0 0 0 1) ()
+GOTO >3
+%2
+RSTK PUSH PUSH PUSH PUSH        (Q R A-C B-D C D) ()
+DROP DROP DROP DROP             (Q R) ()
+LIT PUSH 1 PUSH 0               (Q R 1 0) ()
+%3
+SUB POP DROP                    (Q R) ()
+_RESULT                         (-2) ()
 
 
 

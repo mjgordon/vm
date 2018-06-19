@@ -90,7 +90,7 @@ while recording lists of label tags and references."
 			  :element-type 'unsigned-byte
 			  :if-exists :supersede)
     (let ((bytecodes (get-bytecodes)))
-      (format t "Assembled ~a tokens" (length tokens))
+      (format t "Assembled ~a tokens~%" (length tokens))
       (mapcar (lambda (token)
 		(if (symbolp token)
 		    (let ((byte (gethash token bytecodes)))
@@ -104,6 +104,7 @@ while recording lists of label tags and references."
 (defun compile-hex (filename)
   "Composites all previous assembly steps. Reports any feedback"
   (let ((output-filename (concatenate 'string (subseq filename 0 (search ".hxa" filename)) ".hxb")))
+    (print output-filename)
     (time (write-bytecode (resolve-labels (expand-tokens (generate-tables (get-file filename)))) output-filename)))
   nil)
 
