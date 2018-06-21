@@ -53,7 +53,7 @@ uint8_t FLAG;
 uint16_t PEN_X = 0;
 uint16_t PEN_Y = 0;
 
-uint16_t cycles = 0;
+long cycles = 0;
 
 long startMillis;
 long endMillis;
@@ -101,7 +101,7 @@ void finish() {
   finishIO();
   printf("=== RESULTS ===\n");
   printf("Execution took %li ms\n",endMillis - startMillis);
-  printf("%i operations\n",cycles);
+  printf("%li operations\n",cycles);
   printf("PC: %i\n",PC);
   printf("Data stack max depth: %i\n",stackGetMaxDepth(stack));
   printf("Return stack max depth: %i\n",stackGetMaxDepth(rstack));
@@ -290,7 +290,7 @@ void opPop() {
 
   case MODE_PC:
     PC = popNibble4();
-    break;
+    break;n
 
   case MODE_MEM:
     memory[REG_Y * PAGE_SIZE + REG_X] = stackPop(stack);
@@ -337,7 +337,6 @@ void opNOR() {
   uint8_t output = ~(a | b);
 
   output = output & 0xF;
-  //printf("NOR: %i %i %i\n",a, b, output);
   stackPush(stack,output);
 }
 
