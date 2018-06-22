@@ -62,6 +62,32 @@ SDL_Event event;
 
 char* filename;
 
+int main(int argc, char* argv[]) {
+  int opt;
+  while((opt = getopt(argc,argv,"upof:")) != -1) {
+    switch(opt) {
+    case 'u':
+      flagUnroll = 1;
+      break;
+    case 'p':
+      flagOutputPrint = 1;
+    case 'o':
+      flagOutputFile = 1;
+    case 'f':
+      filename = optarg;
+      break;
+    }
+  }
+
+  setup();
+  startMillis = getMillis();
+  run();
+  endMillis = getMillis();
+  finish();
+}
+
+
+// Loads program file, sets up stacks, visualizer, and output
 void setup() {
   FILE *fileptr;
   printf("Opened program : %s\n",filename);
@@ -86,6 +112,8 @@ void setup() {
   setupSDL();
 }
 
+
+// Loops through the program and executes each opcode. Updates visuals intermittenly
 void run() {
   while(PC < programLength) {
     uint8_t op = getNextOpcode();
@@ -97,6 +125,8 @@ void run() {
   updateSDL();
 }
 
+
+// Reports analysis of program run. Closes files and cleans up SDL components
 void finish() {
   finishIO();
   printf("=== RESULTS ===\n");
@@ -135,16 +165,8 @@ void finish() {
   cleanupSDL();
 }
 
-void setPixels() {
-  for (int i = 0; i < 1024 * 1024; i++) {
-    int offset = i * 4;
-    pixels[offset + 0] = colors[memory[i]].channels[0];
-    pixels[offset + 1] = colors[memory[i]].channels[1];
-    pixels[offset + 2] = colors[memory[i]].channels[2];
-    pixels[offset + 3] = colors[memory[i]].channels[3];
-  }
-}
 
+// Calls function associated with each opcode
 void execute(uint8_t opcode) {
 
   switch(opcode) {
@@ -199,6 +221,8 @@ void execute(uint8_t opcode) {
   }
 }
 
+
+// Pops and adds the top two nb on the data stack, pushes the result. Sets the FLAG if overflows
 void opAdd() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
@@ -208,6 +232,8 @@ void opAdd() {
   stackPush(stack,output);
 }
 
+
+// Pops and subtracts the top two nb on the data stack, pushes the result. Sets the FLAG if undeflows
 void opSub() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
@@ -217,6 +243,8 @@ void opSub() {
   stackPush(stack,output);
 }
 
+
+// Pushes one or more nb to the data stack depending on the machineMode
 void opPush() {
   switch(machineMode) {
   case MODE_COLOR:
@@ -269,6 +297,8 @@ void opPush() {
   
 }
 
+
+// Pops one or more nb from the data stack depending on the machineMode
 void opPop() {
   uint16_t temp = 0;
   switch(machineMode) {
@@ -290,7 +320,7 @@ void opPop() {
 
   case MODE_PC:
     PC = popNibble4();
-    break;n
+    break;
 
   case MODE_MEM:
     memory[REG_Y * PAGE_SIZE + REG_X] = stackPop(stack);
@@ -318,11 +348,15 @@ void opPop() {
   }
 }
 
+
+// Copies an nb of the requested depth to the top of the data stack
 void opPeek() {
   uint8_t depth = getNextOpcode();
   stackPush(stack,stackPeek(stack,depth));
 }
 
+
+// Jumps the PC to the requestion position if the next value on the data stack is 0
 void opCond() {
   uint16_t destination = popNibble4();
   uint8_t value = stackPop(stack);
@@ -331,6 +365,8 @@ void opCond() {
   }
 }
 
+
+// Pops and NORs the top two nb on the data stack, pushes the result
 void opNOR() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
@@ -340,6 +376,8 @@ void opNOR() {
   stackPush(stack,output);
 }
 
+
+// Moves the pen on the display. If the top element is not zero, draws in COLOR on the memory display
 void opMove() {
   
   uint16_t x1 = PEN_X;
@@ -370,6 +408,8 @@ void opMove() {
   
 }
 
+
+// Draws a vertical line on the memory display
 void plotVertical(uint16_t x1, uint16_t y1, uint16_t y2) {
   if (y2 < y1) {
     uint16_t temp = y2;
@@ -382,6 +422,8 @@ void plotVertical(uint16_t x1, uint16_t y1, uint16_t y2) {
   }
 }
 
+
+// Draws a horizontal line on the memory display
 void plotHorizontal(uint16_t x1, uint16_t x2, uint16_t y1) {
   if (x2 < x1) {
     uint16_t temp = x2;
@@ -394,6 +436,8 @@ void plotHorizontal(uint16_t x1, uint16_t x2, uint16_t y1) {
   }
 }
 
+
+// Draws a breshenham line on the memory display
 void plotLineLow(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
   int dx = x2 - x1;
   int dy = y2 - y1;
@@ -413,9 +457,10 @@ void plotLineLow(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
     }
     D = D + (2 * dy);
   }
-
 }
 
+
+// Draws a breshenham line on the memory display
 void plotLineHigh(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
   int dx = x2 - x1;
   int dy = y2 - y1;
@@ -437,11 +482,16 @@ void plotLineHigh(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
   }
 }
 
+
+// Returns the next opcode in the program, advances the PC counter
 uint8_t getNextOpcode() {
   uint8_t opcode = program[PC];
   PC += 1;
   return(opcode);
 }
+
+
+// Helper functions to extract a nb position from a 16 bit number
 
 uint8_t extractNibble0(uint16_t input) {
   return(input & 0xF);
@@ -458,6 +508,9 @@ uint8_t extractNibble2(uint16_t input) {
 uint8_t extractNibble3(uint16_t input) {
   return((input >> 12) & 0xF);
 }
+
+
+// Helper functions to push a 12 or 16 bit number as individual nb
 
 uint16_t popNibble3() {
   uint8_t nibble0 = stackPop(stack);
@@ -488,6 +541,8 @@ uint16_t popNibble4() {
   return(output);
 }
 
+
+// Returns one nb of data from user input
 uint8_t getInput() {
   uint8_t input = 0;
   printf("Input Color Value: ");
@@ -500,8 +555,19 @@ uint8_t getInput() {
 }
 
 
+// Updates the SDL pixel array from the memory array
+void setPixels() {
+  for (int i = 0; i < 1024 * 1024; i++) {
+    int offset = i * 4;
+    pixels[offset + 0] = colors[memory[i]].channels[0];
+    pixels[offset + 1] = colors[memory[i]].channels[1];
+    pixels[offset + 2] = colors[memory[i]].channels[2];
+    pixels[offset + 3] = colors[memory[i]].channels[3];
+  }
+}
 
 
+// Get the current program run time in millis
 long getMillis() {
   long ms;
   //  time_t s;
@@ -512,26 +578,3 @@ long getMillis() {
   return ms;
 }
 
-int main(int argc, char* argv[]) {
-  int opt;
-  while((opt = getopt(argc,argv,"upof:")) != -1) {
-    switch(opt) {
-    case 'u':
-      flagUnroll = 1;
-      break;
-    case 'p':
-      flagOutputPrint = 1;
-    case 'o':
-      flagOutputFile = 1;
-    case 'f':
-      filename = optarg;
-      break;
-    }
-  }
-
-  setup();
-  startMillis = getMillis();
-  run();
-  endMillis = getMillis();
-  finish();
-}

@@ -11,10 +11,10 @@ typedef struct {
   uint8_t size;
 } outputBuffer;
 
-outputBuffer newOutputBuffer(uint8_t size);
 void initializeIO();
 void finishIO();
 void output(uint8_t nb);
 int getInt(uint8_t nb,outputBuffer *buffer,int *value);
+outputBuffer newOutputBuffer(uint8_t size);
 
 #endif

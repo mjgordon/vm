@@ -56,7 +56,7 @@ EXPANSIONS
 - [X] AND
 - [X] DUP
   
-** v002 Additions to assembler and dictionary [33/36]
+** v002 Additions to assembler and dictionary [34/35]
 - [X] F AS : MULT expansion
 - [X] F AS : MULT21 expansion
 - [X] F AS : MULT22 expansion
@@ -90,8 +90,7 @@ EXPANSIONS
 - [X] F AS : Token cleanup step: step through and remove redundant mode commands (e.g. the result of DROP DROP DROP)
 - [X] T AS : Move math unit tests into their own file
 - [X] B VM : Compiler warnings in vm.c
-- [ ] O VM : Look for obvious optimizations
-- [ ] F PR : Update hxa emacs mode
+- [X] F PR : Update hxa emacs mode
 - [ ]   PR : Cleanup and document 
 
 *** TEST : test-math.hxa [8/8]
@@ -117,6 +116,7 @@ EXPANSIONS
 - [ ] B AS : Properly handle trailing whitespace at end of lines
 - [ ] R AS : more clearly differentiate symbols for local and globabl references and labels @ > % etc
 - [ ] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
+- [ ] F PR : Sierpinski carpet program
 
   
 * Documentation
@@ -127,7 +127,7 @@ https://github.com/qeedquan/turtle/blob/master/src/util.c
 ** Editor
 *** .hxa
 elisp snippet for generating the hxa-mode emacs rule for expansions:
-
+(regexp-opt '("DROP" "DUP" "SWAP" "AND" "OR" "NOT" "TRUE" "ZERO2" "ADD21" "ADD22" "SUB21" "SUB22" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "MOD" "MOD21" "MOD22" "OUT" "OUT8" "OUT12" "OUT16"))
 
 ** General
 Screen Storage:
@@ -193,7 +193,8 @@ TRUE           : (0)  (0)  : Converts the top of the stack to F (logical T) if n
 ZERO2          : (-1) ()   : Returns a one-digit zero if the two-digit number is zero
 
 *** MATH : ADDITION
-ADD21          : (-1) ()   : Adds a one digit-number to a two-digit number
+ADD21          : (-1) ()   : Adds a one-digit number to a two-digit number
+ADD22          : (-2) ()   : Adds a two-digit number to a two-digit number
 
 *** MATH : SUBTRACTION
 SUB21          : (-1) (0)  : Subtracts a one-digit number from a two-digit number

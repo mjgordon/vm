@@ -3,6 +3,7 @@
 
 SDLContext context;
 
+// 16 color pallette based on Windows default 16 color pallete
 colorRGB colors[] = {{0xFF000000},
 		     {0xFF800000},
 		     {0xFF008000},
@@ -22,16 +23,18 @@ colorRGB colors[] = {{0xFF000000},
 
 uint8_t pixels[1024 * 1024 * 4];
 
+
+// Called at startup. Sets up SDL backend for displaying memory array 
 void setupSDL() {
   
   if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-    printf("nope\n");
+    printf("SDL INIT FAILED\n");
     return;
   }
   
   context.win = SDL_CreateWindow("VM",300,100,1024,1024,SDL_WINDOW_SHOWN);
   if (!context.win){
-    printf("windowNope\n");
+    printf("SDL WINDOW FAILED\n");
     SDL_Quit();
     return;
   }
@@ -39,7 +42,7 @@ void setupSDL() {
   context.ren = SDL_CreateRenderer(context.win,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   if (!context.ren) {
     SDL_DestroyWindow(context.win);
-    printf("renderNope\n");
+    printf("SDL RENDERER FAILED\n");
     SDL_Quit();
     return;
   }
@@ -48,7 +51,7 @@ void setupSDL() {
   if (!context.tex) {
     SDL_DestroyRenderer(context.ren);
     SDL_DestroyWindow(context.win);
-    printf("textureNope");
+    printf("SDL TEXTURE FAILED");
     SDL_Quit();
     return;
   }
@@ -57,6 +60,7 @@ void setupSDL() {
 }
 
 
+// Updates the visible window after changing the pixels manually
 void updateSDL() {
   SDL_SetRenderDrawColor(context.ren, 0, 0, 0, 255);
   SDL_RenderClear(context.ren);
@@ -65,6 +69,8 @@ void updateSDL() {
   SDL_RenderPresent(context.ren);
 }
 
+
+// Called at shutdown, destroys all created SDL components
 void cleanupSDL() {
   SDL_DestroyTexture(context.tex);
   SDL_DestroyRenderer(context.ren);

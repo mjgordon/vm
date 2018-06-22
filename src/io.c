@@ -11,8 +11,6 @@
 
 const char *modeNames[5];
 
-
-
 outputBuffer buffer8;
 outputBuffer buffer12;
 outputBuffer buffer16;
@@ -25,12 +23,9 @@ int flagOutputFile = 0;
 
 int mode = MODE_WAITING;
 
-outputBuffer newOutputBuffer(uint8_t size) {
-  outputBuffer b;
-  b.size = size;
-  return b;
-}
 
+// Called at startup, sets up different sized output nb buffers, and the modes to use them
+// Also opens the output file
 void initializeIO() {
   buffer8 = newOutputBuffer(2);
   buffer12 = newOutputBuffer(3);
@@ -44,10 +39,14 @@ void initializeIO() {
   write_ptr = fopen("output.bin","wb+");
 }
 
+
+// Called at shutdown, closes the output file
 void finishIO() {
   fclose(write_ptr);
 }
 
+
+// Receices one nb from the runtime. Will set the mode, or insert into a buffer, and print if necessary
 void output(uint8_t nb) {
   int flag = 0;
 
@@ -83,6 +82,8 @@ void output(uint8_t nb) {
   }
 }
 
+
+//Checks if the buffer is full, sets the output value if so
 int getInt(uint8_t nb,outputBuffer *buffer, int *value) {
   buffer->nbs[buffer->position] = nb;
   buffer->position += 1;
@@ -100,3 +101,10 @@ int getInt(uint8_t nb,outputBuffer *buffer, int *value) {
   }
 }
 
+
+// Creates an output buffer of a given nb size
+outputBuffer newOutputBuffer(uint8_t size) {
+  outputBuffer b;
+  b.size = size;
+  return b;
+}

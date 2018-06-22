@@ -7,19 +7,28 @@
 (ql:quickload "split-sequence" :silent t)
 
 
+;;; Global symbol lists
+
+;; Set of all label symbols used in the file				       
 (defparameter *label-set* ())
+
+;; Hash table of label symbols to their final operation number in the file
 (defparameter *label-table* (make-hash-table :test 'eq))
 
+;; Set of all label reference symbols used in the file
 (defparameter *ref-set* ())
+
+;; Hash table of label reference symbols to the label symbols they point to
 (defparameter *ref-table* (make-hash-table :test 'eq))
 
+;; Hash table of the gensym in each call expansion to its final operation numbe + offset in the file
 (defparameter *return-table* (make-hash-table :test 'eq))
 
 
-
+;;; Main assembly pipeline functions
 
 (defun get-file (filename)
-  "Load an assembly file as a list of strings"
+  "Load a hxa assembly file as a list of strings"
   (with-open-file (stream filename)
     (loop for line = (read-line stream nil)
        while line
@@ -27,8 +36,8 @@
 
 
 (defun generate-tables (lines)
-  "Removes comments and blank lines, splits lines into one list of words. Converts to tokens, 
-while recording lists of label tags and references."
+  "Removes comments and blank lines, splits lines into one list of words. Converts to symbol tokens, 
+while creating lists of labels and references."
   (clear-tables)
   (setf lines
 	(mapcan (lambda (line)
@@ -52,7 +61,7 @@ while recording lists of label tags and references."
 
 
 (defun expand-tokens (tokens &optional (expander (get-dictionary-expander)) (depth 1))
-  "Expands folded opcodes into the basic opcode forms. Called recursively until run reports no expansions."
+  "Recursively expands folded opcodes into their normal forms"
   (let ((expansion (expand-pass tokens expander)))
     (if (car expansion)
 	(expand-tokens (rest expansion) expander (incf depth))
@@ -60,7 +69,9 @@ while recording lists of label tags and references."
 	  (format t "Expansion took ~s passes~%" depth)
 	  (rest expansion)))))
 
+
 (defun strip-redundant-modes (tokens)
+  "Removes mode-change opcodes that will have no effect, which may be present for readability or expansion completeness"
   (let ((mode-tokens '(COLOR X Y PC MEM IO RSTK LIT ADD SUB))
 	(strip-count 0)
 	(current-token nil))
@@ -79,7 +90,7 @@ while recording lists of label tags and references."
 			   
 
 (defun resolve-labels (tokens)
-  "Finds label tag locations and replaces label references with these locations"
+  "Steps through the file and determines final operation number for each label. Resolves references with these locations"
   (let ((count 0))
     (setf tokens
 	  (remove-if (lambda (token)
@@ -101,7 +112,7 @@ while recording lists of label tags and references."
 		       
 
 (defun write-bytecode (tokens &optional (filename "program.hxb"))
-  "Converts list of opcode-tokens to list of associated bytes, and writes these to the output .hxb file"
+  "Converts list of opcode-tokens to list of associated bytes, and writes these to the output hxb binary file"
   (with-open-file (stream filename
 			  :direction :output
 			  :element-type 'unsigned-byte
@@ -118,13 +129,14 @@ while recording lists of label tags and references."
 	      tokens))))
 
 
-(defun compile-hex (filename)
-  "Composites all previous assembly steps. Reports any feedback"
+(defun assemble-hex (filename)
+  "Composites main assembly pipeline functions. Reports any feedback"
   (let ((output-filename (concatenate 'string (subseq filename 0 (search ".hxa" filename)) ".hxb")))
     (time (write-bytecode (resolve-labels (strip-redundant-modes (expand-tokens (generate-tables (get-file filename))))) output-filename)))
   nil)
 
 
 ;;; Only called when run from bash
-(compile-hex (cadr sb-ext:*posix-argv*))
+
+(assemble-hex (cadr sb-ext:*posix-argv*))
 

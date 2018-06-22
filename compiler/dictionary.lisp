@@ -1,12 +1,12 @@
 (defun expand-pass (tokens expander)
-  "Runs a single expansion pass over the tokens"
+  "Runs a single expansion pass over a token list"
   (let ((expansion (recursive-expand-pass tokens expander () nil)))
     (cons (car expansion)
 	  (apply #'append (reverse (rest expansion))))))
 
   
 (defun recursive-expand-pass (tokens expander result flag)
-  "Steps through each the token list with a tail recursion, expanding or skipping as necessary"
+  "Steps through the token list with tail recursion, expanding or skipping as necessary"
   (let* ((token (car tokens))
 	 (expansion-result (funcall expander (cons token (cadr tokens))))
 	 (complex (car expansion-result))
@@ -19,9 +19,7 @@
     (if (rest tokens)
 	(recursive-expand-pass (if complex (cddr tokens) (rest tokens)) expander result flag)
 	(cons flag result))))
-	  
 	
-  
 
 (defun get-dictionary-expander ()
   "Returns a function to get the expansion of a folded opcode. The hashmap is enclosed"

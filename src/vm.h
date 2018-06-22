@@ -1,10 +1,11 @@
 #ifndef VM
 #define VM
 
+int main();
+
 void setup();
 void run();
-
-void setPixels();
+void finish();
 
 void execute(uint8_t opcode);
 
@@ -34,8 +35,8 @@ uint16_t popNibble4();
 
 uint8_t getInput();
 
-void outputStack();
+void setPixels();
 
-int main();
+long getMillis();
 
 #endif
