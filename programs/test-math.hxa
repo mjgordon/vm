@@ -4,10 +4,10 @@
 #CALL >SUB21_TEST
 #CALL >SUB22_TEST
 #CALL >MULT_TEST
-#CALL >MULT22_TEST
+CALL >MULT22_TEST
 #CALL >DIV_TEST
 #CALL >DIV21_TEST
-CALL >DIV22_TEST
+#CALL >DIV22_TEST
 #CALL >MOD_TEST
 #CALL >MOD21_TEST
 #CALL >MOD22_TEST
@@ -15,7 +15,10 @@ CALL >DIV22_TEST
 GOTO >END
 
 
+# ==============================================
+# SUB21: Subtract a one digit number from a two digit number
 # Output Should be 31,30,26,2,15,255
+
 @SUB21_TEST
 LIT PUSH 1 PUSH 15 PUSH 0 SUB21 OUT8
 LIT PUSH 1 PUSH 15 PUSH 1 SUB21 OUT8
@@ -26,6 +29,10 @@ LIT PUSH 0 PUSH 1 PUSH 2 SUB21 OUT8
 
 RET
 
+
+# ==============================================
+# SUB22: Subtract a two-digit number from a two-digit number
+# Output should be 0, 15, 12, 16, 13, 254, 4, 5, 255
 
 @SUB22_TEST
 LIT PUSH 0 PUSH 0 PUSH 0 PUSH 0 SUB22 OUT8 SUB PUSH OUT
@@ -42,6 +49,11 @@ LIT PUSH 0 PUSH 0 PUSH 0 PUSH 1 SUB22 OUT8 SUB PUSH OUT
 
 RET
 
+
+# ==============================================
+# MULT : Multiplies two one-digit numbers
+# Output should be 0, 0, 0, 1, 6, 16, 225
+
 @MULT_TEST
 
 LIT PUSH 0 PUSH 0 MULT OUT8
@@ -54,6 +66,10 @@ LIT PUSH 15 PUSH 15 MULT OUT8
 
 RET
 
+
+# ==============================================
+# MULT22 : Multiplies two two-digit numbers
+# Output should be 0, 0, 0, 1, 6, 30, 30, 225, 512, 11592, 65025
 # MULT22 also proves a working MULT21
 @MULT22_TEST
 
@@ -74,6 +90,8 @@ LIT PUSH 15 PUSH 15 PUSH 15 PUSH 15 MULT22 OUT16
 RET
 
 
+# ==============================================
+# DIV : Divides two one-digit numbers
 # Output should be 15, 1, 4, 2, 1, 0, 0*, 0*, 0
 @DIV_TEST
 
@@ -89,6 +107,9 @@ LIT PUSH 0 PUSH 8 DIV OUT
 
 RET
 
+
+# ==============================================
+# DIV21: Divides a two-digit number by a one-digit number
 # Output should be 0,1,255,0,0,8,5,17,21
 @DIV21_TEST
 LIT PUSH 0 PUSH 0 PUSH 1 DIV21 OUT8
@@ -103,7 +124,10 @@ LIT PUSH 9 PUSH 5 PUSH 7 DIV21 OUT8
 
 RET
 
-#Output should be 0*,0,1,15,240,5,1
+
+# ==============================================
+# Divides a two-digit number by a two-digit number
+# Output should be 0*,0,1,15,240,5,1
 
 @DIV22_TEST
 LIT PUSH 0 PUSH 0 PUSH 0 PUSH 0 DIV22 OUT8
@@ -114,6 +138,10 @@ LIT PUSH 15 PUSH 0 PUSH 0 PUSH 1 DIV22 OUT8
 LIT PUSH 10 PUSH 4 PUSH 1 PUSH 12 DIV22 OUT8
 LIT PUSH 15 PUSH 15 PUSH 15 PUSH 15 DIV22 OUT8
 RET
+
+
+# ==============================================
+# MOD: takes the modulo of two one-digit numbers
 
 @MOD_TEST
 LIT PUSH 15 PUSH 0 MOD OUT
@@ -137,6 +165,9 @@ LIT PUSH 4 PUSH 6 MOD OUT
 
 RET
 
+
+# ==============================================
+# MOD21: takes the modulo of a two-digit number and a one-digit number
 # Output should be 15, 0 , 0 , 1, 3, 2, 7
 @MOD21_TEST
 LIT PUSH 0 PUSH 15 PUSH 0 MOD21 OUT8
@@ -151,6 +182,9 @@ LIT PUSH 15 PUSH 15 PUSH 14 MOD21 OUT8
 
 RET
 
+
+# ==============================================
+# MOD22: Takes the modulo of two two-digit numbers
 # Output should be 14, 3, 0
 @MOD22_TEST
 

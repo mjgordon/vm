@@ -56,7 +56,7 @@ EXPANSIONS
 - [X] AND
 - [X] DUP
   
-** v002 Additions to assembler and dictionary [34/35]
+** v002 Additions to assembler and dictionary [35/35]
 - [X] F AS : MULT expansion
 - [X] F AS : MULT21 expansion
 - [X] F AS : MULT22 expansion
@@ -91,7 +91,7 @@ EXPANSIONS
 - [X] T AS : Move math unit tests into their own file
 - [X] B VM : Compiler warnings in vm.c
 - [X] F PR : Update hxa emacs mode
-- [ ]   PR : Cleanup and document 
+- [X]   PR : Cleanup and document 
 
 *** TEST : test-math.hxa [8/8]
 - [X] MULT
