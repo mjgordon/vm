@@ -1,10 +1,11 @@
 # ==============================================
 # Tests for math expansion mnenomics
 
+CALL >ADDC4_1_TEST
 #CALL >SUB21_TEST
 #CALL >SUB22_TEST
 #CALL >MULT_TEST
-CALL >MULT22_TEST
+#CALL >MULT22_TEST
 #CALL >DIV_TEST
 #CALL >DIV21_TEST
 #CALL >DIV22_TEST
@@ -14,6 +15,18 @@ CALL >MULT22_TEST
 
 GOTO >END
 
+
+# ==============================================
+# ADDC4_1 : Adds constant 1 to a 4 digit number on the stack
+# Output should be 1, 2, 4097, 0
+
+@ADDC4_1_TEST
+LIT PUSH 0 PUSH 0 PUSH 0 PUSH 0 ADDC4_1 OUT16
+LIT PUSH 0 PUSH 0 PUSH 0 PUSH 1 ADDC4_1 OUT16
+LIT PUSH 1 PUSH 0 PUSH 0 PUSH 0 ADDC4_1 OUT16
+LIT PUSH 15 PUSH 15 PUSH 15 PUSH 15 ADDC4_1 OUT16
+
+RET
 
 # ==============================================
 # SUB21: Subtract a one digit number from a two digit number
