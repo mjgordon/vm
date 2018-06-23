@@ -9,14 +9,14 @@ void finish();
 
 void execute(uint8_t opcode);
 
-void opAdd();
-void opSub();
-void opPush();
-void opPop();
-void opPeek();
-void opCond();
-void opNOR();
-void opMove();
+void execAdd();
+void execSub();
+void execPush();
+void execPop();
+void execPeek();
+void execCond();
+void execNOR();
+void execMove();
 
 void plotVertical(uint16_t x1, uint16_t y1, uint16_t y2);
 void plotHorizontal(uint16_t x1, uint16_t x2, uint16_t y1);

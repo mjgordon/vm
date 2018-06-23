@@ -201,29 +201,29 @@ void execute(uint8_t opcode) {
     machineMode = MODE_SUB;
     break;
   case OP_PUSH:
-    opPush();
+    execPush();
     break;
   case OP_POP:
-    opPop();
+    execPop();
     break;
   case OP_PEEK:
-    opPeek();
+    execPeek();
     break;
   case OP_COND:
-    opCond();
+    execCond();
     break;
   case OP_NOR:
-    opNOR();
+    execNOR();
     break;
   case OP_MOVE:
-    opMove();
+    execMove();
     break;
   }
 }
 
 
 // Pops and adds the top two nb on the data stack, pushes the result. Sets the FLAG if overflows
-void opAdd() {
+void execAdd() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
   uint8_t output = a + b;
@@ -234,7 +234,7 @@ void opAdd() {
 
 
 // Pops and subtracts the top two nb on the data stack, pushes the result. Sets the FLAG if undeflows
-void opSub() {
+void execSub() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
   uint8_t output = b - a;
@@ -245,7 +245,7 @@ void opSub() {
 
 
 // Pushes one or more nb to the data stack depending on the machineMode
-void opPush() {
+void execPush() {
   switch(machineMode) {
   case MODE_COLOR:
     stackPush(stack,REG_COLOR);
@@ -299,7 +299,7 @@ void opPush() {
 
 
 // Pops one or more nb from the data stack depending on the machineMode
-void opPop() {
+void execPop() {
   uint16_t temp = 0;
   switch(machineMode) {
   case MODE_COLOR:
@@ -339,25 +339,25 @@ void opPop() {
     break;
 
   case MODE_ADD:
-    opAdd();
+    execAdd();
     break;
 
   case MODE_SUB:
-    opSub();
+    execSub();
     break;
   }
 }
 
 
 // Copies an nb of the requested depth to the top of the data stack
-void opPeek() {
+void execPeek() {
   uint8_t depth = getNextOpcode();
   stackPush(stack,stackPeek(stack,depth));
 }
 
 
 // Jumps the PC to the requestion position if the next value on the data stack is 0
-void opCond() {
+void execCond() {
   uint16_t destination = popNibble4();
   uint8_t value = stackPop(stack);
   if (value == 0) {
@@ -367,7 +367,7 @@ void opCond() {
 
 
 // Pops and NORs the top two nb on the data stack, pushes the result
-void opNOR() {
+void execNOR() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
   uint8_t output = ~(a | b);
@@ -378,7 +378,7 @@ void opNOR() {
 
 
 // Moves the pen on the display. If the top element is not zero, draws in COLOR on the memory display
-void opMove() {
+void execMove() {
   
   uint16_t x1 = PEN_X;
   uint16_t y1 = PEN_Y;
