@@ -103,11 +103,11 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [4/16]
+** v003 Basic demos and assembly analysis [6/19]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
-- [ ] F AS : EQUAL3 expansion
-- [ ] F AS : SUB33 expansion
+- [X] F AS : EQUAL3 expansion
+- [X] F AS : SUB33 expansion
 - [X] R VM : Rename all opPush etc. functions to execPush etc. 
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array
 - [X] S AS : use parse-integer instead of read-from-string
@@ -124,10 +124,10 @@ EXPANSIONS
 - [ ] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
 - [ ] F PR : Sierpinski carpet program
 
-*** test-math.hxa [1/3]
+*** test-math.hxa [3/3]
 - [X] ADDC4_1
-- [ ] EQUAL3
-- [ ] SUB33
+- [X] EQUAL3
+- [X] SUB33
   
 * Documentation
 ** Links:
@@ -289,6 +289,27 @@ _RESULT                         (-1) (0)
 *** MATH : COMPARISON
 
 _EQUAL3                         (A B C D E F) ()
+
+PEEK 3 SUB POP                  (A B C D E F-C) ()
+TRUE NOT                        (A B C D E !F-C) ()
+LIT PUSH >0 COND                (A B C D E) ()
+PEEK 3 SUB POP                  (A B C D E-B) ()
+TRUE NOT                        (A B C D !E-B) ()
+LIT PUSH >1 COND                (A B C D) ()
+PEEK 3 SUB POP                  (A B C D-A) ()
+TRUE NOT                        (A B C !D-A) ()
+LIT PUSH >2 COND                (A B C) ()
+DROP DROP DROP                  () ()
+LIT PUSH 15 GOTO >3             (15) ()
+%0
+DROP                            (A B C D) ()
+%1
+DROP                            (A B C) ()
+%2
+DROP DROP DROP                  () ()
+LIT PUSH 0                      (0) ()
+%3
+
 
 *** MATH : ADDITION
 

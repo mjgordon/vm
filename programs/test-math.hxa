@@ -1,10 +1,11 @@
 # ==============================================
 # Tests for math expansion mnenomics
 
+CALL >EQUAL3_TEST
 #CALL >ADDC4_1_TEST
 #CALL >SUB21_TEST
 #CALL >SUB22_TEST
-CALL >SUB33_TEST
+#CALL >SUB33_TEST
 #CALL >MULT_TEST
 #CALL >MULT22_TEST
 #CALL >DIV_TEST
@@ -18,6 +19,21 @@ GOTO >END
 
 
 # ==============================================
+# EQUAL3 : Compares two 3-digit numbers for equality. Returns F if true
+# Output should be 15, 15, 15, 0, 0, 15
+
+@EQUAL3_TEST
+LIT PUSH 0 PUSH 0 PUSH 0 PUSH 0 PUSH 0 PUSH 0 EQUAL3 OUT
+LIT PUSH 1 PUSH 1 PUSH 1 PUSH 1 PUSH 1 PUSH 1 EQUAL3 OUT
+LIT PUSH 15 PUSH 15 PUSH 15 PUSH 15 PUSH 15 PUSH 15 EQUAL3 OUT
+LIT PUSH 0 PUSH 0 PUSH 0 PUSH 15 PUSH 15 PUSH 15 EQUAL3 OUT
+LIT PUSH 2 PUSH 14 PUSH 7 PUSH 2 PUSH 8 PUSH 15 EQUAL3 OUT
+LIT PUSH 2 PUSH 1 PUSH 9 PUSH 2 PUSH 1 PUSH 9 EQUAL3 OUT
+
+RET
+
+
+# ==============================================
 # ADDC4_1 : Adds constant 1 to a 4 digit number on the stack
 # Output should be 1, 2, 4097, 0
 
@@ -28,6 +44,7 @@ LIT PUSH 1 PUSH 0 PUSH 0 PUSH 0 ADDC4_1 OUT16
 LIT PUSH 15 PUSH 15 PUSH 15 PUSH 15 ADDC4_1 OUT16
 
 RET
+
 
 # ==============================================
 # SUB21: Subtract a one digit number from a two digit number
