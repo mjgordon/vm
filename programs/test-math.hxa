@@ -1,9 +1,10 @@
 # ==============================================
 # Tests for math expansion mnenomics
 
-CALL >ADDC4_1_TEST
+#CALL >ADDC4_1_TEST
 #CALL >SUB21_TEST
 #CALL >SUB22_TEST
+CALL >SUB33_TEST
 #CALL >MULT_TEST
 #CALL >MULT22_TEST
 #CALL >DIV_TEST
@@ -62,6 +63,19 @@ LIT PUSH 0 PUSH 0 PUSH 0 PUSH 1 SUB22 OUT8 SUB PUSH OUT
 
 RET
 
+
+# ==============================================
+# SUB33 : Subtract a 3-digit number from a 3-digit number
+# Output should be 15, 14, 0, 4095, 434
+
+@SUB33_TEST
+LIT PUSH 0 PUSH 0 PUSH 15 PUSH 0 PUSH 0 PUSH 0 SUB33 OUT12
+LIT PUSH 0 PUSH 0 PUSH 15 PUSH 0 PUSH 0 PUSH 1 SUB33 OUT12
+LIT PUSH 0 PUSH 0 PUSH 15 PUSH 0 PUSH 0 PUSH 15 SUB33 OUT12
+LIT PUSH 0 PUSH 0 PUSH 14 PUSH 0 PUSH 0 PUSH 15 SUB33 OUT12
+LIT PUSH 1 PUSH 10 PUSH 4 PUSH 15 PUSH 15 PUSH 2 SUB33 OUT12
+
+RET
 
 # ==============================================
 # MULT : Multiplies two one-digit numbers

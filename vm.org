@@ -103,13 +103,15 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 [4/16]
+** v003 Basic demos and assembly analysis [4/16]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
+- [ ] F AS : EQUAL3 expansion
+- [ ] F AS : SUB33 expansion
 - [X] R VM : Rename all opPush etc. functions to execPush etc. 
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array
 - [X] S AS : use parse-integer instead of read-from-string
-- [ ] R AS : get-dictionary-expander is fugly. Separate dictionary definition from expander function
+- [ ] R AS : Seperate dictionary definition literals from hashtable builder and return functions
 - [ ] F VM : Export heatmap file of bytecode program (as a compile option)
 - [ ] F VM : Dumb update cycle, call update pixels every e.g. 1000 operations. This should fix ->
 - [ ] B VM : ^C Doesn't exit when stuck in infinite loop
@@ -118,11 +120,14 @@ EXPANSIONS
 - [ ] B AS : Properly handle trailing whitespace at end of lines
 - [ ] R AS : more clearly differentiate symbols for local and globabl references and labels @ > % etc
 - [ ] F AS : Report when trying to reference a non-existent label
+- [ ] F PR : Automatic unit-testing script
 - [ ] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
 - [ ] F PR : Sierpinski carpet program
 
-*** test-math.hxa [1/1]
+*** test-math.hxa [1/3]
 - [X] ADDC4_1
+- [ ] EQUAL3
+- [ ] SUB33
   
 * Documentation
 ** Links:
@@ -132,7 +137,7 @@ https://github.com/qeedquan/turtle/blob/master/src/util.c
 ** Editor
 *** .hxa
 elisp snippet for generating the hxa-mode emacs rule for expansions:
-(regexp-opt '("DROP" "DUP" "SWAP" "AND" "OR" "NOT" "TRUE" "ZERO2" "ADD21" "ADD22" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "MOD" "MOD21" "MOD22" "OUT" "OUT8" "OUT12" "OUT16"))
+(regexp-opt '("DROP" "DUP" "SWAP" "AND" "OR" "NOT" "TRUE" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "MOD" "MOD21" "MOD22" "OUT" "OUT8" "OUT12" "OUT16"))
 
 ** General
 Screen Storage:
@@ -197,6 +202,10 @@ NOT            : (-1) ()   : Performs a bitwise NOT on the top two nb
 TRUE           : (0)  (0)  : Converts the top of the stack to F (logical T) if not 0 (logical F)
 ZERO2          : (-1) ()   : Returns a one-digit zero if the two-digit number is zero
 
+*** MATH : COMPARISON
+
+EQUAL3         : (-5) (0)  : Compares the top two 3-digit numbers. Returns F if equal, 0 otherwise
+
 *** MATH : ADDITION
 ADD21          : (-1) ()   : Adds a one-digit number to a two-digit number
 ADD22          : (-2) ()   : Adds a two-digit number to a two-digit number
@@ -206,6 +215,7 @@ ADDC4_1        : (0)  (0)  : Adds the constant 1 to a 4 digit number on the stac
 *** MATH : SUBTRACTION
 SUB21          : (-1) (0)  : Subtracts a one-digit number from a two-digit number
 SUB22          : (-2) (0)  : Subtracts a two-digit number from a two-digit number
+SUB33          : (-3) (0)  : Subtracts a 3-digit number froma 3-digit number
 
 *** MATH : MULTIPLICATION
 MULT           : (0)  (0)  : Multiplies two one-digit numbers
@@ -276,7 +286,11 @@ ADD POP                         (A+B) ()
 ADD PUSH POP                    (A+B+F) ()
 _RESULT                         (-1) (0)
 
-*** ADDITION
+*** MATH : COMPARISON
+
+_EQUAL3                         (A B C D E F) ()
+
+*** MATH : ADDITION
 
 _ADD21                          (A B C) ()
 ADD POP RSTK POP ADD PUSH       (A F) (B+C)
@@ -305,10 +319,6 @@ ADD POP RSTK POP ADD PUSH       (A F3) (D+1 C+F B+F2)
 ADD POP RSTK PUSH PUSH PUSH     (A+F3 B+F2 C+F D+1) ()
 _RESULT                         (0) (0)
 
-
-
-# Adds
-
 *** SUBTRACTION
 
 _SUB21                          (A B C) ()
@@ -327,6 +337,19 @@ LIT PUSH 0                      (A-C B-D 0) (F)
 SUB PUSH RSTK PUSH ADD POP      (A-C B-D 0 F1+F2) ()
 SUB POP DROP                    (A-C B-D) ()
 _RESULT                         (-2) (0)
+
+_SUB33                          (A B C D E G) ()
+PEEK 2 RSTK POP POP POP DROP    (A B C) (D G E)
+RSTK PUSH PUSH                  (A B C E G) (D)
+SUB22                           (A B-E C-G) (D)
+RSTK PUSH PEEK 2 PEEK 2         (A B-E C-G D B-E C-G) ()
+RSTK POP POP POP DROP DROP      (A) (C-G B-E D)
+SUB PUSH POP                    (A-F) (C-G B-E D)
+RSTK PUSH                       (A-F D) (C-G B-E)
+SUB POP RSTK PUSH PUSH          (A-F-D B-E C-G) ()
+_RESULT                         (-3) (0)
+
+
 
 *** MULTIPLICATION
 # A and B are the factors. P and R are the digits of the product
