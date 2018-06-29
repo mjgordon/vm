@@ -103,11 +103,14 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [6/19]
+** v003 Basic demos and assembly analysis [8/22]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
 - [X] F AS : SUB33 expansion
+- [X] F AS : CONST(3/4)_(0/1) expansions
+- [ ] F AS : DIV31 expansion
+- [X] F AS : SUB31 expansion
 - [X] R VM : Rename all opPush etc. functions to execPush etc. 
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array
 - [X] S AS : use parse-integer instead of read-from-string
@@ -124,10 +127,12 @@ EXPANSIONS
 - [ ] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
 - [ ] F PR : Sierpinski carpet program
 
-*** test-math.hxa [3/3]
+*** test-math.hxa [4/5]
 - [X] ADDC4_1
 - [X] EQUAL3
 - [X] SUB33
+- [ ] DIV31
+- [X] SUB31
   
 * Documentation
 ** Links:
@@ -137,7 +142,7 @@ https://github.com/qeedquan/turtle/blob/master/src/util.c
 ** Editor
 *** .hxa
 elisp snippet for generating the hxa-mode emacs rule for expansions:
-(regexp-opt '("DROP" "DUP" "SWAP" "AND" "OR" "NOT" "TRUE" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "MOD" "MOD21" "MOD22" "OUT" "OUT8" "OUT12" "OUT16"))
+(regexp-opt '("DROP" "DUP" "SWAP" "CONST3_0" "CONST4_0" "CONST3_1" "CONST4_1" "AND" "OR" "NOT" "TRUE" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB31" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "DIV31" "MOD" "MOD21" "MOD22" "OUT" "OUT8" "OUT12" "OUT16"))
 
 ** General
 Screen Storage:
@@ -194,31 +199,31 @@ F : 1 : DRAW   : Draws a line of COLOR between the last position and X/Y if the 
 DROP           : (-1) (0)  : Removes the top item of the stack
 DUP            : (+1) (0)  : Copies the top item of the stack
 SWAP           : (0)  (0)  : Swaps the top two items on the stack
-CONST3_0       : (+3)  (0)  : Pushes a 12-bit 0 to the stack
-CONST4_0       : (+4)  (0)  : Pushes a 16-bit 0 to the stack
+CONST3_0       : (+3) (0)  : Pushes a 12-bit 0 to the stack
+CONST4_0       : (+4) (0)  : Pushes a 16-bit 0 to the stack
 CONST3_1       : (+3) (0)  : Pushes a 12-bit 1 to the stack
 CONST4_1       : (+4) (0)  : Pushes a 16-bit 1 to the stack
 
 *** LOGIC & COMPARISON
-AND            : (-1) ()   : Performs a bitwise AND on the top two nb
-OR             : (-1) ()   : Performs a bitwise OR on the top two nb
-NOT            : (-1) ()   : Performs a bitwise NOT on the top two nb
+AND            : (-1) (0)  : Performs a bitwise AND on the top two nb
+OR             : (-1) (0)  : Performs a bitwise OR on the top two nb
+NOT            : (-1) (0)  : Performs a bitwise NOT on the top two nb
 TRUE           : (0)  (0)  : Converts the top of the stack to F (logical T) if not 0 (logical F)
-ZERO2          : (-1) ()   : Returns a one-digit zero if the two-digit number is zero
+ZERO2          : (-1) (0)  : Returns a one-digit zero if the two-digit number is zero
 
 *** MATH : COMPARISON
-
-EQUAL3         : (-5) (0)  : Compares the top two 3-digit numbers. Returns F if equal, 0 otherwise
+EQUAL3         : (-5) (0)  : Compares the top two 3-digit numbers. Returns T if equal, F otherwise
 
 *** MATH : ADDITION
-ADD21          : (-1) ()   : Adds a one-digit number to a two-digit number
-ADD22          : (-2) ()   : Adds a two-digit number to a two-digit number
+ADD21          : (-1) (0)  : Adds a one-digit number to a two-digit number
+ADD22          : (-2) (0)  : Adds a two-digit number to a two-digit number
 ADDC3_1        : (0)  (0)  : Adds the constant 1 to a 3 digit number on the stack
 ADDC4_1        : (0)  (0)  : Adds the constant 1 to a 4 digit number on the stack
 
 *** MATH : SUBTRACTION
-SUB21          : (-1) (0)  : Subtracts a one-digit number from a two-digit number
-SUB22          : (-2) (0)  : Subtracts a two-digit number from a two-digit number
+SUB21          : (-1) (0)  : Subtracts a 1-digit number from a 2-digit number
+SUB22          : (-2) (0)  : Subtracts a 2-digit number from a 2-digit number
+SUB31          : (-1) (0)  : Subtracts a 1-digit number from a 3-digit number
 SUB33          : (-3) (0)  : Subtracts a 3-digit number froma 3-digit number
 
 *** MATH : MULTIPLICATION
@@ -228,9 +233,10 @@ MULT22         : (0)  (0)  : Multiplies a two-digit number by a two-digit number
 
 
 *** MATH : DIVISION
-DIV            : (-1) (0)  : Divides a one-digit number by a one digit number. Sets FLAG if /0
-DIV21          : (-1) (0)  : Divides a two-digit number by a one-digit number. Sets FLAG if /0
-DIV22          : (-2) (0)  : Divides a two-digit number by a two-digit number. Sets FLAG if /0
+DIV            : (-1) (0)  : Divides a 1-digit number by a 1-digit number. Sets FLAG if /0
+DIV21          : (-1) (0)  : Divides a 2-digit number by a 1-digit number. Sets FLAG if /0
+DIV22          : (-2) (0)  : Divides a 2-digit number by a 2-digit number. Sets FLAG if /0
+DIV31          : (-1) (0)  : Divides a 3-digit number by a 1-digit number. Sets FLAG if /0
 
 *** MATH : MODULO
 MOD            : (-1) (0)  : Takes the modulo of a one-digit number and a one-digit number
@@ -362,12 +368,14 @@ _RESULT                         (0) (0)
 
 *** SUBTRACTION
 
+# C is subtracted from AB
 _SUB21                          (A B C) ()
 SUB POP                         (A B-C) ()
 RSTK POP SUB PUSH               (A F) (B-C)
 SUB POP RSTK PUSH               (A-F B-C) ()
 _RESULT                         (-1) (0)
 
+# CD is subtracted from AB
 _SUB22                          (A B C D) ()
 SWAP RSTK POP                   (A B D) (C)
 SUB21                           (A-F B-D) (C)
@@ -378,6 +386,18 @@ LIT PUSH 0                      (A-C B-D 0) (F)
 SUB PUSH RSTK PUSH ADD POP      (A-C B-D 0 F1+F2) ()
 SUB POP DROP                    (A-C B-D) ()
 _RESULT                         (-2) (0)
+
+# D is subtracted from ABC
+_SUB31                          (A B C D) ()
+SUB POP                         (A B C-D) ()
+RSTK POP SUB PUSH               (A B F) (C-D)
+SUB POP                         (A B-F) (C-D)
+RSTK POP SUB PUSH               (A F2) (C-D B-F)
+SUB POP                         (A-F2) (C-D B-F)
+RSTK PUSH PUSH                  (A-F2 B-F C-D)
+_RESULT                         (-1) (0)
+
+_RESULT
 
 _SUB33                          (A B C D E G) ()
 PEEK 2 RSTK POP POP POP DROP    (A B C) (D G E)
@@ -538,6 +558,22 @@ LIT PUSH 1 PUSH 0               (Q R 1 0) ()
 %3
 SUB POP DROP                    (Q R) ()
 _RESULT                         (-2) ()
+
+# ABC is dividend, D is divisor, QRS is quotient, F is underflow flag
+_DIV33                          (A B C D) ()
+DUP LIT PUSH >1 COND            (A B C D) ()
+DUP RSTK POP POP POP POP POP    () (D D C B A)
+CONST3_0                        (0 0 0) (D D C B A)
+RSTK PUSH PUSH PUSH PUSH        (0 0 0 A B C D) (D)
+%0
+
+%1                              (A B C D) ()
+DROP DROP DROP DROP             () ()
+CONST4_1                        (0 0 0 1) ()
+GOTO >3
+
+
+_RESULT                         (-1) ()
 
 
 *** MODULO
