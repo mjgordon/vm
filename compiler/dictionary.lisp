@@ -34,6 +34,14 @@
 	       (PEEK 0))
 	      (SWAP
 	       (PEEK 1 RSTK POP POP DROP RSTK PUSH PUSH))
+	      (CONST3_0
+	       (LIT PUSH 0 PUSH 0 PUSH 0))
+	      (CONST4_0
+	       (LIT PUSH 0 PUSH 0 PUSH 0 PUSH 0))
+	      (CONST3_1
+	       (LIT PUSH 0 PUSH 0 PUSH 1))
+	      (CONST4_1
+	       (LIT PUSH 0 PUSH 0 PUSH 0 PUSH 1))
 	      ;; LOGIC
 	      (TRUE
 	       (LIT PUSH >0 COND

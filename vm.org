@@ -194,6 +194,10 @@ F : 1 : DRAW   : Draws a line of COLOR between the last position and X/Y if the 
 DROP           : (-1) (0)  : Removes the top item of the stack
 DUP            : (+1) (0)  : Copies the top item of the stack
 SWAP           : (0)  (0)  : Swaps the top two items on the stack
+CONST3_0       : (+3)  (0)  : Pushes a 12-bit 0 to the stack
+CONST4_0       : (+4)  (0)  : Pushes a 16-bit 0 to the stack
+CONST3_1       : (+3) (0)  : Pushes a 12-bit 1 to the stack
+CONST4_1       : (+4) (0)  : Pushes a 16-bit 1 to the stack
 
 *** LOGIC & COMPARISON
 AND            : (-1) ()   : Performs a bitwise AND on the top two nb
@@ -269,6 +273,22 @@ RSTK POP POP                    (A) (A B)
 DROP                            () (A B)
 RSTK PUSH PUSH                  (B A) ()
 _RESULT                         (0) (0)
+
+_CONST3_0                       () ()
+LIT PUSH 0 PUSH 0 PUSH 0        (0 0 0) ()
+_RESULT                         (+3) ()
+
+_CONST4_0                       () ()
+LIT PUSH 0 PUSH 0 PUSH 0 PUSH 0 (0 0 0 0) ()
+_RESULT                         (+4) ()
+
+_CONST3_1                       () ()
+LIT PUSH 0 PUSH 0 PUSH 1        (0 0 1) ()
+_RESULT                         (+3) ()
+
+_CONST4_1                       () ()
+LIT PUSH 0 PUSH 0 PUSH 0 PUSH1  (0 0 0 1) ()
+_RESULT                         (+4) ()
 
 *** LOGIC AND COMPARISON
 

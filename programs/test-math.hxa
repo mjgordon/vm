@@ -1,7 +1,12 @@
 # ==============================================
 # Tests for math expansion mnenomics
 
-CALL >EQUAL3_TEST
+CONST3_0 OUT12
+CONST3_1 OUT12
+CONST4_0 OUT16
+CONST4_1 OUT16
+
+#CALL >EQUAL3_TEST
 #CALL >ADDC4_1_TEST
 #CALL >SUB21_TEST
 #CALL >SUB22_TEST
