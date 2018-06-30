@@ -70,10 +70,14 @@
 	       local-labels 4)
 	      ;; MATH : ADDITION
 	      (ADD21
-	       (ADD POP RSTK POP ADD PUSH ADD
+	       (ADD POP RSTK POP ADD PUSH
 		ADD POP RSTK PUSH))
 	      (ADD22
 	       (SWAP RSTK POP ADD21 RSTK PUSH SWAP RSTK POP ADD POP RSTK PUSH))
+	      (ADD31
+	       (ADD POP RSTK POP ADD PUSH
+		ADD POP RSTK POP ADD PUSH
+		ADD POP RSTK PUSH PUSH))
 	      (ADDC3_1
 	       (LIT PUSH 1
 		ADD POP RSTK POP ADD PUSH
@@ -203,7 +207,15 @@
 		%1 RSTK POP POP
 		%2 RSTK PUSH PUSH ADD22)
 	       local-labels 3)
-	      
+	      (MOD31
+	       (DUP LIT PUSH >1 COND
+		DUP RSTK POP
+		%0
+		SUB31 SUB PUSH TRUE NOT LIT PUSH >2 COND
+		RSTK PUSH DUP RSTK POP GOTO >0
+		%1 RSTK POP
+		%2 RSTK PUSH ADD31)
+	       local-labels 3)
 	      ;; PROGRAM FLOW
 	      (GOTO
 	       (LIT PUSH)

@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [9/22]
+** v003 Basic demos and assembly analysis [11/25]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -111,7 +111,9 @@ EXPANSIONS
 - [X] F AS : CONST(3/4)_(0/1) expansions
 - [X] F AS : DIV31 expansion
 - [X] F AS : SUB31 expansion
-- [ ] F AS : MOD31 expansion
+- [X] F AS : MOD31 expansion
+- [X] F AS : ADD31 expansion
+- [ ] R AS : ADDC3_1 should use ADD31 
 - [X] R VM : Rename all opPush etc. functions to execPush etc. 
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array
 - [X] S AS : use parse-integer instead of read-from-string
@@ -128,13 +130,14 @@ EXPANSIONS
 - [ ] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
 - [ ] F PR : Sierpinski carpet program
 
-*** test-math.hxa [5/5]
+*** test-math.hxa [6/6]
 - [X] ADDC4_1
 - [X] EQUAL3
 - [X] SUB33
 - [X] DIV31
 - [X] SUB31
-- [ ] MOD31
+- [X] MOD31
+
   
 * Documentation
 ** Links:
@@ -144,7 +147,7 @@ https://github.com/qeedquan/turtle/blob/master/src/util.c
 ** Editor
 *** .hxa
 elisp snippet for generating the hxa-mode emacs rule for expansions:
-(regexp-opt '("DROP" "DUP" "SWAP" "CONST3_0" "CONST4_0" "CONST3_1" "CONST4_1" "AND" "OR" "NOT" "TRUE" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB31" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "DIV31" "MOD" "MOD21" "MOD22" "OUT" "OUT8" "OUT12" "OUT16"))
+(regexp-opt '("DROP" "DUP" "SWAP" "CONST3_0" "CONST4_0" "CONST3_1" "CONST4_1" "AND" "OR" "NOT" "TRUE" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADD31" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB31" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "DIV31" "MOD" "MOD21" "MOD22" "MOD31" "OUT" "OUT8" "OUT12" "OUT16"))
 
 ** General
 Screen Storage:
@@ -217,8 +220,9 @@ ZERO2          : (-1) (0)  : Returns a one-digit zero if the two-digit number is
 EQUAL3         : (-5) (0)  : Compares the top two 3-digit numbers. Returns T if equal, F otherwise
 
 *** MATH : ADDITION
-ADD21          : (-1) (0)  : Adds a one-digit number to a two-digit number
-ADD22          : (-2) (0)  : Adds a two-digit number to a two-digit number
+ADD21          : (-1) (0)  : Adds a 1-digit number to a 2-digit number
+ADD22          : (-2) (0)  : Adds a 2-digit number to a 2-digit number
+ADD31          : (-1) (0)  : Adds a 1-digit number to a 3-digit number
 ADDC3_1        : (0)  (0)  : Adds the constant 1 to a 3 digit number on the stack
 ADDC4_1        : (0)  (0)  : Adds the constant 1 to a 4 digit number on the stack
 
@@ -233,7 +237,6 @@ MULT           : (0)  (0)  : Multiplies two one-digit numbers
 MULT21         : (0)  (0)  : Multiplies a two-digit number by a one-digit numer
 MULT22         : (0)  (0)  : Multiplies a two-digit number by a two-digit number
 
-
 *** MATH : DIVISION
 DIV            : (-1) (0)  : Divides a 1-digit number by a 1-digit number. Sets FLAG if /0
 DIV21          : (-1) (0)  : Divides a 2-digit number by a 1-digit number. Sets FLAG if /0
@@ -241,9 +244,10 @@ DIV22          : (-2) (0)  : Divides a 2-digit number by a 2-digit number. Sets 
 DIV31          : (-1) (0)  : Divides a 3-digit number by a 1-digit number. Sets FLAG if /0
 
 *** MATH : MODULO
-MOD            : (-1) (0)  : Takes the modulo of a one-digit number and a one-digit number
-MOD21          : (-1) (0)  : Takes the modulo of a two-digit number and a one-digit number
-MOD22          : (-2) (0)  : Takes the modulo of a two-digit number and a two-digit number
+MOD            : (-1) (0)  : Takes the modulo of a 1-digit number and a 1-digit number
+MOD21          : (-1) (0)  : Takes the modulo of a 2-digit number and a 1-digit number
+MOD22          : (-2) (0)  : Takes the modulo of a 2-digit number and a 2-digit number
+MOD31          : (-1) (0)  : Takes the modulo of a 3-digit number and a 2-digit number
 
 *** PROGRAM FLOW
 GOTO >ADDR     : (0)  (0)  : Moves PC directly to >ADDR
@@ -352,6 +356,12 @@ ADD21                           (A+F B+D) (C)
 RSTK PUSH SWAP RSTK POP         (A+F C) (B+D)
 ADD POP RSTK PUSH               (A+F+C B+D) ()
 _RESULT                         (-2) (0)
+
+_ADD31                          (A B C D) ()
+ADD POP RSTK POP ADD PUSH       (A B F) (C+D)
+ADD POP RSTK POP ADD PUSH       (A F1) (C+D B+F)
+ADD POP RSTK PUSH PUSH          (A+F1 B+F C+D) ()
+_RESULT                         (-1) (0)
 
 _ADDC3_1                        (A B C) ()
 LIT PUSH 1                      (A B C 1) ()
@@ -641,6 +651,23 @@ RSTK POP POP                    (A B) (D C)
 %2
 RSTK PUSH PUSH ADD22            (A+C B+D) ()
 _RESULT                         (-2) ()
+
+# Returns the modulo of a ABC by D
+_MOD31                          (A B C D) ()
+DUP LIT PUSH >1 COND            (A B C D) ()
+DUP RSTK POP                    (A B C D) (D)
+%0
+SUB31                           (A-F2 B-F C-D) (D)
+SUB PUSH TRUE NOT               (A-F2 B-F C-D !F) (D)
+LIT PUSH >2 COND                (A-F2 B-F C-D) (D)
+RSTK PUSH DUP RSTK POP          (A-F2 B-F C-D D) (D)
+GOTO >0
+%1
+RSTK POP                        (A B C) (D)
+%2 
+RSTK PUSH ADD31                 (A+D B+D C+D) ()
+_RESULT                         (-1) ()
+
 
 *** PROGRAM FLOW
 
