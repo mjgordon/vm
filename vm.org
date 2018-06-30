@@ -103,14 +103,15 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [8/22]
+** v003 Basic demos and assembly analysis [9/22]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
 - [X] F AS : SUB33 expansion
 - [X] F AS : CONST(3/4)_(0/1) expansions
-- [ ] F AS : DIV31 expansion
+- [X] F AS : DIV31 expansion
 - [X] F AS : SUB31 expansion
+- [ ] F AS : MOD31 expansion
 - [X] R VM : Rename all opPush etc. functions to execPush etc. 
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array
 - [X] S AS : use parse-integer instead of read-from-string
@@ -127,12 +128,13 @@ EXPANSIONS
 - [ ] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
 - [ ] F PR : Sierpinski carpet program
 
-*** test-math.hxa [4/5]
+*** test-math.hxa [5/5]
 - [X] ADDC4_1
 - [X] EQUAL3
 - [X] SUB33
-- [ ] DIV31
+- [X] DIV31
 - [X] SUB31
+- [ ] MOD31
   
 * Documentation
 ** Links:
@@ -560,18 +562,31 @@ SUB POP DROP                    (Q R) ()
 _RESULT                         (-2) ()
 
 # ABC is dividend, D is divisor, QRS is quotient, F is underflow flag
-_DIV33                          (A B C D) ()
+_DIV31                          (A B C D) ()
 DUP LIT PUSH >1 COND            (A B C D) ()
 DUP RSTK POP POP POP POP POP    () (D D C B A)
 CONST3_0                        (0 0 0) (D D C B A)
 RSTK PUSH PUSH PUSH PUSH        (0 0 0 A B C D) (D)
 %0
-
+SUB31                           (Q U R A-F2 B-F C-D) (D)
+RSTK POP POP POP SUB PUSH       (Q U R F) (D C-D B-F A-F2)
+TRUE NOT                        (Q U R !F) (D C-D B-F A-F2)
+LIT PUSH >2 COND                (Q U R) (D C-D B-F A-F2)
+ADDC3_1                         (Q U R) (D C-D B-F A-F2)
+RSTK PUSH PUSH PUSH PUSH        (Q U R A-F2 B-F C-D D) ()
+DUP RSTK POP                    (Q U R A-F2 B-F C-D D) (D)
+GOTO >0
 %1                              (A B C D) ()
 DROP DROP DROP DROP             () ()
-CONST4_1                        (0 0 0 1) ()
+LIT PUSH 0 CONST4_1             (0 0 0 0 1) ()
 GOTO >3
-
+%2
+RSTK PUSH PUSH PUSH PUSH        (Q U R A-F2 B-F C-D D) ()
+DROP DROP DROP DROP             (Q U R) ()
+LIT PUSH 1 PUSH 0               (Q U R 1 0) ()
+%3
+SUB POP DROP                    (Q U R) ()
+_RESULT                         (-1) ()
 
 _RESULT                         (-1) ()
 
