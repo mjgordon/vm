@@ -119,8 +119,11 @@ void run() {
     uint8_t op = getNextOpcode();
     execute(op);
     cycles += 1;
-  }
 
+    if (cycles % 1000 == 0) {
+   
+    }
+  }
   setPixels();
   updateSDL();
 }

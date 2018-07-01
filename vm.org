@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [11/25]
+** v003 Basic demos and assembly analysis [12/25]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -113,13 +113,13 @@ EXPANSIONS
 - [X] F AS : SUB31 expansion
 - [X] F AS : MOD31 expansion
 - [X] F AS : ADD31 expansion
-- [ ] R AS : ADDC3_1 should use ADD31 
+- [X] R AS : Factor out all the add 1-digit functions
 - [X] R VM : Rename all opPush etc. functions to execPush etc. 
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array
 - [X] S AS : use parse-integer instead of read-from-string
 - [ ] R AS : Seperate dictionary definition literals from hashtable builder and return functions
 - [ ] F VM : Export heatmap file of bytecode program (as a compile option)
-- [ ] F VM : Dumb update cycle, call update pixels every e.g. 1000 operations. This should fix ->
+- [ ] F VM : Dumb update cycle, call update pixels every $arg operations.
 - [ ] B VM : ^C Doesn't exit when stuck in infinite loop
 - [ ] C PR : Write decent README.md
 - [ ] F AS : Export mapping file of hxb bytes to hxa original. May get wacky when linking eventually 
@@ -220,6 +220,7 @@ ZERO2          : (-1) (0)  : Returns a one-digit zero if the two-digit number is
 EQUAL3         : (-5) (0)  : Compares the top two 3-digit numbers. Returns T if equal, F otherwise
 
 *** MATH : ADDITION
+ADDU11         : (-1) (+1) : Utility functions, adds two numbers, puts on rstk, puts carry on data stack
 ADD21          : (-1) (0)  : Adds a 1-digit number to a 2-digit number
 ADD22          : (-2) (0)  : Adds a 2-digit number to a 2-digit number
 ADD31          : (-1) (0)  : Adds a 1-digit number to a 3-digit number
@@ -344,6 +345,10 @@ LIT PUSH 0                      (0) ()
 
 
 *** MATH : ADDITION
+
+_ADDU_11                        (A B) ()
+ADD POP RSTK POP ADD PUSH       (F) (A+B)
+_RESULT                         (-1) (+1)
 
 _ADD21                          (A B C) ()
 ADD POP RSTK POP ADD PUSH       (A F) (B+C)

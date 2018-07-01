@@ -1,6 +1,7 @@
 # ==============================================
 # Tests for math expansion mnenomics
 
+@START
 #CALL >EQUAL3_TEST
 #CALL >ADDC4_1_TEST
 #CALL >SUB21_TEST
