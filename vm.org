@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [15/28]
+** v003 Basic demos and assembly analysis [16/29]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -113,24 +113,25 @@ EXPANSIONS
 - [X] F AS : SUB31 expansion
 - [X] F AS : MOD31 expansion
 - [X] F AS : ADD31 expansion
+- [ ] F AS : Report when trying to reference a non-existent label
+- [ ] F AS : Export mapping file of hxb bytes to hxa original. May get wacky when linking eventually 
 - [X] R AS : Factor out all the add 1-digit functions
+- [X] R AS : Separate dictionary definition literals from hashtable builder and return functions
+- [ ] R AS : More clearly differentiate symbols for local and global references and labels @ > % etc
+- [X] R AS : Rename dictionary.lisp to assembler-dictionary.lisp
+- [X] S AS : use parse-integer instead of read-from-string
 - [X] R VM : Rename all opPush etc. functions to execPush etc. 
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array
-- [X] S AS : use parse-integer instead of read-from-string
-- [X] R AS : Separate dictionary definition literals from hashtable builder and return functions
 - [X] F VM : Export heatmap file of bytecode program 
-- [ ] F AS : Export mapping file of hxb bytes to hxa original. May get wacky when linking eventually 
-- [X] F PR : Graphing of opcode usage (program vs runtime)
-- [ ] C PR : Opcode graphing should separate constant numbers in assembly
-- [ ] F PR : HTML Heatmap of original program 
 - [ ] F VM : Dumb update cycle, call update pixels every $arg operations.
-- [ ] B VM : ^C Doesn't exit when stuck in infinite loop
-- [ ] B AS : Properly handle trailing whitespace at end of lines
-- [ ] R AS : More clearly differentiate symbols for local and global references and labels @ > % etc
-- [ ] F AS : Report when trying to reference a non-existent label
+- [X] F PR : Graphing of opcode usage (program vs runtime)
+- [ ] F PR : HTML Heatmap of original program 
 - [ ] F PR : Automatic unit-testing script
 - [ ] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
 - [ ] F PR : Sierpinski carpet program
+- [ ] C PR : Opcode graphing should separate constant numbers in assembly
+- [ ] B VM : ^C Doesn't exit when stuck in infinite loop
+- [ ] B AS : Properly handle trailing whitespace at end of lines
 - [ ] C PR : Write decent README.md
 
 *** test-math.hxa [6/6]

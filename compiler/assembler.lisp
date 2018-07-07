@@ -1,7 +1,7 @@
 ;;;;; assembler.lisp
 
 (load "~/lisp/quicklisp/setup.lisp")
-(load "dictionary")
+(load "assembler-dictionary")
 (load "util-assembler")
 
 (ql:quickload "split-sequence" :silent t)
