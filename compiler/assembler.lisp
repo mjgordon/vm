@@ -24,6 +24,8 @@
 ;; Hash table of the gensym in each call expansion to its final operation numbe + offset in the file
 (defparameter *return-table* (make-hash-table :test 'eq))
 
+;; Tracks errors in assembly
+(defparameter *error-flag* 0)
 
 ;;; Main assembly pipeline functions
 
@@ -103,6 +105,7 @@ while creating lists of labels and references."
 							   (progn (incf count 7)
 								  nil)
 							   (progn (format t "Bad Reference : ~a~%" token)
+								  (setf *error-flag* 1)
 								  t)))
 			     (t (progn (incf count)
 				       nil))))
@@ -128,7 +131,10 @@ while creating lists of labels and references."
 		    (let ((byte (gethash token bytecodes)))
 		      (if byte
 			  (setf token byte)
-			  (format t "Bad token: ~a ~%" token))))
+			  (progn
+			    (format t "Bad token: ~a ~%" token)
+			    (setf token 0)
+			    (setf *error-flag* 1)))))
 		(incf (aref bytecode-counts token))
 		(write-byte token stream))
 	      tokens))
@@ -145,7 +151,7 @@ while creating lists of labels and references."
   "Composites main assembly pipeline functions. Reports any feedback"
   (let ((output-filename (concatenate 'string (subseq filename 0 (search ".hxa" filename)) ".hxb")))
     (time (write-bytecode (resolve-labels (strip-redundant-modes (expand-tokens (generate-tables (get-file filename))))) output-filename)))
-  nil)
+  *error-flag*)
 
 
 ;;; Only called when run from bash

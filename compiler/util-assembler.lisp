@@ -74,6 +74,7 @@
 
 (defun clear-tables ()
   "Sets all symbol lists to their empty state"
+  (setf *error-flag* 0)
   (setf *label-set* ())
   (setf *label-table* (make-hash-table :test 'eq))
   (setf *ref-set* ())
