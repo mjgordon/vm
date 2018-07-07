@@ -78,6 +78,12 @@
 	      (MOVE #xF)))
     bytecodes))
 
+(defun get-opcodes()
+  "Returns a set of the legitimate opcodes. Used for checking for bad tokens and label references"
+  '(COLOR X Y PC MEM IO RSTK LIT ADD SUB
+    PUSH POP PEEK COND NOR MOVE
+    0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15))
+
 (defun get-dictionary ()
   "Returns the raw data of the expansion dictionary. Gets closured into the dictionary expander function"
   '(

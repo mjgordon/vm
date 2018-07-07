@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [16/29]
+** v003 Basic demos and assembly analysis [17/30]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -113,8 +113,9 @@ EXPANSIONS
 - [X] F AS : SUB31 expansion
 - [X] F AS : MOD31 expansion
 - [X] F AS : ADD31 expansion
-- [ ] F AS : Report when trying to reference a non-existent label
+- [X] F AS : Report when trying to reference a non-existent label
 - [ ] F AS : Export mapping file of hxb bytes to hxa original. May get wacky when linking eventually 
+- [ ] F AS : Overall error flag (for bad opcode, bad ref etc) for reporting
 - [X] R AS : Factor out all the add 1-digit functions
 - [X] R AS : Separate dictionary definition literals from hashtable builder and return functions
 - [ ] R AS : More clearly differentiate symbols for local and global references and labels @ > % etc
