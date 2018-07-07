@@ -113,20 +113,29 @@ while creating lists of labels and references."
 
 (defun write-bytecode (tokens &optional (filename "program.hxb"))
   "Converts list of opcode-tokens to list of associated bytes, and writes these to the output hxb binary file"
-  (with-open-file (stream filename
-			  :direction :output
-			  :element-type 'unsigned-byte
-			  :if-exists :supersede)
-    (let ((bytecodes (get-bytecodes)))
+  (let ((bytecodes (get-bytecodes))
+	(bytecode-counts (make-array 16)))
+    (with-open-file (stream filename
+			    :direction :output
+			    :element-type 'unsigned-byte
+			    :if-exists :supersede)
       (format t "Assembled ~a tokens~%" (length tokens))
       (mapcar (lambda (token)
-		(if (symbolp token)
+		(when (symbolp token)
 		    (let ((byte (gethash token bytecodes)))
 		      (if byte
-			  (write-byte byte stream)
-			  (format t "Bad token: ~a ~%" token)))
-		    (write-byte token stream)))
-	      tokens))))
+			  (setf token byte)
+			  (format t "Bad token: ~a ~%" token))))
+		(incf (aref bytecode-counts token))
+		(write-byte token stream))
+	      tokens))
+    (with-open-file (stream "../heatmapUsage"
+			    :direction :output
+			    :element-type '(unsigned-byte 64)
+			    :if-exists :supersede)
+      (loop for n in (map 'list #'identity bytecode-counts) do
+	   ;;(format t "~a~%" n)
+	   (write-byte n stream)))))
 
 
 (defun assemble-hex (filename)

@@ -1,0 +1,107 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg viewbox="0 0 1000 800 " height="800" width="1000" version="1.1"
+    id="toplevel" xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>
+    Opcodes Heatmap
+  </title>
+  <ellipse cx="100.00" cy="700.00" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 90.0, 750)" x="90.00" y="750">
+    COLOR
+  </text>
+  <ellipse cx="153.33" cy="700.00" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 143.33333, 750)" x="143.33" y="750">
+    X
+  </text>
+  <ellipse cx="206.67" cy="700.00" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 196.66667, 750)" x="196.67" y="750">
+    Y
+  </text>
+  <ellipse cx="260.00" cy="668.44" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 250.0, 750)" x="250.00" y="750">
+    PC
+  </text>
+  <ellipse cx="313.33" cy="700.00" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 303.33334, 750)" x="303.33" y="750">
+    MEM
+  </text>
+  <ellipse cx="366.67" cy="699.94" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 356.66666, 750)" x="356.67" y="750">
+    IO
+  </text>
+  <ellipse cx="420.00" cy="573.62" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 410.0, 750)" x="410.00" y="750">
+    RSTK
+  </text>
+  <ellipse cx="473.33" cy="573.78" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 463.33334, 750)" x="463.33" y="750">
+    LIT
+  </text>
+  <ellipse cx="526.67" cy="699.83" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 516.6667, 750)" x="516.67" y="750">
+    ADD
+  </text>
+  <ellipse cx="580.00" cy="573.88" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 570.0, 750)" x="570.00" y="750">
+    SUB
+  </text>
+  <ellipse cx="633.33" cy="100.00" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 623.3333, 750)" x="623.33" y="750">
+    PUSH
+  </text>
+  <ellipse cx="686.67" cy="478.69" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 676.6667, 750)" x="676.67" y="750">
+    POP
+  </text>
+  <ellipse cx="740.00" cy="636.88" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 730.0, 750)" x="730.00" y="750">
+    PEEK
+  </text>
+  <ellipse cx="793.33" cy="636.88" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 783.3333, 750)" x="783.33" y="750">
+    COND
+  </text>
+  <ellipse cx="846.67" cy="668.47" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 836.6667, 750)" x="836.67" y="750">
+    NOR
+  </text>
+  <ellipse cx="900.00" cy="700.00" rx="10" ry="10" fill="black" stroke="none"/>
+  <text transform="rotate(45, 890.0, 750)" x="890.00" y="750">
+    DRAW
+  </text>
+  <text x="60" y="700.00" text-anchor="end" dominant-baseline="middle">
+    0
+  </text>
+  <text x="60" y="641.74" text-anchor="end" dominant-baseline="middle">
+    6000
+  </text>
+  <text x="60" y="583.47" text-anchor="end" dominant-baseline="middle">
+    12000
+  </text>
+  <text x="60" y="525.21" text-anchor="end" dominant-baseline="middle">
+    18000
+  </text>
+  <text x="60" y="466.95" text-anchor="end" dominant-baseline="middle">
+    24000
+  </text>
+  <text x="60" y="408.68" text-anchor="end" dominant-baseline="middle">
+    30000
+  </text>
+  <text x="60" y="350.42" text-anchor="end" dominant-baseline="middle">
+    36000
+  </text>
+  <text x="60" y="292.15" text-anchor="end" dominant-baseline="middle">
+    42000
+  </text>
+  <text x="60" y="233.89" text-anchor="end" dominant-baseline="middle">
+    48000
+  </text>
+  <text x="60" y="175.63" text-anchor="end" dominant-baseline="middle">
+    54000
+  </text>
+  <text x="60" y="117.36" text-anchor="end" dominant-baseline="middle">
+    60000
+  </text>
+</svg>

@@ -108,3 +108,10 @@ outputBuffer newOutputBuffer(uint8_t size) {
   b.size = size;
   return b;
 }
+
+void writeArray(char* name, uint64_t* data, int size) {
+  FILE *array_file;
+  array_file = fopen(name,"wb+");
+  fwrite(data,8,size,array_file);
+  fclose(array_file);
+}

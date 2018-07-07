@@ -17,4 +17,6 @@ void output(uint8_t nb);
 int getInt(uint8_t nb,outputBuffer *buffer,int *value);
 outputBuffer newOutputBuffer(uint8_t size);
 
+void writeArray(char* name, uint64_t* data, int size);
+
 #endif

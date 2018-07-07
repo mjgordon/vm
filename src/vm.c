@@ -37,6 +37,9 @@ uint8_t memory[MEMORY_SIZE];
 uint8_t *program;
 uint16_t programLength;
 
+uint64_t heatmapOpcodes[16];
+uint64_t heatmapProgram[65536];
+
 struct Stack* stack;
 struct Stack* rstack;
 
@@ -110,15 +113,28 @@ void setup() {
   rstack = createStack("rstk",65536);
 
   setupSDL();
+
+  for (int i = 0; i < 16; i++) {
+    heatmapOpcodes[i] = 0;
+  }
+
+  for (int i = 0; i < 65535; i++) {
+    heatmapProgram[i] = 0;
+  }
+  
 }
 
 
 // Loops through the program and executes each opcode. Updates visuals intermittenly
 void run() {
   while(PC < programLength) {
+    uint16_t currentPC = PC;
     uint8_t op = getNextOpcode();
     execute(op);
     cycles += 1;
+
+    heatmapOpcodes[op] += 1;
+    heatmapProgram[currentPC] += 1;
 
     if (cycles % 1000 == 0) {
    
@@ -131,6 +147,8 @@ void run() {
 
 // Reports analysis of program run. Closes files and cleans up SDL components
 void finish() {
+  writeArray("heatmapOpcodes",heatmapOpcodes,16);
+  writeArray("heatmapProgram",heatmapProgram,programLength);
   finishIO();
   printf("=== RESULTS ===\n");
   printf("Execution took %li ms\n",endMillis - startMillis);
