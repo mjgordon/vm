@@ -1,3 +1,11 @@
+Generating a mapping of final bytecode to assembly original. 
+Start with a simple list of sequential ids for each token (including labels, not including comments) in the source
+Each expansion in the dictionary also has knowledge of A. how many tokens it consumes, B. How many tokens it outputs
+E.G. A simple logic command may turn 1 token (i.e. AND) into N tokens. 
+E.G. A CALL or GOTO will consume the next token (the > ref), and output N tokens (LIT > for COND is normal however)
+The expansion recursion passes around an input list and a built list as well, adding N copies of the input list to the built list each time. 
+This does not account for linking, this is a far future concern
+
 Note : This file is intended to be viewed in org mode with org-indent-mode turned on
 
 * TODO
@@ -103,7 +111,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [18/30]
+** v003 Basic demos and assembly analysis [19/31]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -114,15 +122,16 @@ EXPANSIONS
 - [X] F AS : MOD31 expansion
 - [X] F AS : ADD31 expansion
 - [X] F AS : Report when trying to reference a non-existent label
-- [ ] F AS : Export mapping file of hxb bytes to hxa original. May get wacky when linking eventually 
+- [X] F AS : Export mapping file of hxb bytes to hxa original. May get wacky when linking eventually 
 - [X] F AS : Overall error flag (for bad opcode, bad ref etc) for reporting
+- [ ] C AS : Export analysis files with correct names
 - [X] R AS : Factor out all the add 1-digit functions
 - [X] R AS : Separate dictionary definition literals from hashtable builder and return functions
 - [ ] R AS : More clearly differentiate symbols for local and global references and labels @ > % etc
 - [X] R AS : Rename dictionary.lisp to assembler-dictionary.lisp
+- [ ] R AS : Rename util-assembly.lisp to assembler-util.lisp
 - [X] S AS : use parse-integer instead of read-from-string
 - [X] R VM : Rename all opPush etc. functions to execPush etc. 
-- [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array
 - [X] F VM : Export heatmap file of bytecode program 
 - [ ] F VM : Dumb update cycle, call update pixels every $arg operations.
 - [X] F PR : Graphing of opcode usage (program vs runtime)
@@ -134,6 +143,9 @@ EXPANSIONS
 - [ ] B VM : ^C Doesn't exit when stuck in infinite loop
 - [ ] B AS : Properly handle trailing whitespace at end of lines
 - [ ] C PR : Write decent README.md
+
+** vFUTURE
+- [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array. (Checked assembly, *may* be doing an internal jump table right now, can't tell. Saving for when I have a more intensive demo program to test with, so differences won't be rounding errors in scale
 
 *** test-math.hxa [6/6]
 - [X] ADDC4_1
@@ -225,7 +237,7 @@ ZERO2          : (-1) (0)  : Returns a one-digit zero if the two-digit number is
 EQUAL3         : (-5) (0)  : Compares the top two 3-digit numbers. Returns T if equal, F otherwise
 
 *** MATH : ADDITION
-ADDU11         : (-1) (+1) : Utility functions, adds two numbers, puts on rstk, puts carry on data stack
+ADDU11         : (-1) (+1) : Utility function, adds two numbers, puts on rstk, puts carry on data stack
 ADD21          : (-1) (0)  : Adds a 1-digit number to a 2-digit number
 ADD22          : (-2) (0)  : Adds a 2-digit number to a 2-digit number
 ADD31          : (-1) (0)  : Adds a 1-digit number to a 3-digit number
@@ -348,7 +360,6 @@ DROP DROP DROP                  () ()
 LIT PUSH 0                      (0) ()
 %3
 
-
 *** MATH : ADDITION
 
 _ADDU_11                        (A B) ()
@@ -388,7 +399,7 @@ ADD POP RSTK POP ADD PUSH       (A F3) (D+1 C+F B+F2)
 ADD POP RSTK PUSH PUSH PUSH     (A+F3 B+F2 C+F D+1) ()
 _RESULT                         (0) (0)
 
-*** SUBTRACTION
+*** MATH : SUBTRACTION
 
 # C is subtracted from AB
 _SUB21                          (A B C) ()
@@ -433,8 +444,7 @@ SUB POP RSTK PUSH PUSH          (A-F-D B-E C-G) ()
 _RESULT                         (-3) (0)
 
 
-
-*** MULTIPLICATION
+*** MATH : MULTIPLICATION
 # A and B are the factors. P and R are the digits of the product
 # AxB = PR
 _MULT                           (A B) ()
@@ -491,7 +501,7 @@ RSTK POP ADD PUSH               (M F) (O N)
 ADD POP RSTK PUSH PUSH          (M+F N O) ()
 _RESULT                         (0) (0)
 
-*** DIVISION
+*** MATH : DIVISION
 
 # A is dividend, B is divisor, Q is quotient, F is underflow flag
 # SUB underflow flag is set to 1 if attempting to divide by zero, created by subbing M and N at the end
@@ -610,8 +620,7 @@ _RESULT                         (-1) ()
 
 _RESULT                         (-1) ()
 
-
-*** MODULO
+*** MATH : MODULO
 
 _MOD                            (A B) ()
 DUP LIT PUSH >1 COND            (A B) ()
@@ -677,7 +686,6 @@ RSTK POP                        (A B C) (D)
 %2 
 RSTK PUSH ADD31                 (A+D B+D C+D) ()
 _RESULT                         (-1) ()
-
 
 *** PROGRAM FLOW
 

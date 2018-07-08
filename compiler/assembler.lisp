@@ -7,7 +7,7 @@
 (ql:quickload "split-sequence" :silent t)
 
 
-;;; Global symbol lists
+
 
 ;; Set of all label symbols used in the file				       
 (defparameter *label-set* ())
@@ -23,6 +23,9 @@
 
 ;; Hash table of the gensym in each call expansion to its final operation numbe + offset in the file
 (defparameter *return-table* (make-hash-table :test 'eq))
+
+;; A mapping between the output file and the input file. A list of token numbers for each source token in the input.
+(defparameter *output-map* ())
 
 ;; Tracks errors in assembly
 (defparameter *error-flag* 0)
@@ -64,6 +67,12 @@ while creating lists of labels and references."
 
 (defun expand-tokens (tokens &optional (expander (get-dictionary-expander)) (depth 1))
   "Recursively expands folded opcodes into their normal forms"
+  ;; If the top call, initialize the output map
+  (when (= depth 1)
+    (setf *output-map* (loop for i from 0 upto (- (length tokens) 1) collect i)))
+
+  
+  ;; Recursively call expand-tokens until no new expansions reported
   (let ((expansion (expand-pass tokens expander)))
     (if (car expansion)
 	(expand-tokens (rest expansion) expander (incf depth))
@@ -74,48 +83,66 @@ while creating lists of labels and references."
 
 (defun strip-redundant-modes (tokens)
   "Removes mode-change opcodes that will have no effect, which may be present for readability or expansion completeness"
+  
   (let ((mode-tokens '(COLOR X Y PC MEM IO RSTK LIT ADD SUB))
 	(strip-count 0)
-	(current-token nil))
-    (setf tokens (remove-if (lambda (token)
-			      (cond ((or (member token *label-set*) (member token *ref-set*))
-				     (setf current-token nil))
-				    ((member token mode-tokens)
-				     (if current-token
-					 (if (eq token current-token)
-					     (incf strip-count)
-					     (progn (setf current-token token) nil))
-					 (progn (setf current-token token) nil)))))
-			    tokens))
-    (format t "~a redundant tokens stripped~%" strip-count))
-  tokens)
-			   
-
+	(current-token nil)
+	(output-tokens ())
+	(output-map ()))
+    (mapcar (lambda (token map-item)
+	      (unless (cond ((or (member token *label-set*) (member token *ref-set*))
+			     (setf current-token nil))
+			    ((member token mode-tokens)
+			     (if (eq token current-token)
+				 (incf strip-count)
+				 (progn (setf current-token token) nil))))
+		(setf output-tokens (cons token output-tokens))
+		(setf output-map (cons map-item output-map))))
+	    tokens *output-map*)
+    (format t "~a redundant tokens stripped~%" strip-count)
+    (setf *output-map* (reverse output-map))
+    (reverse output-tokens)))
+    
 (defun resolve-labels (tokens)
   "Steps through the file and determines final operation number for each label. Resolves references with these locations"
-  (let ((count 0))
-    (setf tokens
-	  (remove-if (lambda (token)
-		       (cond ((member token *label-set*) (progn (insert-label-table token count)
-								t))
-			     ((gethash token *return-table*) (progn (incf (gethash token *return-table*) count)
-								    (incf count 7)
-								    nil))
-			     ((member token *ref-set*) (if (member (gethash token *ref-table*) *label-set*)
-							   (progn (incf count 7)
-								  nil)
-							   (progn (format t "Bad Reference : ~a~%" token)
-								  (setf *error-flag* 1)
-								  t)))
-			     (t (progn (incf count)
-				       nil))))
-		     tokens)))
-  (mapcan (lambda (token)
-	    (cond ((member token *ref-set*) (convert-address (gethash (gethash token *ref-table*) *label-table*)))
-		  ((gethash token *return-table*) (convert-address (gethash token *return-table*)))
-		  (t (list token))))
-	  tokens))
-		       
+  (let ((count 0)
+	(tokens-new ())
+	(map-new ()))
+    (mapcar (lambda (token map-item)
+	      (unless (cond ((member token *label-set*) (progn (insert-label-table token count)
+							       t))
+			    ((gethash token *return-table*) (progn (incf (gethash token *return-table*) count)
+								   (incf count 7)
+								   nil))
+			    ((member token *ref-set*) (if (member (gethash token *ref-table*) *label-set*)
+							  (progn (incf count 7)
+								 nil)
+							  (progn (format t "Bad Reference : ~a~%" token)
+								 (setf *error-flag* 1)
+								 t)))
+			    (t (progn (incf count)
+				      nil)))
+		(setf tokens-new (cons token tokens-new))
+		(setf map-new (cons map-item map-new))))
+	    tokens *output-map*)
+    (setf tokens (reverse tokens-new))
+    (setf *output-map* (reverse map-new)))
+  (let* ((map-new ())
+	 (tokens-new (mapcan (lambda (token map-item)
+			       (cond ((member token *ref-set*) (progn
+								 (setf map-new (append map-new (make-list 7 :initial-element map-item)))
+								 (convert-address (gethash (gethash token *ref-table*) *label-table*))))
+				     ((gethash token *return-table*) (progn
+								       (setf map-new (append map-new (make-list 7 :initial-element map-item)))
+								       (convert-address (gethash token *return-table*))))
+				     (t (progn
+					  (setf map-new (append map-new (list map-item)))
+					  (list token)))))
+			     tokens *output-map*)))
+    (setf *output-map* map-new)
+    tokens-new))
+    
+
 
 (defun write-bytecode (tokens &optional (filename "program.hxb"))
   "Converts list of opcode-tokens to list of associated bytes, and writes these to the output hxb binary file"
@@ -138,6 +165,13 @@ while creating lists of labels and references."
 		(incf (aref bytecode-counts token))
 		(write-byte token stream))
 	      tokens))
+    (with-open-file (stream "../mapping"
+			    :direction :output
+			    :element-type '(unsigned-byte 32)
+			    :if-exists :supersede)
+      (loop for n in *output-map* do
+	   (write-byte n stream)))
+			    
     (with-open-file (stream "../heatmapUsage"
 			    :direction :output
 			    :element-type '(unsigned-byte 64)
@@ -155,6 +189,5 @@ while creating lists of labels and references."
 
 
 ;;; Only called when run from bash
-
 (assemble-hex (cadr sb-ext:*posix-argv*))
 

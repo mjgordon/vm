@@ -1,24 +1,42 @@
 (defun expand-pass (tokens expander)
   "Runs a single expansion pass over a token list"
-  (let ((expansion (recursive-expand-pass tokens expander () nil)))
-    (cons (car expansion)
-	  (apply #'append (reverse (rest expansion))))))
+  (let* ((expansion (recursive-expand-pass tokens *output-map* expander () () nil))
+	 (expansion-flag (first expansion))
+	 (expansion-content (second expansion))
+	 (output-map-new (third expansion)))
+
+    (setf *output-map* (reverse output-map-new))
+    (cons expansion-flag
+	  (apply #'append (reverse expansion-content)))))
 
   
-(defun recursive-expand-pass (tokens expander result flag)
+(defun recursive-expand-pass (tokens map-input expander result map-result flag)
   "Steps through the token list with tail recursion, expanding or skipping as necessary"
-  (let* ((token (car tokens))
-	 (expansion-result (funcall expander (cons token (cadr tokens))))
-	 (complex (car expansion-result))
-	 (expansion (cdr expansion-result)))
-	 
-    (when (not (equal expansion (list token)))
+  (let* ((token (first tokens))
+	 (next (second tokens))
+	 (expansion-result (funcall expander (cons token next)))
+	 (takes-ref (car expansion-result))
+	 (expansion (cdr expansion-result))
+	 (map-item (first map-input)))
+    ;; Mark that an expansion has occurred this pass
+    (unless (equal expansion (list token))
       (setf flag t))
+
+    ;; Add the expansion to the output list
     (when (car expansion)
       (setf result (cons expansion result)))
+
+    (setf map-result (append (make-list (length expansion) :initial-element map-item) map-result))    
+
+    ;; Call the function again if there are more tokens to process, else prepend the expansion flag and return
     (if (rest tokens)
-	(recursive-expand-pass (if complex (cddr tokens) (rest tokens)) expander result flag)
-	(cons flag result))))
+	(recursive-expand-pass (if takes-ref (cddr tokens) (rest tokens))
+			       (if takes-ref (cddr map-input) (rest map-input))
+			       expander
+			       result
+			       map-result
+			       flag)
+	(list flag result map-result))))
 	
 
 (defun get-dictionary-expander ()
