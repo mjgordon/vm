@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [20/34]
+** v003 Basic demos and assembly analysis [22/34]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -116,12 +116,11 @@ EXPANSIONS
 - [X] F AS : Report when trying to reference a non-existent label
 - [X] F AS : Export mapping file of hxb bytes to hxa original. May get wacky when linking eventually 
 - [X] F AS : Overall error flag (for bad opcode, bad ref etc) for reporting
-- [ ] C AS : Export analysis files with correct names
+- [X] C AS : Export analysis files with correct names
 - [X] R AS : Factor out all the add 1-digit functions
 - [X] R AS : Separate dictionary definition literals from hashtable builder and return functions
-- [ ] R AS : More clearly differentiate symbols for local and global references and labels @ > % etc
 - [X] R AS : Rename dictionary.lisp to assembler-dictionary.lisp
-- [ ] R AS : Rename util-assembly.lisp to assembler-util.lisp
+- [X] R AS : Rename util-assembly.lisp to assembler-util.lisp
 - [X] S AS : use parse-integer instead of read-from-string
 - [X] R VM : Rename all opPush etc. functions to execPush etc. 
 - [X] F VM : Export heatmap file of bytecode program 
@@ -141,7 +140,7 @@ EXPANSIONS
 - [ ] C PR : Write decent README.md
 
 ** vFUTURE
-- [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array. (Checked assembly, *may* be doing an internal jump table right now, can't tell. Saving for when I have a more intensive demo program to test with, so differences won't be rounding errors in scale
+- [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array. (Checked assembly, *may* be doing an internal jump table right now, can't tell. Saving for when I have a more intensive demo program to test with, so differences won't be rounding errors in scale. NVM I've got one now, sierpinski takes 5 minutes to run my god
 
 *** test-math.hxa [6/6]
 - [X] ADDC4_1
@@ -182,9 +181,8 @@ Pointer = 8nb (1 : nb length, 1 : some other flag? , 3 : page, 3 : location)
 
 ** Symbols
 @   : Label, assembler stores its position in a hashmap.
->   : Label reference, assembler replaces with final address of associated @ label
-@%  : Local label, the assembler will turn every expanded instance into a unique label 
->%  : Label reference, assembler replaces with final address of associated @% label in that expansion
+>   : Label reference, assembler replaces with final address of associated @ or % label
+%   : Local label, the assembler will turn every expanded instance into a unique label 
 +   : Anonymous/unique label, assembler stores its position in a hashmap with a gensym.
 +32 : Stores the anonymous label with the associated offset. Used in calls
 

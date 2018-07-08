@@ -2,7 +2,7 @@
 
 (load "~/lisp/quicklisp/setup.lisp")
 (load "assembler-dictionary")
-(load "util-assembler")
+(load "assembler-util")
 
 (ql:quickload "split-sequence" :silent t)
 
