@@ -126,7 +126,7 @@
       %1)
      local-labels 2)
     (AND
-     (MEM POP DUP NOR PUSH DUP NOR NOR))
+     (RSTK POP DUP NOR PUSH DUP NOR NOR))
     (OR
      (NOR DUP NOR))
     (NOT

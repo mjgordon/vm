@@ -1,11 +1,3 @@
-Generating a mapping of final bytecode to assembly original. 
-Start with a simple list of sequential ids for each token (including labels, not including comments) in the source
-Each expansion in the dictionary also has knowledge of A. how many tokens it consumes, B. How many tokens it outputs
-E.G. A simple logic command may turn 1 token (i.e. AND) into N tokens. 
-E.G. A CALL or GOTO will consume the next token (the > ref), and output N tokens (LIT > for COND is normal however)
-The expansion recursion passes around an input list and a built list as well, adding N copies of the input list to the built list each time. 
-This does not account for linking, this is a far future concern
-
 Note : This file is intended to be viewed in org mode with org-indent-mode turned on
 
 * TODO
@@ -111,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [19/31]
+** v003 Basic demos and assembly analysis [20/34]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -134,14 +126,17 @@ EXPANSIONS
 - [X] R VM : Rename all opPush etc. functions to execPush etc. 
 - [X] F VM : Export heatmap file of bytecode program 
 - [ ] F VM : Dumb update cycle, call update pixels every $arg operations.
+- [ ] F VM : Export final image
 - [X] F PR : Graphing of opcode usage (program vs runtime)
 - [ ] F PR : HTML Heatmap of original program 
 - [ ] F PR : Automatic unit-testing script
 - [ ] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
-- [ ] F PR : Sierpinski carpet program
+- [X] F PR : Sierpinski carpet program
+- [ ] F PR : Input program filename to test script, VC script
 - [ ] C PR : Opcode graphing should separate constant numbers in assembly
-- [ ] B VM : ^C Doesn't exit when stuck in infinite loop
 - [ ] B AS : Properly handle trailing whitespace at end of lines
+- [ ] B VM : ^C Doesn't exit when stuck in infinite loop
+- [ ] B VM : Program timing rolls over :P
 - [ ] C PR : Write decent README.md
 
 ** vFUTURE

@@ -187,6 +187,7 @@ void finish() {
 }
 
 
+
 // Calls function associated with each opcode
 void execute(uint8_t opcode) {
 
@@ -590,12 +591,11 @@ void setPixels() {
 
 // Get the current program run time in millis
 long getMillis() {
-  long ms;
   //  time_t s;
   struct timespec spec;
   clock_gettime(CLOCK_REALTIME, &spec);
   //s = spec.tv_sec;
-  ms = round(spec.tv_nsec / 1.0e6);
+  long ms = round(spec.tv_nsec / 1.0e6);
   return ms;
 }
 

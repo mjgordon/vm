@@ -2,57 +2,106 @@
 #               SIERPINSKI CARPET
 # ==============================================
 
-
 # ==============================================
 # Main Loop
 @START
 
 # Check the value of the current position, put it into memory
-Y PUSH
 X PUSH
-CALL >S-CHECK
+Y PUSH
+#CALL >S-BW
+CALL >S-C-START
+RSTK POP
+Y POP
+X POP
+RSTK PUSH
 MEM POP
 
 # Add 1 to X
 X PUSH
 ADDC3_1
+X POP
 
 # Skip to end of loop if X is not 1023
-LIT PUSH 3 PUSH 15 PUSH 15 EQUAL3 LIT PUSH >NOT-EDGE COND 
+X PUSH LIT PUSH 3 PUSH 15 PUSH 15 EQUAL3 LIT PUSH >NOT-EDGE COND
 
 # Set X to 0
 LIT PUSH 0 PUSH 0 PUSH 0 X POP
 
 # Add 1 to Y
+Y PUSH OUT12
 Y PUSH
 ADDC3_1
+Y POP
 
 # Go to END if y == 1023
-LIT PUSH 3 PUSH 15 PUSH 15 EQUAL3 NOT LIT PUSH >END COND
+#Y PUSH LIT PUSH 3 PUSH 15 PUSH 15 EQUAL3 NOT LIT PUSH >END COND
+Y PUSH LIT PUSH 0 PUSH 4 PUSH 0 EQUAL3 NOT LIT PUSH >END COND
 
 @NOT-EDGE
 GOTO >START
 
 
 # ==============================================
+# Black and White Sierpinski Carpet
 # With Y(3),X(3) on the stack returns O(1)
-@S-CHECK
+@S-BW
 
-X PUSH CONST3_0 EQUAL3 RSTK POP
-Y PUSH CONST3_0 EQUAL3 RSTK PUSH
-OR NOT LIT PUSH >S-CHECK-1 COND
+X PUSH CONST3_0 EQUAL3
+Y PUSH CONST3_0 EQUAL3
+AND NOT LIT PUSH >S-BW-1 COND
 
-# If  % 3 == 1 for x and y, return 0
+X PUSH LIT PUSH 3 MOD31 CONST3_1 EQUAL3
+Y PUSH LIT PUSH 3 MOD31 CONST3_1 EQUAL3
+AND NOT LIT PUSH >S-BW-0 COND
+
 X PUSH LIT PUSH 3 DIV31 X POP
 Y PUSH LIT PUSH 3 DIV31 Y POP
-GOTO >S-CHECK
 
-@S-CHECK-0
+GOTO >S-BW
+
+
+@S-BW-0
 LIT PUSH 0
 RET
 
-@S-CHECK-1
+@S-BW-1
 LIT PUSH 15
+RET
+
+
+# ==============================================
+# Colored Sierpinski Carpet
+# With Y(3),X(3) on the stack returns O(1), based on number of iterations
+@S-C-START
+LIT PUSH 1 RSTK POP
+@S-C
+
+X PUSH CONST3_0 EQUAL3
+Y PUSH CONST3_0 EQUAL3
+AND NOT LIT PUSH >S-C-N COND
+
+X PUSH LIT PUSH 3 MOD31 CONST3_1 EQUAL3
+Y PUSH LIT PUSH 3 MOD31 CONST3_1 EQUAL3
+AND NOT LIT PUSH >S-C-0 COND
+
+X PUSH LIT PUSH 3 DIV31 X POP
+Y PUSH LIT PUSH 3 DIV31 Y POP
+
+
+RSTK PUSH
+LIT PUSH 1
+ADD POP
+RSTK POP
+
+GOTO >S-C
+
+@S-C-N
+RSTK PUSH
+RET
+
+@S-C-0
+RSTK PUSH DROP LIT PUSH 0
 RET
 
 
