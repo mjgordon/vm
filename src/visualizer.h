@@ -23,4 +23,6 @@ void setupSDL();
 void updateSDL();
 void cleanupSDL();
 
+void saveScreen();
+
 #endif

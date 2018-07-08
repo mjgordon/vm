@@ -77,3 +77,12 @@ void cleanupSDL() {
   SDL_DestroyWindow(context.win);
   SDL_Quit();
 }
+
+// Exports the current visualizer contents to an image file
+void saveScreen() {
+  context.surface = SDL_CreateRGBSurface(0,1024,1024,32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+  SDL_RenderReadPixels(context.ren, NULL, SDL_PIXELFORMAT_ARGB8888, context.surface->pixels, context.surface->pitch);
+  SDL_LockSurface(context.surface);
+  SDL_SaveBMP(context.surface,"screen.bmp");
+  SDL_UnlockSurface(context.surface);
+}

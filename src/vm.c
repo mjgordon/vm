@@ -159,6 +159,8 @@ void run() {
   }
   setPixels();
   updateSDL();
+
+  saveScreen();
 }
 
 
@@ -618,4 +620,3 @@ long getMillis() {
   long ms = round(spec.tv_nsec / 1.0e6);
   return ms;
 }
-
