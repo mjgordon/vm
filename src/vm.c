@@ -86,20 +86,7 @@ int main(int argc, char* argv[]) {
       break;
     }
   }
-
-  filenameOutput = strdup(filename);
-  filenameOutput = remove_ext(filenameOutput,'.',0);
-  filenameOutput = concat(filenameOutput,"-output.hxo");
-
-  filenameHeatmapOpcodes = strdup(filename);
-  filenameHeatmapOpcodes = remove_ext(filenameHeatmapOpcodes,'.',0);
-  filenameHeatmapOpcodes = concat(filenameHeatmapOpcodes,"-hmOpcodes.hxo");
-
-  filenameHeatmapProgram = strdup(filename);
-  filenameHeatmapProgram = remove_ext(filenameHeatmapProgram,'.',0);
-  filenameHeatmapProgram = concat(filenameHeatmapProgram,"-hmProgram.hxo");
-
-
+  
   setup();
   startMillis = getMillis();
   run();
@@ -110,6 +97,9 @@ int main(int argc, char* argv[]) {
 
 // Loads program file, sets up stacks, visualizer, and output
 void setup() {
+  filenameOutput = createOutputFilename(filename,"-output.hxo");
+  filenameHeatmapOpcodes = createOutputFilename(filename,"-hmOpcodes.hxo");
+  filenameHeatmapProgram = createOutputFilename(filename,"-hmProgram.hxo");
   initializeIO(filenameOutput);
 
   FILE *fileptr;

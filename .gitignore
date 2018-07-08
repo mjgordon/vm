@@ -3,5 +3,6 @@
 
 *.fasl
 *.hxb
+*.hxo
 *.bin
 *.svg

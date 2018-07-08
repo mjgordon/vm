@@ -19,7 +19,8 @@ outputBuffer newOutputBuffer(uint8_t size);
 
 void writeArray(char* name, uint64_t* data, int size);
 
-char *remove_ext (char* mystr, char dot, char sep);
+char* createOutputFilename(char* filename, char* suffix);
+char* remove_ext (char* mystr, char dot, char sep);
 char* concat(const char *s1, const char *s2);
 
 #endif

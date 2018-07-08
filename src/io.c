@@ -121,6 +121,12 @@ void writeArray(char* name, uint64_t* data, int size) {
   fclose(array_file);
 }
 
+char* createOutputFilename(char* filename, char* suffix) {
+  char* output = strdup(filename);
+  output = remove_ext(output,'.',0);
+  output = concat(output,suffix);
+  return(output);
+}
 
 // remove_ext: removes the "extension" from a file spec.
 //   mystr is the string to process.
@@ -132,7 +138,7 @@ void writeArray(char* name, uint64_t* data, int size) {
 // If you pass in NULL or the new string can't be allocated,
 //   it returns NULL.
 
-char *remove_ext (char* mystr, char dot, char sep) {
+char* remove_ext (char* mystr, char dot, char sep) {
   char *retstr, *lastdot, *lastsep;
 
   // Error checks and allocate string.

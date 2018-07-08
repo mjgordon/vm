@@ -1,4 +1,4 @@
-Note : This file is intended to be viewed in org mode with org-indent-mode turned on
+Note : This file displays correctly in emacs org mode with org-indent-mode
 
 * TODO
 ** Notation:
