@@ -60,6 +60,8 @@ uint16_t PEN_Y = 0;
 
 long cycles = 0;
 
+int updateFrequency = -1;
+
 long startMillis;
 long endMillis;
 
@@ -72,17 +74,22 @@ char* filenameHeatmapProgram;
 
 int main(int argc, char* argv[]) {
   int opt;
-  while((opt = getopt(argc,argv,"upof:")) != -1) {
+  while((opt = getopt(argc,argv,"spof:u:")) != -1) {
     switch(opt) {
-    case 'u':
-      flagUnroll = 1;
+    case 's':
+      flagUnrollStack = 1;
       break;
     case 'p':
       flagOutputPrint = 1;
+      break;
     case 'o':
       flagOutputFile = 1;
+      break;
     case 'f':
       filename = optarg;
+      break;
+    case 'u':
+      updateFrequency = atoi(optarg);
       break;
     }
   }
@@ -144,8 +151,10 @@ void run() {
     heatmapOpcodes[op] += 1;
     heatmapProgram[currentPC] += 1;
 
-    if (cycles % 1000 == 0) {
-   
+    
+    if ((updateFrequency != -1) && cycles % updateFrequency == 0) {
+        setPixels();
+	updateSDL();
     }
   }
   setPixels();
@@ -169,7 +178,7 @@ void finish() {
   printf("Return stack max depth: %i\n",stackGetMaxDepth(rstack));
   
   printf("Data stack final depth: %i\n",(stack -> top) + 1);
-  if (flagUnroll && !stackIsEmpty(stack)) {
+  if (flagUnrollStack && !stackIsEmpty(stack)) {
     printf(" Unrolling data stack:\n");
     while(!stackIsEmpty(stack)) {
       printf(" %i",stackPop(stack));
@@ -178,7 +187,7 @@ void finish() {
   }
 
   printf("Return stack final depth: %i\n",(rstack -> top) + 1);
-  if (flagUnroll && !stackIsEmpty(rstack)) {
+  if (flagUnrollStack && !stackIsEmpty(rstack)) {
     printf(" Unrolling return stack:\n");
     while(!stackIsEmpty(rstack)) {
       printf(" %i",stackPop(rstack));

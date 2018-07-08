@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [22/34]
+** v003 Basic demos and assembly analysis [23/34]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -124,7 +124,7 @@ EXPANSIONS
 - [X] S AS : use parse-integer instead of read-from-string
 - [X] R VM : Rename all opPush etc. functions to execPush etc. 
 - [X] F VM : Export heatmap file of bytecode program 
-- [ ] F VM : Dumb update cycle, call update pixels every $arg operations.
+- [X] F VM : Dumb update cycle, call update pixels every $arg operations.
 - [ ] F VM : Export final image
 - [X] F PR : Graphing of opcode usage (program vs runtime)
 - [ ] F PR : HTML Heatmap of original program 

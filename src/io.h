@@ -1,7 +1,7 @@
 #ifndef IO
 #define IO
 
-extern int flagUnroll;
+extern int flagUnrollStack;
 extern int flagOutputPrint;
 extern int flagOutputFile;
 

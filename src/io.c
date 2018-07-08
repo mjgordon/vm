@@ -19,7 +19,7 @@ outputBuffer buffer16;
 
 FILE *write_ptr;
 
-int flagUnroll = 0;
+int flagUnrollStack = 0;
 int flagOutputPrint = 0;
 int flagOutputFile = 0;
 
