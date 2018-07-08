@@ -144,7 +144,7 @@ while creating lists of labels and references."
     
 
 
-(defun write-bytecode (tokens &optional (filename "program.hxb"))
+(defun write-bytecode (tokens &optional (filename "program.hxb") (filename-heatmap "heatmap.hxo") (filename-mapping "mapping.hxo"))
   "Converts list of opcode-tokens to list of associated bytes, and writes these to the output hxb binary file"
   (let ((bytecodes (get-bytecodes))
 	(bytecode-counts (make-array 16)))
@@ -165,14 +165,14 @@ while creating lists of labels and references."
 		(incf (aref bytecode-counts token))
 		(write-byte token stream))
 	      tokens))
-    (with-open-file (stream "../mapping"
+    (with-open-file (stream filename-mapping
 			    :direction :output
 			    :element-type '(unsigned-byte 32)
 			    :if-exists :supersede)
       (loop for n in *output-map* do
 	   (write-byte n stream)))
 			    
-    (with-open-file (stream "../heatmapUsage"
+    (with-open-file (stream filename-heatmap
 			    :direction :output
 			    :element-type '(unsigned-byte 64)
 			    :if-exists :supersede)
@@ -183,8 +183,11 @@ while creating lists of labels and references."
 
 (defun assemble-hex (filename)
   "Composites main assembly pipeline functions. Reports any feedback"
-  (let ((output-filename (concatenate 'string (subseq filename 0 (search ".hxa" filename)) ".hxb")))
-    (time (write-bytecode (resolve-labels (strip-redundant-modes (expand-tokens (generate-tables (get-file filename))))) output-filename)))
+  (let* ((filename-stripped (subseq filename 0 (search ".hxa" filename)))
+	 (output-filename (concatenate 'string filename-stripped ".hxb"))
+	 (output-heatmap (concatenate 'string filename-stripped "-hmBytecode.hxo"))
+	 (output-mapping (concatenate 'string filename-stripped "-mapping.hxo")))
+    (time (write-bytecode (resolve-labels (strip-redundant-modes (expand-tokens (generate-tables (get-file filename))))) output-filename output-heatmap output-mapping)))
   *error-flag*)
 
 

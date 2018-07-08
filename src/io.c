@@ -1,5 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "io.h"
 
@@ -24,9 +26,11 @@ int flagOutputFile = 0;
 int mode = MODE_WAITING;
 
 
+
+
 // Called at startup, sets up different sized output nb buffers, and the modes to use them
 // Also opens the output file
-void initializeIO() {
+void initializeIO(char* filenameOutput) {
   buffer8 = newOutputBuffer(2);
   buffer12 = newOutputBuffer(3);
   buffer16 = newOutputBuffer(4);
@@ -36,7 +40,8 @@ void initializeIO() {
   modeNames[2] = "INT8 : ";
   modeNames[3] = "INT12 : ";
   modeNames[4] = "INT16 : ";
-  write_ptr = fopen("output.bin","wb+");
+
+  write_ptr = fopen(filenameOutput,"wb+");
 }
 
 
@@ -114,4 +119,54 @@ void writeArray(char* name, uint64_t* data, int size) {
   array_file = fopen(name,"wb+");
   fwrite(data,8,size,array_file);
   fclose(array_file);
+}
+
+
+// remove_ext: removes the "extension" from a file spec.
+//   mystr is the string to process.
+//   dot is the extension separator.
+//   sep is the path separator (0 means to ignore).
+// Returns an allocated string identical to the original but
+//   with the extension removed. It must be freed when you're
+//   finished with it.
+// If you pass in NULL or the new string can't be allocated,
+//   it returns NULL.
+
+char *remove_ext (char* mystr, char dot, char sep) {
+  char *retstr, *lastdot, *lastsep;
+
+  // Error checks and allocate string.
+
+  if (mystr == NULL)
+    return NULL;
+  if ((retstr = malloc (strlen (mystr) + 1)) == NULL)
+    return NULL;
+
+  // Make a copy and find the relevant characters.
+  strcpy (retstr, mystr);
+  lastdot = strrchr (retstr, dot);
+  lastsep = (sep == 0) ? NULL : strrchr (retstr, sep);
+
+  // If it has an extension separator.
+  if (lastdot != NULL) {
+    // and it's before the extenstion separator.
+    if (lastsep != NULL) {
+      if (lastsep < lastdot) {
+	// then remove it.
+	*lastdot = '\0';
+      }
+    } else {
+      // Has extension separator with no path separator.
+      *lastdot = '\0';
+    }
+  }
+  return retstr;
+}
+
+char* concat(const char *s1, const char *s2) {
+    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
+    // in real code you would check for errors in malloc here
+    strcpy(result, s1);
+    strcat(result, s2);
+    return result;
 }

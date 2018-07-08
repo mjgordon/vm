@@ -3,8 +3,10 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
+
 #include "io.h"
 #include "stack.h"
 #include "visualizer.h"
@@ -64,6 +66,9 @@ long endMillis;
 SDL_Event event;
 
 char* filename;
+char* filenameOutput;
+char* filenameHeatmapOpcodes;
+char* filenameHeatmapProgram;
 
 int main(int argc, char* argv[]) {
   int opt;
@@ -82,6 +87,19 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  filenameOutput = strdup(filename);
+  filenameOutput = remove_ext(filenameOutput,'.',0);
+  filenameOutput = concat(filenameOutput,"-output.hxo");
+
+  filenameHeatmapOpcodes = strdup(filename);
+  filenameHeatmapOpcodes = remove_ext(filenameHeatmapOpcodes,'.',0);
+  filenameHeatmapOpcodes = concat(filenameHeatmapOpcodes,"-hmOpcodes.hxo");
+
+  filenameHeatmapProgram = strdup(filename);
+  filenameHeatmapProgram = remove_ext(filenameHeatmapProgram,'.',0);
+  filenameHeatmapProgram = concat(filenameHeatmapProgram,"-hmProgram.hxo");
+
+
   setup();
   startMillis = getMillis();
   run();
@@ -92,6 +110,8 @@ int main(int argc, char* argv[]) {
 
 // Loads program file, sets up stacks, visualizer, and output
 void setup() {
+  initializeIO(filenameOutput);
+
   FILE *fileptr;
   printf("Opened program : %s\n",filename);
   fileptr = fopen(filename,"rb");
@@ -107,8 +127,6 @@ void setup() {
   }
   fclose(fileptr);
 
-  initializeIO();
-  
   stack = createStack("data",65536);
   rstack = createStack("rstk",65536);
 
@@ -147,9 +165,12 @@ void run() {
 
 // Reports analysis of program run. Closes files and cleans up SDL components
 void finish() {
-  writeArray("heatmapOpcodes",heatmapOpcodes,16);
-  writeArray("heatmapProgram",heatmapProgram,programLength);
+  writeArray(filenameHeatmapOpcodes,heatmapOpcodes,16);
+  writeArray(filenameHeatmapProgram,heatmapProgram,programLength);
   finishIO();
+  free(filenameOutput);
+  free(filenameHeatmapOpcodes);
+  free(filenameHeatmapProgram);
   printf("=== RESULTS ===\n");
   printf("Execution took %li ms\n",endMillis - startMillis);
   printf("%li operations\n",cycles);

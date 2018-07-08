@@ -137,6 +137,7 @@ EXPANSIONS
 - [ ] B AS : Properly handle trailing whitespace at end of lines
 - [ ] B VM : ^C Doesn't exit when stuck in infinite loop
 - [ ] B VM : Program timing rolls over :P
+- [ ] B VM : Window Display isn't persistent
 - [ ] C PR : Write decent README.md
 
 ** vFUTURE
