@@ -1,3 +1,5 @@
+(ql:quickload :cl-svg :silent t)
+
 ;;; GRAPHING FUNCTIONS
 
 (defun create-scatter-plot (datablock canvas &key color (y-legend :left) (radius 10))
