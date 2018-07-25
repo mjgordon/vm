@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [25/34]
+** v003 Basic demos and assembly analysis [26/35]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -128,6 +128,7 @@ EXPANSIONS
 - [X] F VM : Export final image
 - [X] F PR : Graphing of opcode usage (program vs runtime)
 - [X] F PR : HTML Heatmap of original program 
+- [X] F PR : Mouseover cycle count in HTML heatmap
 - [ ] F PR : Automatic unit-testing script
 - [ ] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
 - [X] F PR : Sierpinski carpet program

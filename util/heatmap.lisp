@@ -103,14 +103,15 @@
 	  
     (mapcar (lambda (line)
 	      (mapcar (lambda (token)
-			(let* ((value (/ (nth counter heat-data) max))
+			(let* ((data (nth counter heat-data))
+			       (value (/ data max))
 			       (bg-color (get-color-string value)))
 			  (cond ((string= token "") (list token "black" nil))
 				((char= (char token 0) #\#) (list token "LightGray" nil))
 				((member (char token 0) (list #\@ #\>)) (progn (incf counter)
-									       (list token "Black" bg-color))) 
+									       (list token "Black" bg-color data))) 
 				(t (progn (incf counter)
-					  (list token "DarkGray" bg-color)))))) ; Token
+					  (list token "DarkGray" bg-color data))))))
 		      line))
 	    lines)))
 
@@ -133,7 +134,7 @@
       (write-line "<p style='font-family:Lucida Console, Monaco, monospace;'>" stream)
       (mapcar (lambda (line)
 		(mapcar (lambda (token)
-			  (write-string (format nil "<span style=\"color:~a" (second token)) stream)
+			  (write-string (format nil "<span title=\"~a\" style=\"color:~a" (fourth token) (second token)) stream)
 			  (when (third token)
 			    (write-string (format nil ";background-color:~a" (third token)) stream))
 			  (write-string (format nil "\">~a</span>" (first token)) stream)
