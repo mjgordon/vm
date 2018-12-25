@@ -1,3 +1,5 @@
+(in-package :assembler)
+
 ;;; Predicates
 
 (defun empty-string-p (string)
@@ -18,11 +20,11 @@
 (defun convert-address (address)
   "Custom expansion of address references, converts to 16-byte hex value"
   (list (logand (ash address -12) #xF)
-	'PUSH
+	'OPCODES::PUSH
 	(logand (ash address -8) #xF)
-	'PUSH
+	'OPCODES::PUSH
 	(logand (ash address -4) #xF)
-	'PUSH
+	'OPCODES::PUSH
 	(logand address #xF)))
 
 
@@ -32,11 +34,14 @@
   "Lists keys and values of a hashtable. Returns the size"
   (mapcar (lambda (key)
 	    (format t "~a ~a ~%" key (gethash key table)))
-	  (loop for key being the hash-keys of table collect key))
+	  (hash-keys table))
   (hash-table-count table))
 
 
 ;; Trees
+
+(defun hash-keys (hash-table)
+  (loop for key being the hash-keys of hash-table collect key))
 
 (defun get-gensyms (count)
   "Returns a list of the requested number of gensyms"
@@ -66,8 +71,8 @@
 (defun get-local-names (count)
   "Creates a shallow pair tree of the requested number of associated local symbol and reference names"
   (loop for i upto (- count 1) collect
-       (list (intern (concatenate 'string "%" (write-to-string i)))
-	     (intern (concatenate 'string ">" (write-to-string i))))))
+       (list (intern (concatenate 'string "%" (write-to-string i)) :opcodes)
+	     (intern (concatenate 'string ">" (write-to-string i)) :opcodes))))
 
 
 ;; Token sets and tables

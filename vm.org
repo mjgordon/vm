@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [26/35]
+** v003 Basic demos and assembly analysis [27/37]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -113,10 +113,12 @@ EXPANSIONS
 - [X] F AS : SUB31 expansion
 - [X] F AS : MOD31 expansion
 - [X] F AS : ADD31 expansion
+- [ ] F AS : BIN expansion
 - [X] F AS : Report when trying to reference a non-existent label
 - [X] F AS : Export mapping file of hxb bytes to hxa original. May get wacky when linking eventually 
 - [X] F AS : Overall error flag (for bad opcode, bad ref etc) for reporting
 - [X] C AS : Export analysis files with correct names
+- [X] C AS : Add basic package and asdf system
 - [X] R AS : Factor out all the add 1-digit functions
 - [X] R AS : Separate dictionary definition literals from hashtable builder and return functions
 - [X] R AS : Rename dictionary.lisp to assembler-dictionary.lisp
@@ -160,7 +162,7 @@ https://github.com/qeedquan/turtle/blob/master/src/util.c
 ** Editor
 *** .hxa
 elisp snippet for generating the hxa-mode emacs rule for expansions:
-(regexp-opt '("DROP" "DUP" "SWAP" "CONST3_0" "CONST4_0" "CONST3_1" "CONST4_1" "AND" "OR" "NOT" "TRUE" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADD31" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB31" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "DIV31" "MOD" "MOD21" "MOD22" "MOD31" "OUT" "OUT8" "OUT12" "OUT16"))
+(regexp-opt '("DROP" "DROP1" "DUP" "SWAP" "CONST3_0" "CONST4_0" "CONST3_1" "CONST4_1" "AND" "OR" "NOT" "TRUE" "BIN" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADD31" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB31" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "DIV31" "MOD" "MOD21" "MOD22" "MOD31" "OUT" "OUT8" "OUT12" "OUT16"))
 
 ** General
 Screen Storage:
@@ -214,6 +216,7 @@ F : 1 : DRAW   : Draws a line of COLOR between the last position and X/Y if the 
 
 *** STACK OPERATION
 DROP           : (-1) (0)  : Removes the top item of the stack
+DROP1          : (-1) (0)  : Removes the second item of the stack
 DUP            : (+1) (0)  : Copies the top item of the stack
 SWAP           : (0)  (0)  : Swaps the top two items on the stack
 CONST3_0       : (+3) (0)  : Pushes a 12-bit 0 to the stack
@@ -226,6 +229,7 @@ AND            : (-1) (0)  : Performs a bitwise AND on the top two nb
 OR             : (-1) (0)  : Performs a bitwise OR on the top two nb
 NOT            : (-1) (0)  : Performs a bitwise NOT on the top two nb
 TRUE           : (0)  (0)  : Converts the top of the stack to F (logical T) if not 0 (logical F)
+BIN            : (0)  (0)  : Converts the top of the stack to 1 if not 0
 ZERO2          : (-1) (0)  : Returns a one-digit zero if the two-digit number is zero
 
 *** MATH : COMPARISON
@@ -288,6 +292,12 @@ _DROP                           (A) ()
 LIT POP                         () ()
 _RESULT                         (-1) (0)
 
+_DROP1                          (A B) ()
+RSTK POP                        (A) (B)
+DROP                            () (B)
+RSTK PUSH                       (B) ()
+_RESULT                         (-1) (0)
+
 _DUP                            (A) ()
 PEEK 0                          (A A) ()
 _RESULT                         (+ 1) ()
@@ -325,6 +335,15 @@ GOTO >1                         () ()
 LIT PUSH 0                      (0) ()
 %1
 _RESULT                         (0) (0)                   
+
+_BIN                            (A) ()
+LIT PUSH >0 COND                () ()
+LIT PUSH 1                      (1) ()
+GOTO >1                         () ()
+%0
+LIT PUSH 0                      (0) ()
+%1
+_RESULT                         (0) (0)
 
 _ZERO2                          (A B) ()
 ADD POP                         (A+B) ()

@@ -589,7 +589,7 @@ uint16_t popNibble4() {
 // Returns one nb of data from user input
 uint8_t getInput() {
   uint8_t input = 0;
-  printf("Input Color Value: ");
+  printf("Input 1 hex digit: ");
   //scanf("%hhu",&input);
   char st[1024];
   if (  fgets( st, sizeof(st), stdin )) {

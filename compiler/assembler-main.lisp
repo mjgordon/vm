@@ -1,34 +1,5 @@
 ;;;;; assembler.lisp
-
-(load "~/lisp/quicklisp/setup.lisp")
-(load "assembler-dictionary")
-(load "assembler-util")
-
-(ql:quickload "split-sequence" :silent t)
-
-
-
-
-;; Set of all label symbols used in the file				       
-(defparameter *label-set* ())
-
-;; Hash table of label symbols to their final operation number in the file
-(defparameter *label-table* (make-hash-table :test 'eq))
-
-;; Set of all label reference symbols used in the file
-(defparameter *ref-set* ())
-
-;; Hash table of label reference symbols to the label symbols they point to
-(defparameter *ref-table* (make-hash-table :test 'eq))
-
-;; Hash table of the gensym in each call expansion to its final operation numbe + offset in the file
-(defparameter *return-table* (make-hash-table :test 'eq))
-
-;; A mapping between the output file and the input file. A list of token numbers for each source token in the input.
-(defparameter *output-map* ())
-
-;; Tracks errors in assembly
-(defparameter *error-flag* 0)
+(in-package :assembler)
 
 ;;; Main assembly pipeline functions
 
@@ -50,9 +21,9 @@ while creating lists of labels and references."
 		(remove-lines lines)))
 
   (mapcar (lambda (word)
-	    (let ((sym (intern word)) (ch0 (char word 0)))
+	    (let ((sym (intern word 'opcodes)) (ch0 (char word 0)))
 	      (cond ((char= ch0 #\@) (insert-label-set sym))
-		    ((char= ch0 #\>) (progn (insert-ref-table sym (intern (substitute #\@ #\> word)))
+		    ((char= ch0 #\>) (progn (insert-ref-table sym (intern (substitute #\@ #\> word) 'opcodes))
 					    (insert-ref-set sym)))
 		    ((char= ch0 #\+) (let ((offset 0))
 				       (progn (setf sym (gensym))
@@ -159,7 +130,7 @@ while creating lists of labels and references."
 		      (if byte
 			  (setf token byte)
 			  (progn
-			    (format t "Bad token: ~a ~%" token)
+			    (format t "Bad token: ~a ~a  ~%" token (symbol-package token))
 			    (setf token 0)
 			    (setf *error-flag* 1)))))
 		(incf (aref bytecode-counts token))
@@ -187,10 +158,10 @@ while creating lists of labels and references."
 	 (output-filename (concatenate 'string filename-stripped ".hxb"))
 	 (output-heatmap (concatenate 'string filename-stripped "-hmBytecode.hxo"))
 	 (output-mapping (concatenate 'string filename-stripped "-mapping.hxo")))
-    (time (write-bytecode (resolve-labels (strip-redundant-modes (expand-tokens (generate-tables (get-file filename))))) output-filename output-heatmap output-mapping)))
+    (time (write-bytecode (resolve-labels (strip-redundant-modes (expand-tokens (generate-tables (get-file filename)))))
+			  output-filename
+			  output-heatmap
+			  output-mapping)))
   *error-flag*)
 
-
-;;; Only called when run from bash
-(assemble-hex (cadr sb-ext:*posix-argv*))
 
