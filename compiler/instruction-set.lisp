@@ -1,6 +1,7 @@
 (in-package :opcodes)
 
 (defun shadow-symbols (dict)
+  "Ensures that all the expansions mnemonics shadow in the package"
   (mapcar (lambda (key)
 	    (shadow key :opcodes))
 	  (assembler::hash-keys dict)))
@@ -8,9 +9,11 @@
 
 (defun get-dictionary ()
   "Returns the raw data of the expansion dictionary. Gets closured into the dictionary expander function"
+  ;; Ensure that the default opcodes shadow
   (mapcar (lambda (sym)
 	    (shadow sym :opcodes))
 	  '(COLOR X Y PC MEM IO RSTK LIT ADD SUB PUSH POP PEEK COND NOR MOVE))
+  ;; DEFINITIONS
   '(
     ;; STACK OPERATIONS
     (DROP
