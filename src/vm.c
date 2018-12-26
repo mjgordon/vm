@@ -201,11 +201,17 @@ void finish() {
     }
     printf("\n");
   }
-  
+
+  // Loop forever after execution is complete; respond to quit events and redraw the window as needed
   while (1) {
     if (SDL_WaitEvent(&event)) {
       if (event.type == SDL_QUIT) {
 	break;
+      }
+      else if (event.type == SDL_WINDOWEVENT) {
+	if (event.window.event == SDL_WINDOWEVENT_MOVED) {
+	  updateSDL();
+	}
       }
     }
   }

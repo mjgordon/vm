@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [33/37]
+** v003 Basic demos and assembly analysis [34/37]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -128,7 +128,8 @@ EXPANSIONS
 - [X] F VM : Export heatmap file of bytecode program 
 - [X] F VM : Dumb update cycle, call update pixels every $arg operations.
 - [X] F VM : Export final image
-- [X] F VM : Checks for SDL Events during run
+- [X] C VM : Checks for SDL Events during run
+- [X] C VM : Window redraws if dragged
 - [X] F PR : Graphing of opcode usage (program vs runtime)
 - [X] F PR : HTML Heatmap of original program 
 - [X] F PR : Mouseover cycle count in HTML heatmap
@@ -141,7 +142,7 @@ EXPANSIONS
 
 - [X] B AS : Properly handle trailing whitespace at end of lines
 - [ ] B VM : Program timing rolls over :P
-- [ ] B VM : Window Display isn't persistent
+
 
 
 

@@ -55,7 +55,7 @@ void setupSDL() {
     SDL_Quit();
     return;
   }
-
+  
   updateSDL();
 }
 
