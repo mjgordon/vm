@@ -1,3 +1,4 @@
+#include <libgen.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -121,9 +122,15 @@ void writeArray(char* name, uint64_t* data, int size) {
   fclose(array_file);
 }
 
-char* createOutputFilename(char* filename, char* suffix) {
-  char* output = strdup(filename);
-  output = remove_ext(output,'.',0);
+char* createOutputFilename(char* filepath, char* suffix) {
+  char* path = dirname(strdup(filepath));
+  char* file = basename(strdup(filepath));
+  file = remove_ext(file,'.',0);
+  char* output = strdup(path);
+  output = concat(output,"/");
+  output = concat(output, file);
+  output = concat(output,"-analysis/");
+  output = concat(output,file);
   output = concat(output,suffix);
   return(output);
 }

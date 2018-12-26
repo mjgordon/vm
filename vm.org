@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [28/38]
+** v003 Basic demos and assembly analysis [29/38]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -128,7 +128,6 @@ EXPANSIONS
 - [X] F VM : Export heatmap file of bytecode program 
 - [X] F VM : Dumb update cycle, call update pixels every $arg operations.
 - [X] F VM : Export final image
-- [ ] C VM : New Folder for Analysis
 - [X] F PR : Graphing of opcode usage (program vs runtime)
 - [X] F PR : HTML Heatmap of original program 
 - [X] F PR : Mouseover cycle count in HTML heatmap
@@ -138,6 +137,7 @@ EXPANSIONS
 - [ ] F PR : Input program filename to test script, VC script
 - [ ] C PR : Opcode graphing should separate constant numbers in assembly
 - [ ] C PR : Write decent README.md
+- [X] C PR : Folder for program output
 
 - [ ] B AS : Properly handle trailing whitespace at end of lines
 - [ ] B VM : ^C Doesn't exit when stuck in infinite loop

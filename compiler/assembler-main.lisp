@@ -119,6 +119,7 @@ while creating lists of labels and references."
   "Converts list of opcode-tokens to list of associated bytes, and writes these to the output hxb binary file"
   (let ((bytecodes (get-bytecodes))
 	(bytecode-counts (make-array 16)))
+    ;; Export the binary file
     (with-open-file (stream filename
 			    :direction :output
 			    :element-type 'unsigned-byte
@@ -136,28 +137,42 @@ while creating lists of labels and references."
 		(incf (aref bytecode-counts token))
 		(write-byte token stream))
 	      tokens))
+    ;; Export the mapping analysis
     (with-open-file (stream filename-mapping
 			    :direction :output
 			    :element-type '(unsigned-byte 32)
 			    :if-exists :supersede)
       (loop for n in *output-map* do
 	   (write-byte n stream)))
-			    
+
+    ;; Export the heatmap analysis
     (with-open-file (stream filename-heatmap
 			    :direction :output
 			    :element-type '(unsigned-byte 64)
 			    :if-exists :supersede)
       (loop for n in (map 'list #'identity bytecode-counts) do
-	   ;;(format t "~a~%" n)
 	   (write-byte n stream)))))
 
 
 (defun assemble-hex (filename)
   "Composites main assembly pipeline functions. Reports any feedback"
-  (let* ((filename-stripped (subseq filename 0 (search ".hxa" filename)))
-	 (output-filename (concatenate 'string filename-stripped ".hxb"))
-	 (output-heatmap (concatenate 'string filename-stripped "-hmBytecode.hxo"))
-	 (output-mapping (concatenate 'string filename-stripped "-mapping.hxo")))
+  (let* ((path-divisor (search "/" filename :from-end t))
+	 (filename-stripped (subseq filename path-divisor (search ".hxa" filename)))
+	 (filepath (subseq filename 0 path-divisor))
+	 (output-filename (concatenate 'string filepath filename-stripped ".hxb"))
+	 (output-heatmap (concatenate 'string
+				      filepath
+				      filename-stripped
+				      "-analysis"
+				      filename-stripped
+				      "-hmBytecode.hxo"))
+	 (output-mapping (concatenate 'string
+				      filepath
+				      filename-stripped
+				      "-analysis"
+				      filename-stripped
+				      "-mapping.hxo")))
+    (ensure-directories-exist (concatenate 'string filepath filename-stripped "-analysis/"))
     (time (write-bytecode (resolve-labels (strip-redundant-modes (expand-tokens (generate-tables (get-file filename)))))
 			  output-filename
 			  output-heatmap
