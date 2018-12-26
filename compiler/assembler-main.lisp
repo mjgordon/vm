@@ -14,11 +14,15 @@
 (defun generate-tables (lines)
   "Removes comments and blank lines, splits lines into one list of words. Converts to symbol tokens, 
 while creating lists of labels and references."
+  ;; Remove comments and blank lines, split lines
   (clear-tables)
   (setf lines
 	(mapcan (lambda (line)
 		  (split-sequence:split-sequence #\Space line))
 		(remove-lines lines)))
+  ;; Ignore trailing whitespace and other things that result in "" tokens
+  (setf lines
+	(delete-if (lambda (word) (string= word "")) lines))
   
   (mapcar (lambda (word)
 	    (let ((sym (intern word 'opcodes)) (ch0 (char word 0)))

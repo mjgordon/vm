@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [31/37]
+** v003 Basic demos and assembly analysis [32/37]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -138,7 +138,7 @@ EXPANSIONS
 - [ ] C PR : Write decent README.md
 - [X] C PR : Folder for program output
 
-- [ ] B AS : Properly handle trailing whitespace at end of lines
+- [X] B AS : Properly handle trailing whitespace at end of lines
 - [ ] B VM : ^C Doesn't exit when stuck in infinite loop
 - [ ] B VM : Program timing rolls over :P
 - [ ] B VM : Window Display isn't persistent
