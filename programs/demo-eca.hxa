@@ -2,7 +2,7 @@
 #         ELEMENTARY CELLUAR AUTOMATA
 # ==============================================
 
-# Input starting seed
+# Input rule (H L)
 IO PUSH PUSH
 
 # Set initial condition
@@ -46,8 +46,10 @@ GOTO >LOOP
 
 # =============================================
 #             ECA CELL COMPUTATION
-# With input on the stack
+# IN : Rule on the stack (H L)
 # Sets the memory cell for the current X Y
+# OUT : Rule remains on the stack (H L)
+# =============================================
 
 @ECA-COMPUTE
 # Copy the input 
@@ -94,7 +96,6 @@ LIT PUSH 0
 
 @INPUT2-END
 
-
 # Compile value
 RSTK POP POP
 BIN LIT PUSH 4 MULT DROP1
@@ -102,10 +103,8 @@ RSTK PUSH BIN LIT PUSH 2 MULT DROP1
 RSTK PUSH BIN
 ADD POP POP
 
-# Put a copy on the RSTK
-# (in-a in-b v) (v)
+# Wack switch statement equivalent
 DUP RSTK POP
-#DUP OUT
 LIT PUSH >RESULT-0 COND RSTK PUSH DUP RSTK POP
 LIT PUSH 1 SUB POP LIT PUSH >RESULT-1 COND RSTK PUSH DUP RSTK POP
 LIT PUSH 2 SUB POP LIT PUSH >RESULT-2 COND RSTK PUSH DUP RSTK POP
@@ -115,7 +114,7 @@ LIT PUSH 5 SUB POP LIT PUSH >RESULT-5 COND RSTK PUSH DUP RSTK POP
 LIT PUSH 6 SUB POP LIT PUSH >RESULT-6 COND RSTK PUSH DUP RSTK POP
 LIT PUSH 7 SUB POP LIT PUSH >RESULT-7 COND RSTK PUSH DUP RSTK POP
 
-# This shouldn't happen
+# Default case, this shouldn't happen
 LIT PUSH 0
 GOTO >SWITCH-END
 
@@ -124,42 +123,34 @@ DROP1 LIT PUSH 1 AND
 GOTO >SWITCH-END
 
 @RESULT-1
-#LIT PUSH 1 OUT
 DROP1 LIT PUSH 2 AND
 GOTO >SWITCH-END
 
 @RESULT-2
-#LIT PUSH 2 OUT
 DROP1 LIT PUSH 4 AND
 GOTO >SWITCH-END
 
 @RESULT-3
-#LIT PUSH 3 OUT
 DROP1 LIT PUSH 8 AND
 GOTO >SWITCH-END
 
 @RESULT-4
-#LIT PUSH 4 OUT
 DROP LIT PUSH 1 AND
 GOTO >SWITCH-END
 
 @RESULT-5
-#LIT PUSH 5 OUT
 DROP LIT PUSH 2 AND
 GOTO >SWITCH-END
 
 @RESULT-6
-#LIT PUSH 6 OUT
 DROP LIT PUSH 4 AND
 GOTO >SWITCH-END
 
 @RESULT-7
-#LIT PUSH 7 OUT
 DROP LIT PUSH 8 AND
 GOTO >SWITCH-END
 
 @SWITCH-END
-#TRUE DUP OUT
 TRUE MEM POP
 RSTK PUSH DROP
 RET

@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [30/37]
+** v003 Basic demos and assembly analysis [31/37]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -133,7 +133,7 @@ EXPANSIONS
 - [X] F PR : Mouseover cycle count in HTML heatmap
 - [X] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
 - [X] F PR : Sierpinski carpet program
-- [ ] F PR : Input program filename to test script, VC script
+- [X] F PR : Input program filename to test script, VC script
 - [ ] C PR : Opcode graphing should separate constant numbers in assembly
 - [ ] C PR : Write decent README.md
 - [X] C PR : Folder for program output
