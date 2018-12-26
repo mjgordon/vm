@@ -60,10 +60,10 @@ uint16_t PEN_Y = 0;
 
 long cycles = 0;
 
-int updateFrequency = -1;
+int updateFrequency = 1000000;
 
-long startMillis;
-long endMillis;
+unsigned long startMillis;
+unsigned long endMillis;
 
 SDL_Event event;
 
@@ -155,6 +155,11 @@ void run() {
     if ((updateFrequency != -1) && cycles % updateFrequency == 0) {
         setPixels();
 	updateSDL();
+	if (SDL_PollEvent(&event)) {
+	  if (event.type == SDL_QUIT) {
+	    exit(1);
+	  }
+	}
     }
   }
   setPixels();
@@ -173,7 +178,7 @@ void finish() {
   free(filenameHeatmapOpcodes);
   free(filenameHeatmapProgram);
   printf("=== RESULTS ===\n");
-  printf("Execution took %li ms\n",endMillis - startMillis);
+  printf("Execution took %lu ms\n",endMillis - startMillis);
   printf("%li operations\n",cycles);
   printf("PC: %i\n",PC);
   printf("Data stack max depth: %i\n",stackGetMaxDepth(stack));
@@ -612,7 +617,7 @@ void setPixels() {
 
 
 // Get the current program run time in millis
-long getMillis() {
+unsigned long getMillis() {
   //  time_t s;
   struct timespec spec;
   clock_gettime(CLOCK_REALTIME, &spec);

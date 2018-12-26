@@ -37,6 +37,6 @@ uint8_t getInput();
 
 void setPixels();
 
-long getMillis();
+unsigned long getMillis();
 
 #endif
