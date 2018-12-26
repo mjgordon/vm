@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -62,8 +63,8 @@ long cycles = 0;
 
 int updateFrequency = 1000000;
 
-unsigned long startMillis;
-unsigned long endMillis;
+unsigned long startTime;
+unsigned long endTime;
 
 SDL_Event event;
 
@@ -95,9 +96,9 @@ int main(int argc, char* argv[]) {
   }
   
   setup();
-  startMillis = getMillis();
+  startTime = getMillis();
   run();
-  endMillis = getMillis();
+  endTime = getMillis();
   finish();
 }
 
@@ -178,7 +179,7 @@ void finish() {
   free(filenameHeatmapOpcodes);
   free(filenameHeatmapProgram);
   printf("=== RESULTS ===\n");
-  printf("Execution took %lu ms\n",endMillis - startMillis);
+  printf("Execution took %lu ms\n",endTime - startTime);
   printf("%li operations\n",cycles);
   printf("PC: %i\n",PC);
   printf("Data stack max depth: %i\n",stackGetMaxDepth(stack));
@@ -623,11 +624,11 @@ void setPixels() {
 
 
 // Get the current program run time in millis
+
+
+
 unsigned long getMillis() {
-  //  time_t s;
-  struct timespec spec;
-  clock_gettime(CLOCK_REALTIME, &spec);
-  //s = spec.tv_sec;
-  long ms = round(spec.tv_nsec / 1.0e6);
-  return ms;
+  struct timeval tv;
+  gettimeofday(&tv,NULL);
+  return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 }

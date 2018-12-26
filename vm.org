@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [34/37]
+** v003 Basic demos and assembly analysis [35/37]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -141,7 +141,7 @@ EXPANSIONS
 - [X] C PR : Folder for program output
 
 - [X] B AS : Properly handle trailing whitespace at end of lines
-- [ ] B VM : Program timing rolls over :P
+- [X] B VM : Fixed program run timing
 
 
 
