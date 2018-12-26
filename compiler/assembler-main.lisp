@@ -19,7 +19,7 @@ while creating lists of labels and references."
 	(mapcan (lambda (line)
 		  (split-sequence:split-sequence #\Space line))
 		(remove-lines lines)))
-
+  
   (mapcar (lambda (word)
 	    (let ((sym (intern word 'opcodes)) (ch0 (char word 0)))
 	      (cond ((char= ch0 #\@) (insert-label-set sym))

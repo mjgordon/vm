@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [29/38]
+** v003 Basic demos and assembly analysis [30/37]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -131,8 +131,7 @@ EXPANSIONS
 - [X] F PR : Graphing of opcode usage (program vs runtime)
 - [X] F PR : HTML Heatmap of original program 
 - [X] F PR : Mouseover cycle count in HTML heatmap
-- [ ] F PR : Automatic unit-testing script
-- [ ] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
+- [X] F PR : Elementary cellular automata program (e.g. rule 90 Sierpinski)
 - [X] F PR : Sierpinski carpet program
 - [ ] F PR : Input program filename to test script, VC script
 - [ ] C PR : Opcode graphing should separate constant numbers in assembly
@@ -158,7 +157,7 @@ EXPANSIONS
 
 ** vFUTURE
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array. (Checked assembly, *may* be doing an internal jump table right now, can't tell. Saving for when I have a more intensive demo program to test with, so differences won't be rounding errors in scale. NVM I've got one now, sierpinski takes 5 minutes to run my god
-
+- [ ] F PR : Automatic unit-testing script
 
 
   
