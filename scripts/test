@@ -7,7 +7,7 @@ cd ..
 
 echo "=== Assembling ==="
 cd compiler
-sbcl --script script.lisp "../programs/$1.hxa"
+sbcl --script shell-entry.lisp "../programs/$1.hxa"
 cd ..
 
 echo "=== Running ==="

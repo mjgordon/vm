@@ -24,7 +24,9 @@ colorRGB colors[] = {{0xFF000000},
 uint8_t pixels[1024 * 1024 * 4];
 
 
-// Called at startup. Sets up SDL backend for displaying memory array 
+/* setupSDL
+ * Called at startup. Sets up SDL backend for displaying memory array 
+ */
 void setupSDL() {
   
   if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -60,7 +62,10 @@ void setupSDL() {
 }
 
 
-// Updates the visible window after changing the pixels manually
+/* updateSDL
+ * Updates the visible window after changing the pixels manually.
+ * Since this flips the buffer, should be called during window drags etc
+ */
 void updateSDL() {
   SDL_SetRenderDrawColor(context.ren, 0, 0, 0, 255);
   SDL_RenderClear(context.ren);
@@ -70,7 +75,9 @@ void updateSDL() {
 }
 
 
-// Called at shutdown, destroys all created SDL components
+/* cleanupSDL
+ * Called at shutdown, destroys all created SDL components
+ */
 void cleanupSDL() {
   SDL_DestroyTexture(context.tex);
   SDL_DestroyRenderer(context.ren);
@@ -78,7 +85,10 @@ void cleanupSDL() {
   SDL_Quit();
 }
 
-// Exports the current visualizer contents to an image file
+
+/* saveScreen
+ * Exports the current visualizer contents to an image file
+ */
 void saveScreen() {
   context.surface = SDL_CreateRGBSurface(0,1024,1024,32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
   SDL_RenderReadPixels(context.ren, NULL, SDL_PIXELFORMAT_ARGB8888, context.surface->pixels, context.surface->pitch);

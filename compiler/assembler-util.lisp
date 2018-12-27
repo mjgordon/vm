@@ -41,6 +41,7 @@
 ;; Trees
 
 (defun hash-keys (hash-table)
+  "Returns a list of the keys in a hash table"
   (loop for key being the hash-keys of hash-table collect key))
 
 (defun get-gensyms (count)

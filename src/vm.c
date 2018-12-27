@@ -36,33 +36,51 @@
 #define PAGE_COUNT  1024
 #define MEMORY_SIZE PAGE_SIZE * PAGE_COUNT
 
+// Memory array. Divided implicitly into pages. Presented in a grid as an image
 uint8_t memory[MEMORY_SIZE];
+
+// Array of machine code for the loaded program
 uint8_t *program;
 uint16_t programLength;
 
+// How many each opcode is executed
 uint64_t heatmapOpcodes[16];
+
+// How many times each position in the program is executed
 uint64_t heatmapProgram[65536];
 
+// Data stack and return stack
 struct Stack* stack;
 struct Stack* rstack;
 
+// Processor modes define how PUSH and POP opcodes operate
 enum mode {MODE_COLOR,MODE_X,MODE_Y,MODE_PC,MODE_MEM,MODE_IO,MODE_RSTK,MODE_LIT,MODE_ADD,MODE_SUB};
-
 enum mode machineMode = MODE_COLOR;
 
+// Program Counter
 uint16_t PC = 0;
+
+// Color for drawing operation
 uint8_t REG_COLOR;
+
+// Memory position of the machine, point to draw to
 uint16_t REG_X;
 uint16_t REG_Y;
+
+// Combined carry and underflow flag for addition and subtraction operations
 uint8_t FLAG;
 
+// Current position of the pen, point to draw from
 uint16_t PEN_X = 0;
 uint16_t PEN_Y = 0;
 
-long cycles = 0;
+// How many operations the VM has executed
+unsigned long cycles = 0;
 
+// Frequency in cycles for how often the 'hardware' checks for SDL events and updates the window
 int updateFrequency = 1000000;
 
+// Used for measuring the execution time of the program
 unsigned long startTime;
 unsigned long endTime;
 
@@ -103,7 +121,9 @@ int main(int argc, char* argv[]) {
 }
 
 
-// Loads program file, sets up stacks, visualizer, and output
+/* setup
+ * Loads program file, sets up stacks, visualizer, and output
+ */
 void setup() {
   filenameOutput = createOutputFilename(filename,"-output.hxo");
   filenameHeatmapOpcodes = createOutputFilename(filename,"-hmOpcodes.hxo");
@@ -141,7 +161,9 @@ void setup() {
 }
 
 
-// Loops through the program and executes each opcode. Updates visuals intermittenly
+/* run
+ * Loops through the program and executes each opcode. Updates visuals intermittenly
+ */
 void run() {
   while(PC < programLength) {
     uint16_t currentPC = PC;
@@ -170,7 +192,9 @@ void run() {
 }
 
 
-// Reports analysis of program run. Closes files and cleans up SDL components
+/* finish
+ * Reports analysis of program run. Closes files and cleans up SDL components
+ */
 void finish() {
   writeArray(filenameHeatmapOpcodes,heatmapOpcodes,16);
   writeArray(filenameHeatmapProgram,heatmapProgram,programLength);
@@ -184,7 +208,8 @@ void finish() {
   printf("PC: %i\n",PC);
   printf("Data stack max depth: %i\n",stackGetMaxDepth(stack));
   printf("Return stack max depth: %i\n",stackGetMaxDepth(rstack));
-  
+
+  // Report on data stack
   printf("Data stack final depth: %i\n",(stack -> top) + 1);
   if (flagUnrollStack && !stackIsEmpty(stack)) {
     printf(" Unrolling data stack:\n");
@@ -194,6 +219,7 @@ void finish() {
     printf("\n");
   }
 
+  // Report on return stack
   printf("Return stack final depth: %i\n",(rstack -> top) + 1);
   if (flagUnrollStack && !stackIsEmpty(rstack)) {
     printf(" Unrolling return stack:\n");
@@ -221,8 +247,9 @@ void finish() {
 }
 
 
-
-// Calls function associated with each opcode
+/* execute
+ * Calls function associated with each opcode
+ */
 void execute(uint8_t opcode) {
 
   switch(opcode) {
@@ -278,7 +305,9 @@ void execute(uint8_t opcode) {
 }
 
 
-// Pops and adds the top two nb on the data stack, pushes the result. Sets the FLAG if overflows
+/* execAdd
+ * Opcode ADD : Pops and adds the top two nb on the data stack, pushes the result. Sets the FLAG if overflows
+ */
 void execAdd() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
@@ -289,7 +318,9 @@ void execAdd() {
 }
 
 
-// Pops and subtracts the top two nb on the data stack, pushes the result. Sets the FLAG if undeflows
+/* execSub
+ * Opcode SUB : Pops and subtracts the top two nb on the data stack, pushes the result. Sets the FLAG if undeflows
+ */
 void execSub() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
@@ -300,7 +331,9 @@ void execSub() {
 }
 
 
-// Pushes one or more nb to the data stack depending on the machineMode
+/* execPush
+ * Opcode PUSH : Pushes one or more nb to the data stack depending on the machineMode
+ */
 void execPush() {
   switch(machineMode) {
   case MODE_COLOR:
@@ -354,7 +387,9 @@ void execPush() {
 }
 
 
-// Pops one or more nb from the data stack depending on the machineMode
+/* execPop
+ * Opcode POP : Pops one or more nb from the data stack depending on the machineMode
+ */
 void execPop() {
   uint16_t temp = 0;
   switch(machineMode) {
@@ -405,14 +440,18 @@ void execPop() {
 }
 
 
-// Copies an nb of the requested depth to the top of the data stack
+/* execPeek
+ * Opcode PEEK : Copies an nb of the requested depth to the top of the data stack
+ */
 void execPeek() {
   uint8_t depth = getNextOpcode();
   stackPush(stack,stackPeek(stack,depth));
 }
 
 
-// Jumps the PC to the requestion position if the next value on the data stack is 0
+/* execCond
+ * Opcode COND : Jumps the PC to the requestion position if the next value on the data stack is 0
+ */
 void execCond() {
   uint16_t destination = popNibble4();
   uint8_t value = stackPop(stack);
@@ -422,7 +461,9 @@ void execCond() {
 }
 
 
-// Pops and NORs the top two nb on the data stack, pushes the result
+/* execNOR
+ * Opcode NOR : Pops and NORs the top two nb on the data stack, pushes the result
+ */
 void execNOR() {
   uint8_t a = stackPop(stack);
   uint8_t b = stackPop(stack);
@@ -433,7 +474,9 @@ void execNOR() {
 }
 
 
-// Moves the pen on the display. If the top element is not zero, draws in COLOR on the memory display
+/* execMove
+ * Opcode MOVE : Moves the pen on the display. If the top element is not zero, draws in COLOR on the memory display
+ */
 void execMove() {
   
   uint16_t x1 = PEN_X;
@@ -465,7 +508,9 @@ void execMove() {
 }
 
 
-// Draws a vertical line on the memory display
+/* plotVertical
+ * Draws a vertical line on the memory display
+ */
 void plotVertical(uint16_t x1, uint16_t y1, uint16_t y2) {
   if (y2 < y1) {
     uint16_t temp = y2;
@@ -479,7 +524,9 @@ void plotVertical(uint16_t x1, uint16_t y1, uint16_t y2) {
 }
 
 
-// Draws a horizontal line on the memory display
+/* plotHorizontal
+ * Draws a horizontal line on the memory display
+ */
 void plotHorizontal(uint16_t x1, uint16_t x2, uint16_t y1) {
   if (x2 < x1) {
     uint16_t temp = x2;
@@ -493,7 +540,9 @@ void plotHorizontal(uint16_t x1, uint16_t x2, uint16_t y1) {
 }
 
 
-// Draws a breshenham line on the memory display
+/* plotLineLow 
+ * Draws a breshenham line on the memory display
+ */
 void plotLineLow(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
   int dx = x2 - x1;
   int dy = y2 - y1;
@@ -516,7 +565,9 @@ void plotLineLow(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
 }
 
 
-// Draws a breshenham line on the memory display
+/* plotLineHigh
+ * Draws a breshenham line on the memory display
+ */
 void plotLineHigh(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
   int dx = x2 - x1;
   int dy = y2 - y1;
@@ -539,7 +590,9 @@ void plotLineHigh(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
 }
 
 
-// Returns the next opcode in the program, advances the PC counter
+/* getNextOpcode
+ * Returns the next opcode in the program, advances the PC counter
+ */
 uint8_t getNextOpcode() {
   uint8_t opcode = program[PC];
   PC += 1;
@@ -598,7 +651,9 @@ uint16_t popNibble4() {
 }
 
 
-// Returns one nb of data from user input
+/* getInput
+ * Returns one nb of data from user input
+ */
 uint8_t getInput() {
   uint8_t input = 0;
   printf("Input 1 hex digit: ");
@@ -611,7 +666,9 @@ uint8_t getInput() {
 }
 
 
-// Updates the SDL pixel array from the memory array
+/* setPixels
+ * Updates the SDL pixel array from the memory array
+ */
 void setPixels() {
   for (int i = 0; i < 1024 * 1024; i++) {
     int offset = i * 4;
@@ -623,10 +680,9 @@ void setPixels() {
 }
 
 
-// Get the current program run time in millis
-
-
-
+/* getMillis
+ * Returns the current time in millis
+ */
 unsigned long getMillis() {
   struct timeval tv;
   gettimeofday(&tv,NULL);

@@ -27,10 +27,9 @@ int flagOutputFile = 0;
 int mode = MODE_WAITING;
 
 
-
-
-// Called at startup, sets up different sized output nb buffers, and the modes to use them
-// Also opens the output file
+/* initializeIO
+ * Sets up the different buffers for output, and opens the output file
+ */
 void initializeIO(char* filenameOutput) {
   buffer8 = newOutputBuffer(2);
   buffer12 = newOutputBuffer(3);
@@ -46,13 +45,17 @@ void initializeIO(char* filenameOutput) {
 }
 
 
-// Called at shutdown, closes the output file
+/* finishIO
+ * Closes the output file
+ */
 void finishIO() {
   fclose(write_ptr);
 }
 
 
-// Receices one nb from the runtime. Will set the mode, or insert into a buffer, and print if necessary
+/* output
+ * Receives one nb from the runtime. Will set the mode, or insert into a buffer, and print if necessary
+ */
 void output(uint8_t nb) {
   int flag = 0;
 
@@ -89,7 +92,9 @@ void output(uint8_t nb) {
 }
 
 
-//Checks if the buffer is full, sets the output value if so
+/* getInt
+ * Checks if the selected buffer is full, and sets the output value if so
+ */
 int getInt(uint8_t nb,outputBuffer *buffer, int *value) {
   buffer->nbs[buffer->position] = nb;
   buffer->position += 1;
@@ -108,13 +113,19 @@ int getInt(uint8_t nb,outputBuffer *buffer, int *value) {
 }
 
 
-// Creates an output buffer of a given nb size
+/* newOutputBuffer
+ * Creates an output buffer of a given nb size
+ */
 outputBuffer newOutputBuffer(uint8_t size) {
   outputBuffer b;
   b.size = size;
   return b;
 }
 
+
+/* writeArray
+ * Writes an array 'data' of 'size to a file 'name'. 
+ */
 void writeArray(char* name, uint64_t* data, int size) {
   FILE *array_file;
   array_file = fopen(name,"wb+");
@@ -122,6 +133,10 @@ void writeArray(char* name, uint64_t* data, int size) {
   fclose(array_file);
 }
 
+
+/* createOutputFilename
+ * Returns a full filename given the input filename and a given suffix
+ */
 char* createOutputFilename(char* filepath, char* suffix) {
   char* path = dirname(strdup(filepath));
   char* file = basename(strdup(filepath));
@@ -176,6 +191,10 @@ char* remove_ext (char* mystr, char dot, char sep) {
   return retstr;
 }
 
+
+/* concat
+ * Concatenate two strings
+ */
 char* concat(const char *s1, const char *s2) {
     char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
     // in real code you would check for errors in malloc here

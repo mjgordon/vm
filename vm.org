@@ -103,7 +103,7 @@ EXPANSIONS
 - [X] MOD21
 - [X] MOD22
   
-** v003 Basic demos and assembly analysis [36/36]
+** v003 Basic demos and assembly analysis [37/37]
 - [X] F AS : ADDC3_1 expansion
 - [X] F AS : ADDC4_1 expansion
 - [X] F AS : EQUAL3 expansion
@@ -140,9 +140,7 @@ EXPANSIONS
 - [X] C PR : Folder for program output
 - [X] B AS : Properly handle trailing whitespace at end of lines
 - [X] B VM : Fixed program run timing
-
-
-
+- [X]   PR : Cleanup and document
 
 *** test-math.hxa [7/7]
 - [X] ADDC4_1
@@ -153,6 +151,11 @@ EXPANSIONS
 - [X] MOD31
 - [X] BIN
 
+** v004 Compiling and Linking [0/2]
+- [ ] R AS : Cleanup usage of car/first, cdr/rest etc
+- [ ] F CM : Plan basix syntax 
+
+- [ ] B AS : Recompiling sometimes messes up opcode package shadowing?
 
 ** vFUTURE
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array. (Checked assembly, *may* be doing an internal jump table right now, can't tell. Saving for when I have a more intensive demo program to test with, so differences won't be rounding errors in scale. NVM I've got one now, sierpinski takes 5 minutes to run my god

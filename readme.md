@@ -19,7 +19,7 @@ Opcodes A-F handle stack operations, program flow, and drawing to the graphical 
 | **9**  | 2,1              | SUB   | POP subs the top two stack positions, PUSH pushes the underflow bit |
 
 ### Commands
-| Opcode | Stack effect | Name | Description |
+| Opcode | Stack Effect | Name | Description |
 | ------ | ------------:|:---- |:----------- |
 | **A** | X  | PUSH | Pushes X nb to the stack based on the current mode |
 | **B** | X  | POP | Pops X nb from the stack, may push some back, based on the current mode |

@@ -57,8 +57,7 @@ while creating lists of labels and references."
 
 
 (defun strip-redundant-modes (tokens)
-  "Removes mode-change opcodes that will have no effect, which may be present for readability or expansion completeness"
-  
+  "Removes mode-change opcodes that will have no effect, which may be present for readability or expansion completeness"  
   (let ((mode-tokens '(COLOR X Y PC MEM IO RSTK LIT ADD SUB))
 	(strip-count 0)
 	(current-token nil)
