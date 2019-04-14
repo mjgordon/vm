@@ -151,9 +151,18 @@ EXPANSIONS
 - [X] MOD31
 - [X] BIN
 
-** v004 Compiling and Linking [0/2]
+** v004 Instruction Set Reconfiguring [1/4]
+- [X] C PR : Replace COLOR mode and MOVE command with RSHFT and LSHFT
+- [ ] C PR : Replace PEEK w/ argument with PEEK : copy second item on stack to top of stack
+- [ ] C AS : Rewrite DUP and SWAP to use new version of PEEK
+- [ ] C AS : Add new PEEK2 and PEEK3 macros
+- [ ] C PR : Rewrite test files for new opcodes
+- [ ] F PR : Create test suite
+** v005 Compiling and Linking [0/5]
+- [ ] C VM : Replace F (Draw line)
 - [ ] R AS : Cleanup usage of car/first, cdr/rest etc
-- [ ] F CM : Plan basix syntax 
+- [ ] F CM : Plan basic syntax 
+- [ ] F CM : Constants and math : +,-,*,/,(,)
 
 - [ ] B AS : Recompiling sometimes messes up opcode package shadowing?
 
@@ -219,6 +228,18 @@ C : 1 : PEEK   : Copy part of the stack to the top of the stack
 D : 5 : COND   : Go to the address at the top 4 positions of the stack if the 5th stack position is 0
 E : 2->1 : NOR : Performs a logical NOR on the top two stack positions
 F : 1 : DRAW   : Draws a line of COLOR between the last position and X/Y if the top position is 1. Else just move.
+
+Ideas:
+- Explicit Drop (LIT POP)
+- Explicit Swap (PEEK 1 RSTK POP POP DROP RSTK PUSH PUSH)
+- Explicit Dup (PEEK 0)
+- Jump if carry (ADD PUSH ADDR PUSH COND)
+- Twos Complement? (NOT LIT PUSH 1 ADD POP)
+
+- Rotate L
+- Rotate R
+
+
 
 ** Expansion mnemonics
 
@@ -286,7 +307,6 @@ OUT            : (-1) (0)  : Outputs 1 nb from the stack
 OUTINT8        : (-2) (0)  : Outputs 2 nb from the stack, formatted as an int
 OUTINT12       : (-3) (0)  : Outputs 3 nb from the stack, formatted as an int
 OUTINT16       : (-4) (0)  : Outputs 4 nb from the stack, formatted as an int
-
 
 ** Expansion Definitions
 
@@ -735,5 +755,8 @@ RSTK PUSH PUSH PUSH PUSH        (A B C D) ()
 PC POP                          () ()
 _RESULT                         (0) (-4)
 *** IO
+
+** HXC
+Minimal subset of C
 
 

@@ -1,4 +1,4 @@
-(defsystem assembler
+(asdf:defsystem :assembler
   :name "assembler"
   :components ((:file "packages")
 	       (:file "assembler-globals")

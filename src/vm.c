@@ -14,22 +14,22 @@
 
 #include "vm.h"
 
-#define OP_COLOR    0x0
-#define OP_X        0x1
-#define OP_Y        0x2
-#define OP_PC       0x3
-#define OP_MEM      0x4
-#define OP_IO       0x5
-#define OP_RSTK     0x6
-#define OP_LIT      0x7
-#define OP_ADD      0x8
-#define OP_SUB      0x9
-#define OP_PUSH     0xA
-#define OP_POP      0xB
-#define OP_PEEK     0xC
-#define OP_COND     0xD
-#define OP_NOR      0xE
-#define OP_MOVE     0xF
+#define OP_X        0x0
+#define OP_Y        0x1
+#define OP_PC       0x2
+#define OP_MEM      0x3
+#define OP_IO       0x4
+#define OP_RSTK     0x5
+#define OP_LIT      0x6
+#define OP_ADD      0x7
+#define OP_SUB      0x8
+#define OP_PUSH     0x9
+#define OP_POP      0xA
+#define OP_PEEK     0xB
+#define OP_COND     0xC
+#define OP_NOR      0xD
+#define OP_RSH      0xE
+#define OP_LSH      0xF
 
 #define NB          16
 #define PAGE_SIZE   1024
@@ -54,16 +54,13 @@ struct Stack* stack;
 struct Stack* rstack;
 
 // Processor modes define how PUSH and POP opcodes operate
-enum mode {MODE_COLOR,MODE_X,MODE_Y,MODE_PC,MODE_MEM,MODE_IO,MODE_RSTK,MODE_LIT,MODE_ADD,MODE_SUB};
-enum mode machineMode = MODE_COLOR;
+enum mode {MODE_X,MODE_Y,MODE_PC,MODE_MEM,MODE_IO,MODE_RSTK,MODE_LIT,MODE_ADD,MODE_SUB};
+enum mode machineMode = MODE_MEM;
 
 // Program Counter
 uint16_t PC = 0;
 
-// Color for drawing operation
-uint8_t REG_COLOR;
-
-// Memory position of the machine, point to draw to
+// Memory position of the machine
 uint16_t REG_X;
 uint16_t REG_Y;
 
@@ -253,9 +250,6 @@ void finish() {
 void execute(uint8_t opcode) {
 
   switch(opcode) {
-  case OP_COLOR:
-    machineMode = MODE_COLOR;
-    break;
   case OP_X:
     machineMode = MODE_X;
     break;
@@ -298,8 +292,11 @@ void execute(uint8_t opcode) {
   case OP_NOR:
     execNOR();
     break;
-  case OP_MOVE:
-    execMove();
+  case OP_RSH:
+    execRSH();
+    break;
+  case OP_LSH:
+    execLSH();
     break;
   }
 }
@@ -336,9 +333,6 @@ void execSub() {
  */
 void execPush() {
   switch(machineMode) {
-  case MODE_COLOR:
-    stackPush(stack,REG_COLOR);
-    break;
     
   case MODE_X:
     stackPush(stack,extractNibble2(REG_X));
@@ -393,9 +387,6 @@ void execPush() {
 void execPop() {
   uint16_t temp = 0;
   switch(machineMode) {
-  case MODE_COLOR:
-    REG_COLOR = stackPop(stack);
-    break;
 
   case MODE_X:
     temp = popNibble3();
@@ -474,119 +465,27 @@ void execNOR() {
 }
 
 
-/* execMove
- * Opcode MOVE : Moves the pen on the display. If the top element is not zero, draws in COLOR on the memory display
+/* execRSH
+ * Opcode RSH : Binary shift the top of the stack one place to the right
  */
-void execMove() {
-  
-  uint16_t x1 = PEN_X;
-  uint16_t y1 = PEN_Y;
-  uint16_t x2 = REG_X;
-  uint16_t y2 = REG_Y;
 
-  PEN_X = REG_X;
-  PEN_Y = REG_Y;
-  
-  uint8_t mode = stackPop(stack);
-  if (mode == 0) return;
-
-  if (abs(x2-x1) == 0) {
-    plotVertical(x1,y1,y2);
-  }
-  if (abs(y2-y1) == 0) {
-    plotHorizontal(x1,x2,y1);
-  }
-  else if (abs(y2-y1) < abs(x2-x1)) {
-    if (x1 > x2) plotLineLow(x2,y2,x1,y1);
-    else plotLineLow(x1,y1,x2,y2);
-  }
-  else {
-    if (y1 > y2) plotLineHigh(x2,y2,x1,y1);
-    else plotLineHigh(x1,y1,x2,y2);
-  }
-  
+void execRSH() {
+  uint8_t value = stackPop(stack);
+  value = value >> 1;
+  value = value & 0xF;
+  stackPush(stack,value);
 }
 
 
-/* plotVertical
- * Draws a vertical line on the memory display
+/* exec LSH
+ * Opcode LSH : Binary shift the top of the stack one place to the left
  */
-void plotVertical(uint16_t x1, uint16_t y1, uint16_t y2) {
-  if (y2 < y1) {
-    uint16_t temp = y2;
-    y2 = y1;
-    y1 = temp;
-  }
 
-  for (uint16_t y = y1; y <= y2; y++) {
-    memory[y * PAGE_SIZE + x1] = REG_COLOR;
-  }
-}
-
-
-/* plotHorizontal
- * Draws a horizontal line on the memory display
- */
-void plotHorizontal(uint16_t x1, uint16_t x2, uint16_t y1) {
-  if (x2 < x1) {
-    uint16_t temp = x2;
-    x2 = x1;
-    x1 = temp;
-  }
-
-  for (uint16_t x = x1; x <= x2; x++) {
-    memory[y1 * PAGE_SIZE + x] = REG_COLOR;
-  }
-}
-
-
-/* plotLineLow 
- * Draws a breshenham line on the memory display
- */
-void plotLineLow(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
-  int dx = x2 - x1;
-  int dy = y2 - y1;
-  uint16_t yi = 1;
-  if (dy < 0) {
-    yi = -1;
-    dy = -dy;
-  }
-  int D = (2 * dy) - dx;
-  uint16_t y = y1;
-
-  for (uint16_t x = x1; x <= x2; x++) {
-    memory[y * PAGE_SIZE + x] = REG_COLOR;
-    if (D > 0) {
-      y = y + yi;
-      D = D - (2 * dx);
-    }
-    D = D + (2 * dy);
-  }
-}
-
-
-/* plotLineHigh
- * Draws a breshenham line on the memory display
- */
-void plotLineHigh(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
-  int dx = x2 - x1;
-  int dy = y2 - y1;
-  uint16_t xi = 1;
-  if (dx < 0) {
-    xi = -1;
-    dx = -dx;
-  }
-  int D = (2 * dx) - dy;
-  uint16_t x = x1;
-
-  for (uint16_t y = y1; y < y2; y++) {
-    memory[y * PAGE_SIZE + x] = REG_COLOR;
-    if (D > 0) {
-      x = x + xi;
-      D = D - (2 * dy);
-    }
-    D = D + (2 * dx);
-  }
+void execLSH() {
+  uint8_t value = stackPop(stack);
+  value = value << 1;
+  value = value & 0xF;
+  stackPush(stack,value);
 }
 
 
