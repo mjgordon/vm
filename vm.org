@@ -151,11 +151,11 @@ EXPANSIONS
 - [X] MOD31
 - [X] BIN
 
-** v004 Instruction Set Reconfiguring [2/6]
+** v004 Instruction Set Reconfiguring [4/6]
 - [X] C PR : Replace COLOR mode and MOVE command with RSH and LSH
 - [X] C PR : Replace PEEK w/ argument with PEEK : copy second item on stack to top of stack
-- [ ] C AS : Rewrite DUP and SWAP to use new version of PEEK
-- [ ] C AS : Add new PEEK2 and PEEK3 macros
+- [X] C AS : Rewrite DUP and SWAP to use new version of PEEK
+- [X] C AS : Add new PEEK2 and PEEK3 macros
 - [ ] C PR : Rewrite test files for new opcodes
 - [ ] F PR : Create test suite
 ** v005 Compiling and Linking [0/5]
@@ -224,7 +224,7 @@ B : ∆ : MNMNC  : DESCRIPTION
 
 A : N : PUSH   : Push selected mode location onto the stack
 B : N : POP    : Pop the stack into the selected mode location
-C : 1 : PEEK   : Copy part of the stack to the top of the stack
+C : 1 : PEEK   : Copy the second item of the stack to the top of the stack
 D : 5 : COND   : Go to the address at the top 4 positions of the stack if the 5th stack position is 0
 E : 2->1 : NOR : Performs a logical NOR on the top two stack positions
 F : 1 : DRAW   : Draws a line of COLOR between the last position and X/Y if the top position is 1. Else just move.
@@ -254,6 +254,8 @@ CONST3_0       : (+3) (0)  : Pushes a 12-bit 0 to the stack
 CONST4_0       : (+4) (0)  : Pushes a 16-bit 0 to the stack
 CONST3_1       : (+3) (0)  : Pushes a 12-bit 1 to the stack
 CONST4_1       : (+4) (0)  : Pushes a 16-bit 1 to the stack
+PEEK2          : (+1) (0)  : Copies the third item of the stack to the top of the stack
+PEEK3          : (+1) (0)  : Copies the fourth item of the stack to the top of the stack
 
 *** LOGIC & COMPARISON
 AND            : (-1) (0)  : Performs a bitwise AND on the top two nb
@@ -329,11 +331,15 @@ RSTK PUSH                       (B) ()
 _RESULT                         (-1) (0)
 
 _DUP                            (A) ()
-PEEK 0                          (A A) ()
+LIT PUSH 0                      (A 0) ()
+PEEK                            (A 0 A) ()
+RSTK POP                        (A 0) (A)
+DROP                            (A) (A)
+RSTK PUSH                       (A A)
 _RESULT                         (+ 1) ()
 
 _SWAP                           (A B) ()
-PEEK 1                          (A B A) ()
+PEEK                            (A B A) ()
 RSTK POP POP                    (A) (A B)
 DROP                            () (A B)
 RSTK PUSH PUSH                  (B A) ()
@@ -354,6 +360,21 @@ _RESULT                         (+3) ()
 _CONST4_1                       () ()
 LIT PUSH 0 PUSH 0 PUSH 0 PUSH1  (0 0 0 1) ()
 _RESULT                         (+4) ()
+
+_PEEK2                          (A B C) ()
+RSTK POP PEEK                   (A B A) (C)
+RSTK PUSH                       (A B A C) ()
+SWAP                            (A B C A) ()
+_RESULT                         (+1) ()
+
+
+_PEEK3                          (A B C D) ()
+RSTK POP POP                    (A B) (D C)
+PEEK                            (A B A) (D C)
+RSTK PUSH SWAP                  (A B C A) (D)
+RSTK PUSH SWAP                  (A B C D A) ()
+_RESULT                         (+1) ()
+
 
 *** LOGIC AND COMPARISON
 
@@ -384,13 +405,13 @@ _RESULT                         (-1) (0)
 
 _EQUAL3                         (A B C D E F) ()
 
-PEEK 3 SUB POP                  (A B C D E F-C) ()
+PEEK3 SUB POP                  (A B C D E F-C) ()
 TRUE NOT                        (A B C D E !F-C) ()
 LIT PUSH >0 COND                (A B C D E) ()
-PEEK 3 SUB POP                  (A B C D E-B) ()
+PEEK3 SUB POP                  (A B C D E-B) ()
 TRUE NOT                        (A B C D !E-B) ()
 LIT PUSH >1 COND                (A B C D) ()
-PEEK 3 SUB POP                  (A B C D-A) ()
+PEEK3 SUB POP                  (A B C D-A) ()
 TRUE NOT                        (A B C !D-A) ()
 LIT PUSH >2 COND                (A B C) ()
 DROP DROP DROP                  () ()
@@ -477,10 +498,10 @@ _RESULT                         (-1) (0)
 _RESULT
 
 _SUB33                          (A B C D E G) ()
-PEEK 2 RSTK POP POP POP DROP    (A B C) (D G E)
+PEEK2 RSTK POP POP POP DROP    (A B C) (D G E)
 RSTK PUSH PUSH                  (A B C E G) (D)
 SUB22                           (A B-E C-G) (D)
-RSTK PUSH PEEK 2 PEEK 2         (A B-E C-G D B-E C-G) ()
+RSTK PUSH PEEK2 PEEK2         (A B-E C-G D B-E C-G) ()
 RSTK POP POP POP DROP DROP      (A) (C-G B-E D)
 SUB PUSH POP                    (A-F) (C-G B-E D)
 RSTK PUSH                       (A-F D) (C-G B-E)
@@ -519,7 +540,7 @@ x    CD
    0123
 
 _MULT22                         (A B C D) ()
-RSTK POP PEEK 2 PEEK 2          (A B C A B) (D)
+RSTK POP PEEK2 PEEK2          (A B C A B) (D)
 RSTK POP POP                    (A B C) (D B A)
 MULT21                          (M N O) (D B A)
 RSTK PUSH PUSH PUSH             (M N O A B D) ()
@@ -537,7 +558,7 @@ _MULT21                         (A B C) ()
 RSTK POP SWAP RSTK PUSH         (B A C) ()
 DUP RSTK POP                    (B A C) (C)
 MULT                            (B K T) (C)
-PEEK 2 RSTK POP POP POP         (B) (C B T K)
+PEEK2 RSTK POP POP POP         (B) (C B T K)
 DROP RSTK PUSH PUSH PUSH PUSH   (K T B C) ()
 MULT                            (K T K T) ()
 RSTK POP ADD POP                (M N) (O)
@@ -606,10 +627,10 @@ _RESULT                         (-1) ()
 
 # AB is dividend. CD is divisor. QR is quotient, F is underflow flag
 _DIV22                          (A B C D) ()
-PEEK 1 PEEK 1 ADD POP           (A B C D C+D) ()
+PEEK PEEK ADD POP           (A B C D C+D) ()
 ADD PUSH POP                    (A B C D C+D+F) ()
 LIT PUSH >1 COND                (A B C D) ()
-PEEK 1 PEEK 1 RSTK POP POP      (A B C D) (D C)
+PEEK PEEK RSTK POP POP      (A B C D) (D C)
 POP POP POP POP                 () (D C D C B A)
 LIT PUSH 0 PUSH 0               (0 0) (D C D C B A)
 RSTK PUSH PUSH PUSH PUSH        (0 0 A B C D) (D C)
@@ -621,7 +642,7 @@ LIT PUSH >2                     (Q R !F >2) (D C B-D A-C)
 COND(>2)                        (Q R) (D C B-D A-C)
 LIT PUSH 1 ADD21                (Q R) (D C B-D A-C)
 RSTK PUSH PUSH PUSH PUSH        (Q R A-C B-D C D) ()
-PEEK 1 PEEK 1 RSTK POP POP      (Q R A-C B-D C D) (D C)
+PEEK PEEK RSTK POP POP      (Q R A-C B-D C D) (D C)
 GOTO >0
 %1                              (A B C D) ()
 DROP DROP DROP DROP             () ()
@@ -699,14 +720,14 @@ _RESULT                         (-1) ()
 
 # Returns the modulo of a two-digit number and a two-digit number
 _MOD22                          (A B C D) ()
-PEEK 1 PEEK 1 ZERO2             (A B C D Z) ()
+PEEK PEEK ZERO2             (A B C D Z) ()
 LIT PUSH >1 COND                (A B C D) ()
-PEEK 1 PEEK 1 RSTK POP POP      (A B C D) (D C)
+PEEK PEEK RSTK POP POP      (A B C D) (D C)
 %0
 SUB22                           (A-C B-D) (D C)
 SUB PUSH TRUE NOT               (A-C B-D !F) (D C)
 LIT PUSH >2 COND                (A-C B-D) (D C)
-RSTK PUSH PUSH PEEK 1 PEEK 1    (A-C B-D C D C D) ()
+RSTK PUSH PUSH PEEK PEEK    (A-C B-D C D C D) ()
 RSTK POP POP                    (A-C B-D C D) (D C)
 GOTO >0
 %1

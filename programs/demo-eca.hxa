@@ -53,7 +53,7 @@ GOTO >LOOP
 
 @ECA-COMPUTE
 # Copy the input 
-PEEK 1 PEEK 1
+PEEK PEEK
 
 # === DATAPOINT 0 ===
 # If X is 0, put 0 on the stack
