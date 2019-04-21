@@ -432,11 +432,10 @@ void execPop() {
 
 
 /* execPeek
- * Opcode PEEK : Copies an nb of the requested depth to the top of the data stack
+ * Opcode PEEK : Copies the second item on the stack to the top of the stack
  */
 void execPeek() {
-  uint8_t depth = getNextOpcode();
-  stackPush(stack,stackPeek(stack,depth));
+  stackPush(stack,stackPeek(stack,1));
 }
 
 
