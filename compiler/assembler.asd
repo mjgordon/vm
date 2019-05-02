@@ -1,5 +1,6 @@
 (asdf:defsystem :assembler
   :name "assembler"
+  :depends-on (:prove :split-sequence)
   :components ((:file "packages")
 	       (:file "assembler-globals")
 	       (:file "assembler-util"

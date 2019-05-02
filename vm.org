@@ -159,7 +159,6 @@ EXPANSIONS
 - [ ] C PR : Rewrite test files for new opcodes
 - [ ] F PR : Create test suite
 ** v005 Compiling and Linking [0/5]
-- [ ] C VM : Replace F (Draw line)
 - [ ] R AS : Cleanup usage of car/first, cdr/rest etc
 - [ ] F CM : Plan basic syntax 
 - [ ] F CM : Constants and math : +,-,*,/,(,)

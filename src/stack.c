@@ -52,7 +52,7 @@ void stackPush(struct Stack* stack, uint8_t item) {
  */
 uint8_t stackPop(struct Stack* stack) {
   if (stackIsEmpty(stack)) {
-    printf("%s : tried to pop empty stack\n",stack->name);
+    //printf("%s : tried to pop empty stack\n",stack->name);
     return 0;
   }
   return stack->array[stack->top--];

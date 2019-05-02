@@ -4,6 +4,7 @@
 extern int flagUnrollStack;
 extern int flagOutputPrint;
 extern int flagOutputFile;
+extern int flagTest;
 
 typedef struct {
   uint8_t nbs[8];

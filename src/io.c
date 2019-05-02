@@ -23,6 +23,7 @@ FILE *write_ptr;
 int flagUnrollStack = 0;
 int flagOutputPrint = 0;
 int flagOutputFile = 0;
+int flagTest = 0;
 
 int mode = MODE_WAITING;
 

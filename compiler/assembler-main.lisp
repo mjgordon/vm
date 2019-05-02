@@ -27,7 +27,7 @@ while creating lists of labels and references."
   (mapcar (lambda (word)
 	    (let ((sym (intern word 'opcodes)) (ch0 (char word 0)))
 	      (cond ((char= ch0 #\@) (insert-label-set sym))
-		    ((char= ch0 #\>) (progn (insert-ref-table sym (intern (substitute #\@ #\> word) 'opcodes))
+		    ((char= ch0 #\>) (progn (insert-ref-table sym (intern (substitute #\@ #\> word) :opcodes))
 					    (insert-ref-set sym)))
 		    ((char= ch0 #\+) (let ((offset 0))
 				       (progn (setf sym (gensym))

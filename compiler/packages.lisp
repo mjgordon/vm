@@ -3,5 +3,8 @@
   (:export :assemble-hex))
 
 (defpackage :opcodes
-  (:use :cl :asdf)
-  (:export :get-dictionary))
+  (:export :get-dictionary :get-bytecodes-raw))
+
+(defpackage :tests
+  (:use :cl :asdf :prove)
+  (:export :test-opcodes))

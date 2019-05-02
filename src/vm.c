@@ -90,7 +90,7 @@ char* filenameHeatmapProgram;
 
 int main(int argc, char* argv[]) {
   int opt;
-  while((opt = getopt(argc,argv,"spof:u:")) != -1) {
+  while((opt = getopt(argc,argv,"spotf:u:")) != -1) {
     switch(opt) {
     case 's':
       flagUnrollStack = 1;
@@ -100,6 +100,9 @@ int main(int argc, char* argv[]) {
       break;
     case 'o':
       flagOutputFile = 1;
+      break;
+    case 't':
+      flagTest = 1;
       break;
     case 'f':
       filename = optarg;
@@ -128,11 +131,11 @@ void setup() {
   initializeIO(filenameOutput);
 
   FILE *fileptr;
-  printf("Opened program : %s\n",filename);
+  if (!flagTest) printf("Opened program : %s\n",filename);
   fileptr = fopen(filename,"rb");
   fseek(fileptr,0,SEEK_END);
   programLength = ftell(fileptr);
-  printf("Program length: %i\n",programLength);
+  if (!flagTest) printf("Program length: %i\n",programLength);
   rewind(fileptr);
   program = (uint8_t *)malloc((programLength)*sizeof(char));
   if (fread(program,1,programLength,fileptr) == 0) {
@@ -199,33 +202,35 @@ void finish() {
   free(filenameOutput);
   free(filenameHeatmapOpcodes);
   free(filenameHeatmapProgram);
-  printf("=== RESULTS ===\n");
-  printf("Execution took %lu ms\n",endTime - startTime);
-  printf("%li operations\n",cycles);
-  printf("PC: %i\n",PC);
-  printf("Data stack max depth: %i\n",stackGetMaxDepth(stack));
-  printf("Return stack max depth: %i\n",stackGetMaxDepth(rstack));
+  if (! flagTest) {
+    printf("=== RESULTS ===\n");
+    printf("Execution took %lu ms\n",endTime - startTime);
+    printf("%li operations\n",cycles);
+    printf("PC: %i\n",PC);
+    printf("Data stack max depth: %i\n",stackGetMaxDepth(stack));
+    printf("Return stack max depth: %i\n",stackGetMaxDepth(rstack));
+  
 
-  // Report on data stack
-  printf("Data stack final depth: %i\n",(stack -> top) + 1);
-  if (flagUnrollStack && !stackIsEmpty(stack)) {
-    printf(" Unrolling data stack:\n");
-    while(!stackIsEmpty(stack)) {
-      printf(" %i",stackPop(stack));
+    // Report on data stack
+    printf("Data stack final depth: %i\n",(stack -> top) + 1);
+    if (flagUnrollStack && !stackIsEmpty(stack)) {
+      printf(" Unrolling data stack:\n");
+      while(!stackIsEmpty(stack)) {
+	printf(" %i",stackPop(stack));
+      }
+      printf("\n");
     }
-    printf("\n");
-  }
-
-  // Report on return stack
-  printf("Return stack final depth: %i\n",(rstack -> top) + 1);
-  if (flagUnrollStack && !stackIsEmpty(rstack)) {
-    printf(" Unrolling return stack:\n");
-    while(!stackIsEmpty(rstack)) {
-      printf(" %i",stackPop(rstack));
+    
+    // Report on return stack
+    printf("Return stack final depth: %i\n",(rstack -> top) + 1);
+    if (flagUnrollStack && !stackIsEmpty(rstack)) {
+      printf(" Unrolling return stack:\n");
+      while(!stackIsEmpty(rstack)) {
+	printf(" %i",stackPop(rstack));
+      }
+      printf("\n");
     }
-    printf("\n");
   }
-
   // Loop forever after execution is complete; respond to quit events and redraw the window as needed
   while (1) {
     if (SDL_WaitEvent(&event)) {

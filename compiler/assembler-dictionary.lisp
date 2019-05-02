@@ -47,7 +47,7 @@
     (mapcar (lambda (def)
 	      (setf (gethash (first def) definitions) (rest def)))
 	    (opcodes:get-dictionary))
-    (opcodes::shadow-symbols definitions)
+    ;(opcodes::shadow-dict definitions)
     (lambda (tokens)
       (let* ((token (car tokens))
 	     (next (cdr tokens))
@@ -76,28 +76,14 @@
 	      (t (cons nil def)))))))
 
 
+
+
+
+
 (defun get-bytecodes ()
   "Returns a hashtable of the mnemonic symbols to their associated bytecodes"
   (let ((bytecodes (make-hash-table :test 'eq)))
-    (mapcan #'(lambda (def)
-		(setf (gethash (car def) bytecodes) (cadr def)))
-	    '((OPCODES::X #x0)
-	      (OPCODES::Y #x1)
-	      (OPCODES::PC #x2)
-	      (OPCODES::MEM #x3)
-	      (OPCODES::IO #x4)
-	      (OPCODES::RSTK #x5)
-	      (OPCODES::LIT #x6)
-	      (OPCODES::ADD #x7)
-	      (OPCODES::SUB #x8)
-	      (OPCODES::PUSH #x9)
-	      (OPCODES::POP #xA)
-	      (OPCODES::PEEK #xB)
-	      (OPCODES::COND #xC)
-	      (OPCODES::NOR #xD)
-	      (OPCODES::RSH #xE)
-	      (OPCODES::LSH #xF)))
+    (mapcar (lambda (def)
+	      (setf (gethash (car def) bytecodes) (cadr def)))
+	    (opcodes:get-bytecodes-raw))
     bytecodes))
-
-
-

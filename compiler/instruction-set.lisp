@@ -1,18 +1,26 @@
-(in-package :opcodes)
+(cl:in-package :opcodes)
 
-(defun shadow-symbols (dict)
-  "Ensures that all the expansions mnemonics shadow in the package"
-  (mapcar (lambda (key)
-	    (shadow key :opcodes))
-	  (assembler::hash-keys dict)))
-	       
+(cl:defun get-bytecodes-raw()
+  '((OPCODES::X #x0)
+    (OPCODES::Y #x1)
+    (OPCODES::PC #x2)
+    (OPCODES::MEM #x3)
+    (OPCODES::IO #x4)
+    (OPCODES::RSTK #x5)
+    (OPCODES::LIT #x6)
+    (OPCODES::ADD #x7)
+    (OPCODES::SUB #x8)
+    (OPCODES::PUSH #x9)
+    (OPCODES::POP #xA)
+    (OPCODES::PEEK #xB)
+    (OPCODES::COND #xC)
+    (OPCODES::NOR #xD)
+    (OPCODES::RSH #xE)
+    (OPCODES::LSH #xF)))
 
-(defun get-dictionary ()
+
+(cl:defun get-dictionary ()
   "Returns the raw data of the expansion dictionary. Gets closured into the dictionary expander function"
-  ;; Ensure that the default opcodes shadow
-  (mapcar (lambda (sym)
-	    (shadow sym :opcodes))
-	  '(X Y PC MEM IO RSTK LIT ADD SUB PUSH POP PEEK COND NOR RSH LSH))
   ;; DEFINITIONS
   '(
     ;; STACK OPERATIONS
