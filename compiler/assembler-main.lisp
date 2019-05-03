@@ -3,6 +3,8 @@
 
 ;;; Main assembly pipeline functions
 
+
+
 (defun get-file (filename)
   "Load a hxa assembly file as a list of strings"
   (with-open-file (stream filename)
@@ -52,7 +54,7 @@ while creating lists of labels and references."
     (if (car expansion)
 	(expand-tokens (rest expansion) expander (incf depth))
 	(progn
-	  (format t "Expansion took ~s passes~%" depth)
+	  (when *verbose-assembly* (format t "Expansion took ~s passes~%" depth))
 	  (rest expansion)))))
 
 
@@ -73,7 +75,7 @@ while creating lists of labels and references."
 		(setf output-tokens (cons token output-tokens))
 		(setf output-map (cons map-item output-map))))
 	    tokens *output-map*)
-    (format t "~a redundant tokens stripped~%" strip-count)
+    (when *verbose-assembly* (format t "~a redundant tokens stripped~%" strip-count))
     (setf *output-map* (reverse output-map))
     (reverse output-tokens)))
     
@@ -127,7 +129,7 @@ while creating lists of labels and references."
 			    :direction :output
 			    :element-type 'unsigned-byte
 			    :if-exists :supersede)
-      (format t "Assembled ~a tokens~%" (length tokens))
+      (when *verbose-assembly* (format t "Assembled ~a tokens~%" (length tokens)))
       (mapcar (lambda (token)
 		(when (symbolp token)
 		    (let ((byte (gethash token bytecodes)))
@@ -156,9 +158,17 @@ while creating lists of labels and references."
       (loop for n in (map 'list #'identity bytecode-counts) do
 	   (write-byte n stream)))))
 
+(defun assemble-hex-internal (filename output-filename output-heatmap output-mapping)
+  (write-bytecode (resolve-labels (strip-redundant-modes (expand-tokens (generate-tables (get-file filename)))))
+		  output-filename
+		  output-heatmap
+		  output-mapping))
 
-(defun assemble-hex (filename)
+
+(defun assemble-hex (filename &key (verbose t))
   "Composites main assembly pipeline functions. Reports any feedback"
+  (setf *verbose-assembly* verbose)
+  (setf *error-flag* 0)
   (let* ((path-divisor (search "/" filename :from-end t))
 	 (filename-stripped (subseq filename path-divisor (search ".hxa" filename)))
 	 (filepath (subseq filename 0 path-divisor))
@@ -176,10 +186,9 @@ while creating lists of labels and references."
 				      filename-stripped
 				      "-mapping.hxo")))
     (ensure-directories-exist (concatenate 'string filepath filename-stripped "-analysis/"))
-    (time (write-bytecode (resolve-labels (strip-redundant-modes (expand-tokens (generate-tables (get-file filename)))))
-			  output-filename
-			  output-heatmap
-			  output-mapping)))
+    (if *verbose-assembly*
+	(time (assemble-hex-internal filename output-filename output-heatmap output-mapping))
+	(assemble-hex-internal filename output-filename output-heatmap output-mapping)))
   *error-flag*)
 
 

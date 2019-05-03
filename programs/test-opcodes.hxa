@@ -4,8 +4,8 @@
 # each test ends with a RET expansion, then GOTO's the end of the file
 
 CALL >PC_TEST
-#CALL >ADD_TEST
-#CALL >SUB_TEST
+CALL >ADD_TEST
+CALL >SUB_TEST
 #CALL >PEEK_TEST
 #CALL >NOR_TEST
 
@@ -15,6 +15,7 @@ GOTO >END
 # ==============================================
 # PC Mode
 # Puts 1, moves PC beyond instructions that would change it to 2
+# Output : 1
 
 @PC_TEST
 LIT PUSH 1
@@ -27,46 +28,25 @@ RET
 
 # ==============================================
 # ADD mode and addition flag
-# Move to position, put a color into memory and copy it out again, move two pixels over and repeat
-# Uses cond to know when to end
+# Adds two non-overflowing and two overflowing NBs. Returns their results and their overflow flags
+# Output : 5 0 0 1
 
 @ADD_TEST
-LIT
-PUSH 10
-PUSH 0 PUSH 4 PUSH 0
-PUSH 0 PUSH 10 PUSH 4
-Y POP
-X POP
-MEM POP
-@ADD_TEST_B
-MEM PUSH X PUSH
-LIT PUSH 2 ADD POP
-X POP MEM POP
-ADD PUSH
-LIT PUSH >ADD_TEST_B
-COND
-
+LIT PUSH 2  PUSH 3 ADD POP OUT ADD PUSH OUT
+LIT PUSH 15 PUSH 1 ADD POP OUT ADD PUSH OUT
 RET
 
 # ==============================================
 # SUB mode and subtraction flag
-# Similar to ADD test, but starts at end of line of dots and works backwards. Uses cond.
+# Subracts several non-underflowing and underflowing pairs of NBs.
+# Output : 2 0 0 0 15 1 15 1 1 1
 
 @SUB_TEST
-LIT
-PUSH 10
-PUSH 0 PUSH 4 PUSH 15
-PUSH 0 PUSH 10 PUSH 8
-Y POP
-X POP
-MEM POP
-@SUB_TEST_B
-MEM PUSH X PUSH
-LIT PUSH 2 SUB POP
-X POP MEM POP
-SUB PUSH
-LIT PUSH >SUB_TEST_B
-COND
+LIT PUSH 5 PUSH  3 SUB POP OUT SUB PUSH OUT
+LIT PUSH 5 PUSH  5 SUB POP OUT SUB PUSH OUT
+LIT PUSH 5 PUSH  6 SUB POP OUT SUB PUSH OUT
+LIT PUSH 0 PUSH  1 SUB POP OUT SUB PUSH OUT
+LIT PUSH 0 PUSH 15 SUB POP OUT SUB PUSH OUT
 
 RET
 

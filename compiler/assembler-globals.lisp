@@ -20,3 +20,6 @@
 
 ;; Tracks errors in assembly
 (defparameter *error-flag* 0)
+
+;; Whether to print messages during assembly
+(defparameter *verbose-assembly* t)

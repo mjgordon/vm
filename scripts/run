@@ -1,0 +1,18 @@
+#!/bin/bash
+
+pushd . > /dev/null
+
+cd "${0%/*}"
+cd ..
+
+echo "=== Assembling ==="
+cd compiler
+sbcl --script shell-entry.lisp "../programs/$1.hxa"
+cd ..
+
+echo "=== Running ==="
+./bin/vm -s -p -f "programs/$1.hxb"
+
+echo "=== Finished ==="
+
+popd > /dev/null
