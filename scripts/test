@@ -5,6 +5,9 @@ pushd . > /dev/null
 cd "${0%/*}"
 cd ../compiler
 
-sbcl --noinform --load test-assembler.lisp --eval '(quit)'
+echo "=== OPCODES ==="
+sbcl --noinform --load shell-entry-tests.lisp "opcodes"
+echo "=== MACROS ==="
+sbcl --noinform --load shell-entry-tests.lisp "macros"
 
 popd > /dev/null

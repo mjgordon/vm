@@ -1,9 +1,12 @@
-;; Used when running the assembler from a bash script
+;; Calling tests from bash script
 (load "~/lisp/quicklisp/setup.lisp")
 (with-open-stream (*standard-output* (make-broadcast-stream))
   (handler-bind ((asdf:bad-system-name #'muffle-warning))
     (asdf:load-system :assembler)))
 
-(assembler::assemble-hex (cadr sb-ext:*posix-argv*))
-
+(let ((arg (cadr sb-ext:*posix-argv*)))
+  (cond
+    ((string= arg "opcodes") (tests:test-opcodes))
+    ((string= arg "macros") (tests:test-macros))))
+      
 (exit)

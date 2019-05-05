@@ -7,4 +7,4 @@
 
 (defpackage :tests
   (:use :cl :asdf :prove)
-  (:export :test-opcodes))
+  (:export :test-opcodes :test-macros))

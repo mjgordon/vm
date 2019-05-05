@@ -1,41 +1,22 @@
-(with-open-stream (*standard-output* (make-broadcast-stream))
-  (handler-bind ((asdf:bad-system-name #'muffle-warning))
-    (asdf:load-system :assembler)))
-
 (in-package :tests)
-
-(defun get-result (results)
-  (read-line (sb-ext:process-output results) nil)) 
-
-(defun prove-nb (values results)
-  (mapcar (lambda (value)
-	    (is (concatenate 'string "NB : " (write-to-string value)) (get-result results)))
-	  values))
-
-
 
 
 (defun test-opcodes ()
-  (assembler::assemble-hex "../programs/test-opcodes.hxa" :verbose nil)
-  (let ((results (sb-ext:run-program "./../bin/vm" (list "-p" "-t" "-f" "../programs/test-opcodes.hxb") :search "/usr/bin/sh" :output :stream)))
+  (with-hxa "test-opcodes"
     (diag "Testing Opcodes:")
-    (subtest "Opcode PC"
+    (mnemonic-test "Opcode PC" ((:nb 1)))
+    (mnemonic-test "Opcode MEM" ((:nb 1 2)))
+    (subtest "Opcode IO"
       (plan 1)
-      (is (get-result results) "NB : 1")
+      (ok (get-result results))
       (prove:finalize))
-    (subtest "Opcode ADD"
-      (plan 4)
-      (prove-nb '(5 0 0 1) results)
-      (prove:finalize))
-    (subtest "Opcode SUB"
-      (plan 10)
-      (prove-nb '(2 0 0 0 15 1 15 1 1 1) results)
-      (prove:finalize))))
-
-
-     
-
-(test-opcodes)
+    (mnemonic-test "Opcode ADD" ((:nb 5 0 0 1)))
+    (mnemonic-test "Opcode SUB" ((:nb 2 0 0 0) (:nb 15 1 15 1 1 1 )))
+    (mnemonic-test "Opcode PEEK" ((:nb 1 2 1 0)))
+    (mnemonic-test "Opcode COND" ((:nb 1 1)))
+    (mnemonic-test "Opcode NOR" ((:nb 15 0 12 3)))
+    (mnemonic-test "Opcode RSH" ((:nb 0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7)))
+    (mnemonic-test "Opcode LSH" ((:nb 0 2 4 6 8 10 12 14 0 2 4 6 8 10 12 14)))))
   
 
 

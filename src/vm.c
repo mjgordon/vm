@@ -473,6 +473,7 @@ void execNOR() {
 
 /* execRSH
  * Opcode RSH : Binary shift the top of the stack one place to the right
+ * Currently does not set flags if bits wrap, will need to test
  */
 
 void execRSH() {

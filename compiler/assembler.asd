@@ -10,4 +10,11 @@
 	       (:file "assembler-dictionary"
 		      :depends-on ("assembler-globals" "assembler-util" "instruction-set"))
 	       (:file "assembler-main"
-		      :depends-on ("assembler-globals" "assembler-dictionary" "assembler-util"))))
+		      :depends-on ("assembler-globals" "assembler-dictionary" "assembler-util"))
+
+	       (:file "test-util")
+	       (:file "test-assembler"
+		      :depends-on("test-util"))
+	       (:file "test-macros"
+		      :depends-on("test-util"))))
+		

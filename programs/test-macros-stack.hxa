@@ -1,0 +1,73 @@
+# Testing stack macros
+
+@START
+CALL >DROP_TEST
+CALL >DROP1_TEST
+CALL >DUP_TEST
+CALL >SWAP_TEST
+CALL >CONST_TEST
+CALL >PEEK_TEST
+GOTO >END
+
+
+# ==============================================
+# Stack Macro DROP
+# Output 1 1
+
+@DROP_TEST
+LIT PUSH 1 PUSH 0 DROP OUT
+DROP LIT PUSH 1 OUT
+RET
+
+
+# ==============================================
+# Stack Macro DROP
+# Output 1 1
+
+@DROP1_TEST
+LIT PUSH 1 PUSH 0 PUSH 1 DROP1 OUT OUT
+RET
+
+
+# ==============================================
+# Stack Macro DUP
+# Output 1 1
+
+@DUP_TEST
+LIT PUSH 1 DUP OUT OUT
+RET
+
+
+# ==============================================
+# Stack Macro SWAP
+# Output 1 2
+
+@SWAP_TEST
+LIT PUSH 1 PUSH 2 SWAP OUT OUT
+RET
+
+
+# ==============================================
+# Stack Macro CONST3_0 CONST4_0 CONST3_1 CONST4_1
+# Output 0 0 1 1
+
+@CONST_TEST
+CONST3_0 OUT12
+CONST4_0 OUT16
+CONST3_1 OUT12
+CONST4_1 OUT16
+RET
+
+
+# ==============================================
+# Stack Macro PEEK2 and PEEK3
+# Output 0 2 1 0 0 3 2 1 0
+
+@PEEK_TEST
+LIT PUSH 0 PUSH 1 PUSH 2 PEEK2 OUT OUT OUT OUT
+LIT PUSH 0 PUSH 1 PUSH 2 PUSH 3 PEEK3 OUT OUT OUT OUT OUT
+RET
+
+
+@END
+

@@ -157,20 +157,20 @@ EXPANSIONS
 - [X] C AS : Rewrite DUP and SWAP to use new version of PEEK
 - [X] C AS : Add new PEEK2 and PEEK3 macros
 - [X] B AS : Fix shadowing issues in opcode package
-- [X] F PR : Create test system
+- [X] F PR : Setup test system using prove
 - [ ] C PR : Rewrite test files
+- [ ] F AS : PUSH2 PUSH3 PUSH4 for pushing larger numbers
 
 ** v005 Compiling and Linking [0/5]
 - [ ] R AS : Cleanup usage of car/first, cdr/rest etc
 - [ ] F CM : Plan basic syntax 
 - [ ] F CM : Constants and math : +,-,*,/,(,)
 
-- [ ] B AS : Recompiling sometimes messes up opcode package shadowing?
-
 ** vFUTURE
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array. (Checked assembly, *may* be doing an internal jump table right now, can't tell. Saving for when I have a more intensive demo program to test with, so differences won't be rounding errors in scale. NVM I've got one now, sierpinski takes 5 minutes to run my god
-- [ ] F PR : Automatic unit-testing script
 - [ ] C PR : Opcode graphing should separate constant numbers in assembly
+- [ ] C VM : Use separate flags for ADD, SUB, RSH, LSH
+- [ ] C PR : Decide on 2,3,4 vs 8,12,16 naming convention for multi-nb numbers
 
 
   
@@ -182,7 +182,7 @@ https://github.com/qeedquan/turtle/blob/master/src/util.c
 ** Editor
 *** .hxa
 elisp snippet for generating the hxa-mode emacs rule for expansions:
-(regexp-opt '("DROP" "DROP1" "DUP" "SWAP" "CONST3_0" "CONST4_0" "CONST3_1" "CONST4_1" "AND" "OR" "NOT" "TRUE" "BIN" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADD31" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB31" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "DIV31" "MOD" "MOD21" "MOD22" "MOD31" "OUT" "OUT8" "OUT12" "OUT16"))
+(regexp-opt '("DROP" "DROP1" "DUP" "SWAP" "CONST3_0" "CONST4_0" "CONST3_1" "CONST4_1" "AND" "OR" "NOT" "TRUE" "BIN" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADD31" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB31" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "DIV31" "MOD" "MOD21" "MOD22" "MOD31" "OUT" "OUT8" "OUT12" "OUT16" "PEEK2" "PEEK3"))
 
 ** General
 Screen Storage:
@@ -721,14 +721,14 @@ _RESULT                         (-1) ()
 
 # Returns the modulo of a two-digit number and a two-digit number
 _MOD22                          (A B C D) ()
-PEEK PEEK ZERO2             (A B C D Z) ()
+PEEK PEEK ZERO2                 (A B C D Z) ()
 LIT PUSH >1 COND                (A B C D) ()
-PEEK PEEK RSTK POP POP      (A B C D) (D C)
+PEEK PEEK RSTK POP POP          (A B C D) (D C)
 %0
 SUB22                           (A-C B-D) (D C)
 SUB PUSH TRUE NOT               (A-C B-D !F) (D C)
 LIT PUSH >2 COND                (A-C B-D) (D C)
-RSTK PUSH PUSH PEEK PEEK    (A-C B-D C D C D) ()
+RSTK PUSH PUSH PEEK PEEK        (A-C B-D C D C D) ()
 RSTK POP POP                    (A-C B-D C D) (D C)
 GOTO >0
 %1
