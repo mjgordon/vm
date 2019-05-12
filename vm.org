@@ -151,20 +151,21 @@ EXPANSIONS
 - [X] MOD31
 - [X] BIN
 
-** v004 Instruction Set Reconfiguring [6/7]
+** v004 Instruction Set Reconfiguring [7/8]
 - [X] C PR : Replace COLOR mode and MOVE command with RSH and LSH
 - [X] C PR : Replace PEEK w/ argument with PEEK : copy second item on stack to top of stack
 - [X] C AS : Rewrite DUP and SWAP to use new version of PEEK
 - [X] C AS : Add new PEEK2 and PEEK3 macros
 - [X] B AS : Fix shadowing issues in opcode package
 - [X] F PR : Setup test system using prove
-- [ ] C PR : Rewrite test files
+- [X] C PR : Rewrite test files
 - [ ] F AS : PUSH2 PUSH3 PUSH4 for pushing larger numbers
 
 ** v005 Compiling and Linking [0/5]
 - [ ] R AS : Cleanup usage of car/first, cdr/rest etc
 - [ ] F CM : Plan basic syntax 
 - [ ] F CM : Constants and math : +,-,*,/,(,)
+- [ ] F PR : Testing should scan dictionary for macro coverage
 
 ** vFUTURE
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array. (Checked assembly, *may* be doing an internal jump table right now, can't tell. Saving for when I have a more intensive demo program to test with, so differences won't be rounding errors in scale. NVM I've got one now, sierpinski takes 5 minutes to run my god
