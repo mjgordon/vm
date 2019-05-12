@@ -2,6 +2,7 @@
 
 
 (defun test-macros-stack ()
+  "Run tests on the macros for stack operations"
   (with-hxa "test-macros-stack"
     (diag "Testing stack macros:")
     (mnemonic-test "Macro DROP" ((:nb 1 1)))
@@ -12,6 +13,7 @@
     (mnemonic-test "Macro PEEK" ((:nb 0 2 1 0) (:nb 0 3 2 1 0)))))
 
 (defun test-macros-logic ()
+  "Run tests on the macros for logic operations"
   (with-hxa "test-macros-logic"
     (diag "Testing logic macros:")
     (mnemonic-test "Macro AND" ((:nb 0 0 1 2 0 0 15)))
@@ -22,6 +24,7 @@
     (mnemonic-test "Macro ZERO2" ((:nb 0 1 1 1 1 1 1)))))
 
 (defun test-macros-math ()
+  "Run tests on the macros for math operations"
   (with-hxa "test-macros-math"
     (diag "Testing math macros:")
     (mnemonic-test "Macro EQUAL3:" ((:nb 15 15 15 0 0 15)))
@@ -52,6 +55,7 @@
 
 
 (defun test-macros ()
+  "Run all macro tests in this file"
   ;(setf prove:*default-reporter* :fiveam)
   ;(test-macros-stack)
   ;(test-macros-logic)

@@ -47,7 +47,6 @@
     (mapcar (lambda (def)
 	      (setf (gethash (first def) definitions) (rest def)))
 	    (opcodes:get-dictionary))
-    ;(opcodes::shadow-dict definitions)
     (lambda (tokens)
       (let* ((token (car tokens))
 	     (next (cdr tokens))

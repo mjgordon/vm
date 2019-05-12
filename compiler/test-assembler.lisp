@@ -1,7 +1,7 @@
 (in-package :tests)
 
-
 (defun test-opcodes ()
+  "Run tests on the basic opcodes"
   (with-hxa "test-opcodes"
     (diag "Testing Opcodes:")
     (mnemonic-test "Opcode PC" ((:nb 1)))

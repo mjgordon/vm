@@ -1,9 +1,8 @@
 ;;;;; assembler.lisp
 (in-package :assembler)
 
+
 ;;; Main assembly pipeline functions
-
-
 
 (defun get-file (filename)
   "Load a hxa assembly file as a list of strings"
@@ -159,6 +158,7 @@ while creating lists of labels and references."
 	   (write-byte n stream)))))
 
 (defun assemble-hex-internal (filename output-filename output-heatmap output-mapping)
+  "Composites main assembly pipeline functions. Reports any feedback"
   (write-bytecode (resolve-labels (strip-redundant-modes (expand-tokens (generate-tables (get-file filename)))))
 		  output-filename
 		  output-heatmap
@@ -166,7 +166,7 @@ while creating lists of labels and references."
 
 
 (defun assemble-hex (filename &key (verbose t))
-  "Composites main assembly pipeline functions. Reports any feedback"
+  "Sets up outputs and assembles differently based on arguments"
   (setf *verbose-assembly* verbose)
   (setf *error-flag* 0)
   (let* ((path-divisor (search "/" filename :from-end t))

@@ -1,6 +1,7 @@
 (cl:in-package :opcodes)
 
 (cl:defun get-bytecodes-raw()
+  "Returns a tree of the basic opcodes and their bytecode counterparts"
   '((OPCODES::X #x0)
     (OPCODES::Y #x1)
     (OPCODES::PC #x2)
@@ -44,6 +45,8 @@
      (RSTK POP PEEK RSTK PUSH SWAP))
     (PEEK3
      (RSTK POP POP PEEK RSTK PUSH SWAP RSTK PUSH SWAP))
+    (PUSH2
+     (LIT PUSH A PUSH B))
     ;; LOGIC
     (TRUE
      (LIT PUSH >0 COND
