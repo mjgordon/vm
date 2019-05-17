@@ -1,10 +1,5 @@
-(defpackage :assembler
-  (:use :cl :asdf)
-  (:export :assemble-hex))
+(defpackage :compiler
+  (:use :cl :asdf))
 
-(defpackage :opcodes
-  (:export :get-dictionary :get-bytecodes-raw))
-
-(defpackage :tests
-  (:use :cl :asdf :prove)
-  (:export :test-opcodes :test-macros))
+(defpackage :compiler-tests
+  (:use :cl :asdf :prove))

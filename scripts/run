@@ -6,7 +6,7 @@ cd "${0%/*}"
 cd ..
 
 echo "=== Assembling ==="
-cd compiler
+cd assembler
 sbcl --script shell-entry.lisp "../programs/$1.hxa"
 cd ..
 

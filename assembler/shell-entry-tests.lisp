@@ -1,5 +1,6 @@
 ;; Calling tests from bash script
 (load "~/lisp/quicklisp/setup.lisp")
+(load "assembler.asd")
 (with-open-stream (*standard-output* (make-broadcast-stream))
   (handler-bind ((asdf:bad-system-name #'muffle-warning))
     (asdf:load-system :assembler)))

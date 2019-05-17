@@ -160,9 +160,10 @@ EXPANSIONS
 - [X] F PR : Setup test system using prove
 - [X] C PR : Rewrite test files
 
-** v005 Compiling and Linking [0/3]
+** v005 Compiling and Linking [1/4]
 - [ ] R AS : Cleanup usage of car/first, cdr/rest etc
-- [ ] F CM : Plan basic syntax 
+- [ ] F CM : Write spec for subset of c
+- [X] F CM : Basic lexer
 - [ ] F CM : Constants and math : +,-,*,/,(,)
 
 
@@ -782,5 +783,11 @@ _RESULT                         (0) (-4)
 
 ** HXC
 Minimal subset of C
+*** Datatypes
+- int4 (nb)
+- int8
+- int12
+- int16
+- boolean
 
 
