@@ -3,4 +3,4 @@
   :depends-on (:prove :split-sequence :cl-ppcre)
   :components ((:file "packages")
 	       (:file "compiler-main")
-	       (:file "scanners")))
+	       (:file "compiler-util")))
