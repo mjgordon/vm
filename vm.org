@@ -176,7 +176,8 @@ EXPANSIONS
 - [ ] C VM : Use separate flags for ADD, SUB, RSH, LSH
 - [ ] C PR : Decide on 2,3,4 vs 8,12,16 naming convention for multi-nb numbers
 
-
+** Reminders
+- C : We don't want to store tokens as (simpler conses) because there's other information such as tree inclusion, line numbers, that is helpful to pull along from the start
   
 * Documentation
 ** Links:
@@ -790,5 +791,10 @@ Minimal subset of C
 - int12
 - int16
 - boolean
+
+*** Sample function definition
+int4 main() {
+    int a = 4;
+}
 
 

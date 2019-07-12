@@ -1,0 +1,6 @@
+CALL >main
+GOTO >END
+@main
+LIT PUSH 2
+RET
+@END

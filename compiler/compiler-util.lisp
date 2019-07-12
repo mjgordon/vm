@@ -1,7 +1,13 @@
 (in-package :compiler)
 
-(defmacro get-hash (key hashtable)
-  `(gethash ,key ,hashtable))
+
+(defun load-file-as-strings (filename)
+  "Load a hxc file as a list of strings"
+  (with-open-file (stream filename)
+    (loop for line = (read-line stream nil)
+       while line
+       collect line)))
+
 
 (defun print-list (l)
   (mapcar (lambda (item)
@@ -16,17 +22,20 @@
 
 (defun print-token-tree (tree &optional (depth 0))
   (mapcar (lambda (token)
-	    (format t "~v@{~A~:*~}" depth " ")
-	    (format t "~a~%" (token-type token))
+	    (format t "~%")
+	    (print-spaces depth)
+	    (format t "~a" (token-type token))
 	    (if (eq (type-of (token-value token)) 'cons)
 		(print-token-tree (token-value token) (+ 1 depth))
 		(progn
-		  (format t "~v@{~A~:*~}" (+ 1 depth) " ")
-		  (format t "~a~%" (token-value token)))))
+		  ;;(print-spaces (+ depth 1))
+		  (format t " (~a)" (token-value token)))))
 	    
 	  tree)
   nil)
 
+(defun print-spaces (amt)
+  (format t "~v@{~A~:*~}" amt " "))
 
 ;;; Debugging
 
@@ -48,4 +57,4 @@
 
 
 
-    
+

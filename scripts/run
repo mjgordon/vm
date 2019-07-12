@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 pushd . > /dev/null
@@ -5,13 +6,31 @@ pushd . > /dev/null
 cd "${0%/*}"
 cd ..
 
-echo "=== Assembling ==="
-cd assembler
-sbcl --script shell-entry.lisp "../programs/$1.hxa"
-cd ..
+filename=''
+
+while getopts "caf:" OPTION
+do
+    case $OPTION in
+	f)
+	    filename=$OPTARG
+	    ;;
+	c)
+	    echo "=== Compiling ==="
+	    cd compiler
+	    sbcl --script shell-entry-compiler.lisp "../programs/$filename.hxc"
+	    cd ..
+	    ;;
+	a)
+	    echo "=== Assembling ==="
+	    cd assembler
+	    sbcl --script shell-entry.lisp "../programs/$filename.hxa"
+	    cd ..
+	    ;;
+    esac
+done
 
 echo "=== Running ==="
-./bin/vm -s -p -f "programs/$1.hxb"
+./bin/vm -s -p -f "programs/$filename.hxb"
 
 echo "=== Finished ==="
 

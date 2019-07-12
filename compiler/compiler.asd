@@ -2,5 +2,8 @@
   :name "compiler"
   :depends-on (:prove :split-sequence :cl-ppcre)
   :components ((:file "packages")
-	       (:file "compiler-main")
-	       (:file "compiler-util")))
+	       (:file "compiler-util")
+	       (:file "token")
+	       (:file "compiler-lexer")
+	       (:file "compiler-parser")
+	       (:file "compiler-main")))
