@@ -27,9 +27,7 @@
 	    (format t "~a" (token-type token))
 	    (if (eq (type-of (token-value token)) 'cons)
 		(print-token-tree (token-value token) (+ 1 depth))
-		(progn
-		  ;;(print-spaces (+ depth 1))
-		  (format t " (~a)" (token-value token)))))
+		(format t " (~a)" (token-value token))))
 	    
 	  tree)
   nil)

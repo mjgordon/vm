@@ -1,15 +1,18 @@
 (in-package :compiler)
 
+
+;;; HXA-writing utilities
 (defmacro append-line (line)
   `(setf output (cons ,line output)))
 
 (defmacro append-lines (lines)
   `(mapcar (lambda (line)
-	     (setf output (cons line output)))
+	     (append-line line))
 	   ,lines))
 
+
+;;; Generating HXA from AST
 (defun generate-expression (branch-expression)
-  ;;(format t "~a~%"  (type-of (string (token-value (first (token-value branch-expression))))))
   (token-value (first (token-value branch-expression))))
 
 (defun generate-statement (branch-statement)
@@ -45,6 +48,8 @@
     (append-line "@END")
     (reverse output)))
 
+
+;;; Main functions
 (defun output-assembly (filename hxa)
   (with-open-file (stream filename
 			  :direction :output

@@ -7,10 +7,11 @@
 	    (let ((type (first arg)) (expr (second arg)))
 	      (list (ppcre:create-scanner expr)
 		    type)))
-     '((key-int4 "int4$")
-       (key-return "return")
-       (identifier "[a-zA-Z]\w*")
-       (literal-int "[0-9]+"))))
+	  '((key-int4 "int4$")
+	    (key-int8 "int8$")
+	    (key-return "return")
+	    (identifier "[a-zA-Z]\w*")
+	    (literal-int "[0-9]+"))))
 
 (defmacro check-regexes (current)
   `(loop for regex in regexes do
@@ -38,6 +39,6 @@
 			  ((equal c #\ ) nil)))
 		  (setf current (concatenate 'string current (string c))))) ;TODO this concat isn't great
 	 (check-regexes current))
-
+    (add-token 'eof "EOF")
     (reverse tokens)))
 
