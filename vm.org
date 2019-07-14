@@ -160,11 +160,14 @@ EXPANSIONS
 - [X] F PR : Setup test system using prove
 - [X] C PR : Rewrite test files
 
-** v005 Compiling and Linking [2/5]
+** v005 Compiling and Linking [5/8]
 - [ ] R AS : Cleanup usage of car/first, cdr/rest etc
 - [ ] F CM : Write spec for subset of c
 - [X] F CM : Basic lexer
 - [X] F CM : Basic parser
+- [X] F CM : Basic generation
+- [X] F CM : Parser rule options
+- [X] F CM : Parser rule repeats 
 - [ ] F CM : Constants and math : +,-,*,/,(,)
 
 
