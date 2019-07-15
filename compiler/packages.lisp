@@ -1,5 +1,5 @@
 (defpackage :compiler
-  (:use :cl :asdf))
+  (:use :cl :asdf)
+  (:export :compile-hxc))
 
-(defpackage :compiler-tests
-  (:use :cl :asdf :prove))
+

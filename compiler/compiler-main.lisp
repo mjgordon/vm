@@ -38,7 +38,7 @@
     
 
 (defun generate (ast)
-  (print-token-tree ast)
+  ;;(print-token-tree ast)
   (let ((output ()))
     (append-line "CALL >main")
     (append-line "GOTO >END")
@@ -65,12 +65,10 @@
 	 (filepath (subseq filename-hxc 0 path-divisor))
 	 (output-filename (concatenate 'string filepath filename-stripped ".hxa")))
     
-    (output-assembly output-filename (generate (parse (lex (load-file-as-strings filename-hxc)))))))
+    (output-assembly output-filename (generate (parse (lex (load-file-as-strings filename-hxc))))))
+  *error-list*)
 	
     
-(defmacro testmacro (input)
-  (mapcar (lambda (word)
-	    (format t "~a ~a~%" word (type-of word)))
-	  input))
+
 
 

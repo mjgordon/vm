@@ -61,21 +61,17 @@
 			      (list main-options)))
 		 (rules (mapcar get-rule options)))
 	    (when is-repeating
-	      (format t "Repeating : ~a~%" repeating-option)
 	      (let ((option-check (parse-check-option repeating-option repeating-rule tokens get-rule)))
 		(if (option-result option-check)
 		    (progn
 		      (setf tokens (option-tokens option-check))
 		      (setf tree-level (cons branch tree-level))
-		      (format t "Option Result : ~a~%" (option-result option-check))
-		      (format t "After replacing : ~a~%" tree-level)
 		      (return-from branch-block (if (token-semantic (option-result option-check))
 						    (option-result option-check)
 						    'syntax)))
 		    (progn
 		      (pop tree-level)
-		      (pop tree-level)
-		      (format t "After popping : ~a~%" tree-level)))))
+		      (pop tree-level)))))
 	    (loop
 	       for option in options
 	       for rule in rules
