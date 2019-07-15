@@ -12,6 +12,17 @@
 ;; (<rule-a> (<repeating-options> &))
 ;; (<repeating-options> ((sym-a sym-b sym-c...)))
 
+;;; === Criticality ===
+;; Whether a failure to parse for a rule or token should cause an error and exit
+;; <program> starts with criticality
+;; criticality is normally passed down however:
+;;
+;; (<example-rule> a b & c (d e f) g)
+;;
+;; a, c, and g have criticality
+;; b does not
+;; it is critical that one of d, e, or f, succeed, however individually they do not have criticality
+
 
 (let ((rule-table (make-hash-table)))
   (mapcar (lambda (rule)
@@ -38,44 +49,44 @@
 
 (defun parse-r (tree-level tokens)
   "Parse a single tree-level (i.e. rule expansion)"
-  (list
-   (loop while tree-level collect
-	(block branch-block
-	  (let* ((branch (pop tree-level))
-		 (is-repeating (eq '& (first tree-level)))
-		 (repeating-option (when is-repeating branch))
-		 (repeating-rule (when is-repeating (get-rule repeating-option)))
-		 (main-options (if is-repeating
-				   (second tree-level)
-				   branch))
-		 (options (if (listp main-options)
-			      main-options
-			      (list main-options)))
-		 (rules (mapcar #'get-rule options)))
-	    (when is-repeating
-	      (let ((option-check (parse-check-option repeating-option repeating-rule tokens)))
-		(if (option-result option-check)
-		    (progn
-		      (setf tokens (option-tokens option-check))
+  (let ((tree-level-result
+	 (loop while tree-level collect
+	      (block branch-block
+		(let* ((branch (pop tree-level))
+		       (is-repeating (eq '& (first tree-level)))
+		       (repeating-option (when is-repeating branch))
+		       (repeating-rule (when is-repeating (get-rule repeating-option)))
+		       (main-options (if is-repeating
+					 (second tree-level)
+					 branch))
+		       (options (if (listp main-options)
+				    main-options
+				    (list main-options)))
+		       (rules (mapcar #'get-rule options)))
+		  (when is-repeating
+		    (option-and-react repeating-option repeating-rule
 		      (setf tree-level (cons branch tree-level))
-		      (return-from branch-block (if (token-semantic (option-result option-check))
-						    (option-result option-check)
-						    'syntax)))
-		    (progn
-		      (pop tree-level)
-		      (pop tree-level)))))
-	    (loop
-	       for option in options
-	       for rule in rules
-	       do
-		 (let ((option-check (parse-check-option option rule tokens)))
-		   (when (option-result option-check)
-		     (setf tokens (option-tokens option-check))
-		     (return-from branch-block (if (token-semantic (option-result option-check))
-						    (option-result option-check)
-						    'syntax))))))))
-      tokens))
-		      
+		      (progn (pop tree-level) (pop tree-level))))
+		  (loop
+		     for option in options
+		     for rule in rules
+		     do
+		       (option-and-react option rule)))))))
+    (list tree-level-result tokens)))
+	  
+
+(defmacro option-and-react (option rule &optional (success-form nil) (failure-form nil))
+  `(let ((option-check (parse-check-option ,option ,rule tokens)))
+     (if (option-result option-check)
+	 (progn
+	   (setf tokens (option-tokens option-check))
+	   ,success-form
+	   (return-from branch-block (if (token-semantic (option-result option-check))
+					 (option-result option-check)
+					 'syntax)))
+	 ,failure-form)))
+	   
+	   
 			     
 
 ;; Returns list [0] the result (nil if failed) [1] remaining token list
