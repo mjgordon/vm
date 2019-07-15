@@ -36,78 +36,74 @@
 	    (<statement> (key-return <exp> semicolon))
 	    (<exp> (literal-int))))
   (defun get-rule (token-name)
+    "Returns the rule expansion list associated with the token name"
     (gethash token-name rule-table)))
-
-
-
   
 
 (defun parse (tokens)
   "Parser entry. Accepts a list of tokens and returns an AST"
   (let ((program-tree '(<program> .())))
-    (remove 'syntax (first (parse-r program-tree tokens)))))
+    (remove 'syntax (first (parse-subtree program-tree tokens)))))
 
-(defun parse-r (tree-level tokens)
-  "Parse a single tree-level (i.e. rule expansion)"
+
+(defun parse-subtree (tree-level tokens)
+  "Parse for a single subtree (usually a rule expansion)
+Returns a list of : a list of the tokens matching the subtree, and a list of the remaining tokens.
+Any subtree tokens that are not semantic get replaced with the symbol 'syntax for later removal"
   (let ((tree-level-result
 	 (loop while tree-level collect
 	      (block branch-block
 		(let* ((branch (pop tree-level))
 		       (is-repeating (eq '& (first tree-level)))
 		       (repeating-option (when is-repeating branch))
-		       (repeating-rule (when is-repeating (get-rule repeating-option)))
 		       (main-options (if is-repeating
 					 (second tree-level)
 					 branch))
 		       (options (if (listp main-options)
 				    main-options
-				    (list main-options)))
-		       (rules (mapcar #'get-rule options)))
+				    (list main-options))))
 		  (when is-repeating
-		    (option-and-react repeating-option repeating-rule
-		      (setf tree-level (cons branch tree-level))
-		      (progn (pop tree-level) (pop tree-level))))
-		  (loop
-		     for option in options
-		     for rule in rules
-		     do
-		       (option-and-react option rule)))))))
+		    (if-option repeating-option
+			       (setf tree-level (cons branch tree-level))
+			       (progn (pop tree-level) (pop tree-level))))
+		  (loop for option in options do
+		       (if-option option)))))))
     (list tree-level-result tokens)))
 	  
 
-(defmacro option-and-react (option rule &optional (success-form nil) (failure-form nil))
-  `(let ((option-check (parse-check-option ,option ,rule tokens)))
-     (if (option-result option-check)
+(defmacro if-option (option &optional (success-form nil) (failure-form nil))
+  "Used within parse-subtree, finds the results of a single call to parse-option, and 
+executes one of two forms based on whether the option was valid"
+  `(let* ((option-check (parse-option ,option tokens))
+	  (option-result (first option-check))
+	  (option-tokens (second option-check)))
+     (if option-result
 	 (progn
-	   (setf tokens (option-tokens option-check))
+	   (setf tokens option-tokens)
 	   ,success-form
-	   (return-from branch-block (if (token-semantic (option-result option-check))
-					 (option-result option-check)
+	   (return-from branch-block (if (token-semantic option-result)
+					 option-result
 					 'syntax)))
 	 ,failure-form)))
-	   
-	   
-			     
-
-;; Returns list [0] the result (nil if failed) [1] remaining token list
-(defun parse-check-option (option rule tokens)
-  "Checks a single option at the current tree level, recursing if necessary"
-  (if rule
-      ;; If the option is a rule, parse its subtree, and pickup where it left off on the token list
-      (let* ((option-result (parse-r rule tokens))
-	     (result-subtree (first option-result))
-	     (result-tokens (second option-result)))
-	(if (and result-subtree (not (list-all-nil result-subtree)))
-	    (list (make-token :type option :value (remove 'syntax result-subtree) :semantic t) result-tokens)
-	    (list nil tokens)))
-      
-      ;;Otherwise, check if the next token matches the option
-      (let* ((token (first tokens))
-	     (type (token-type token)))
-	(if (eq type option)
-	    (list token (rest tokens))
-	    (list nil tokens)))))
-  
 
 
-
+(defun parse-option (option tokens)
+  "Parses for a single option in the current subtree, recursing if necessary.
+Returns a list of: the result and the list of remaining tokens.
+Result is nil if the option was not valid."
+  (let ((rule (get-rule option)))
+    (if rule
+	;; If the option is a rule, parse the subtree for its expansion
+	(let* ((option-result (parse-subtree rule tokens))
+	       (result-subtree (first option-result))
+	       (result-tokens (second option-result)))
+	  (if (and result-subtree (not (list-all-nil result-subtree)))
+	      (list (make-token :type option :value (remove 'syntax result-subtree) :semantic t) result-tokens)
+	      (list nil tokens)))
+	
+	;;Otherwise, parse for a single token
+	(let* ((token (first tokens))
+	       (type (token-type token)))
+	  (if (eq type option)
+	      (list token (rest tokens))
+	      (list nil tokens))))))

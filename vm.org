@@ -172,7 +172,6 @@ EXPANSIONS
 - [X] F CM : Parser rule repeats
 - [ ] F CM : Automatically split literal-ints into multiple nb in hxc files
 - [X] F CM : Automatic compiler testing against valid and invalid single-file programs
-
 - [ ] F CM : Compiler error collection and reporting
 - [ ] F CM : Constants and math : +,-,*,/,(,)
 

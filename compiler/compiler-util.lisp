@@ -58,13 +58,9 @@
   "Returns a list of the keys in a hash table"
   (loop for key being the hash-keys of hash-table collect key))
 
-;;; Place renaming
 
-(defmacro option-result (option)
-  `(first ,option))
 
-(defmacro option-tokens (option)
-  `(second ,option))
+
 
 
 
