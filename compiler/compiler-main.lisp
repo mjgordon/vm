@@ -38,7 +38,7 @@
     
 
 (defun generate (ast)
-  ;;(print-token-tree ast)
+  (print-token-tree ast)
   (let ((output ()))
     (append-line "CALL >main")
     (append-line "GOTO >END")
