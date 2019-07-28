@@ -2,10 +2,10 @@ Note : This file displays correctly in emacs org mode with org-indent-mode
 
 * TODO
 ** Notation:
-- B : Bug
-- C : Generic Change
+- B : Bug fix
+- C : Change
 - F : New Feature
-- O : Optimize
+- O : Optimization
 - R : Refactor
 - S : Security
 - T : Test
@@ -174,14 +174,15 @@ EXPANSIONS
 - [X] F CM : Automatic compiler testing against valid and invalid single-file programs
 - [ ] F CM : Compiler error collection and reporting
 - [ ] F CM : Constants and math : +,-,*,/,(,)
-
+- [ ] F PR : Automatically scan the assembler dictionary and call the elisp regex builder for hxa-mode
 
 ** vFUTURE
 - [ ] F PR : Testing should scan dictionary for macro coverage
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array. (Checked assembly, *may* be doing an internal jump table right now, can't tell. Saving for when I have a more intensive demo program to test with, so differences won't be rounding errors in scale. NVM I've got one now, sierpinski takes 5 minutes to run my god
 - [ ] C PR : Opcode graphing should separate constant numbers in assembly
 - [ ] C VM : Use separate flags for ADD, SUB, RSH, LSH
-- [ ] C PR : Decide on 2,3,4 vs 8,12,16 naming convention for multi-nb numbers
+- [ ] C AS : Rename opcodes to reflect bit-lengths rather than nb-lengths
+
 
 ** Reminders
 - C : We don't want to store tokens as (simpler conses) because there's other information such as tree inclusion, line numbers, that is helpful to pull along from the start
@@ -789,6 +790,7 @@ RSTK PUSH PUSH PUSH PUSH        (A B C D) ()
 PC POP                          () ()
 _RESULT                         (0) (-4)
 *** IO
+
 
 ** HXC
 Minimal subset of C

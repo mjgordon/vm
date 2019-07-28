@@ -18,7 +18,7 @@
 ;;; Addresses
 
 (defun convert-address (address)
-  "Custom expansion of address references, converts to 16-byte hex value"
+  "Custom expansion of address references, converts to 16-bit hex value"
   (list (logand (ash address -12) #xF)
 	'OPCODES::PUSH
 	(logand (ash address -8) #xF)
