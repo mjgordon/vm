@@ -56,7 +56,7 @@
 
 (defun test-macros ()
   "Run all macro tests in this file"
-  ;(setf prove:*default-reporter* :fiveam)
-  ;(test-macros-stack)
-  ;(test-macros-logic)
+  (setf prove:*default-reporter* :dot)
+  (test-macros-stack)
+  (test-macros-logic)
   (test-macros-math))

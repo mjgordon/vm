@@ -1,5 +1,31 @@
 (in-package :assembler)
 
+;;; Addresses
+
+(defun convert-address (address)
+  "Custom expansion of address references, converts to 16-bit hex value"
+    (make-tokens (list (logand (ash address -12) #xF)
+		       'OPCODES::PUSH
+		       (logand (ash address -8) #xF)
+		       'OPCODES::PUSH
+		       (logand (ash address -4) #xF)
+		       'OPCODES::PUSH
+		       (logand address #xF))))
+
+
+
+;;; Hashtables
+
+(defun sethash (table key value)
+  (setf (gethash key table) value))
+
+
+;;; Lists
+
+(defun iota (n)
+  (loop for i below n collect i))
+
+
 ;;; Predicates
 
 (defun empty-string-p (string)
@@ -15,17 +41,7 @@
   (remove-if #'comment-string-p (remove-if #'empty-string-p lines)))
 
 
-;;; Addresses
 
-(defun convert-address (address)
-  "Custom expansion of address references, converts to 16-bit hex value"
-  (list (logand (ash address -12) #xF)
-	'OPCODES::PUSH
-	(logand (ash address -8) #xF)
-	'OPCODES::PUSH
-	(logand (ash address -4) #xF)
-	'OPCODES::PUSH
-	(logand address #xF)))
 
 
 ;;; Debugging
@@ -46,11 +62,10 @@
 
 (defun get-gensyms (count)
   "Returns a list of the requested number of gensyms"
-  (let ((output ()))
-    (dotimes (i count output)
-      (setf output (cons (gensym) output)))))
+  (loop for i from 1 to count collect
+       (gensym)))
 
-
+;; TODO: make cons instead of list?
 (defun pair-tree-create (input)
   "Divides a list into a shallow tree of two-item branches"
   (loop for (a b) on input by #'cddr collect (list a b)))
@@ -70,10 +85,10 @@
 
 
 (defun get-local-names (count)
-  "Creates a shallow pair tree of the requested number of associated local symbol and reference names"
+  "Creates a shallow pair tree of the requested number of associated local reference and label names"
   (loop for i upto (- count 1) collect
-       (list (intern (concatenate 'string "%" (write-to-string i)) :opcodes)
-	     (intern (concatenate 'string ">" (write-to-string i)) :opcodes))))
+       (list (intern (concatenate 'string ">" (write-to-string i)) :opcodes)
+	     (intern (concatenate 'string "%" (write-to-string i)) :opcodes))))
 
 
 ;; Token sets and tables
@@ -118,9 +133,11 @@
   (insert-table *label-table*))
 
 
-(defun insert-ref-table (key def)
-  "Insert the key-value pair into the reference table"
-  (insert-table *ref-table*))
+(defun insert-ref-table (key &optional def)
+  "Insert the a reference symbol into the table. Automatically generate the associated label if necessary"
+  (unless def
+    (setf def (intern (substitute #\@ #\> (symbol-name key)) :opcodes)))
+    (insert-table *ref-table*))
 
 
 (defun insert-return-table (key def)

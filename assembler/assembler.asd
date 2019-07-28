@@ -2,6 +2,7 @@
   :name "assembler"
   :depends-on (:prove :split-sequence)
   :components ((:file "packages")
+	       (:file "token")
 	       (:file "assembler-globals")
 	       (:file "assembler-util"
 		      :depends-on ("assembler-globals"))

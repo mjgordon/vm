@@ -17,12 +17,7 @@
 
 
 (defparameter *return-table* (make-hash-table :test 'eq)
-  "Hash table of the gensym in each call expansion to its final operation numbe + offset in the file")
-
-
-(defparameter *output-map* ()
-  "A mapping between the output file and the input file. A list of token numbers for each source token in the input.")
-    
+  "Hash table of the gensym in each call expansion to its final operation number + offset in the file")
 
 
 (defparameter *error-flag* 0

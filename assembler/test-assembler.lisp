@@ -3,6 +3,7 @@
 (defun test-opcodes ()
   "Run tests on the basic opcodes"
   (with-hxa "test-opcodes"
+    (setf prove:*default-reporter* :dot)
     (diag "Testing Opcodes:")
     (mnemonic-test "Opcode PC" ((:nb 1)))
     (mnemonic-test "Opcode MEM" ((:nb 1 2)))
