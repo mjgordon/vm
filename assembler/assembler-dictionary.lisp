@@ -45,7 +45,19 @@ Returns a cons of an expansion flag, and a new list which may or may not still c
 			       result
 			       pass-flag)
 	(cons pass-flag result))))
-	
+
+(defmacro get-emacs-regex-function ()
+  "Call this with macroexpand"
+  (let* ((not-included '("CALL" "GOTO" "RET"))
+	 (names (remove-if 'null (mapcar (lambda (item)
+					   (let ((name (symbol-name (first item))))
+					     (unless (member name not-included)
+					       name)))
+					 (opcodes:get-dictionary)))))
+    
+    `(regexp-opt ' (,@names))))
+		   
+
 
 (let ((definitions (make-hash-table :test 'eq)))
   (loop for def in (opcodes:get-dictionary) do

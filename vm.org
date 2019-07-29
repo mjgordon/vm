@@ -160,7 +160,7 @@ EXPANSIONS
 - [X] F PR : Setup test system using prove
 - [X] C PR : Rewrite test files
 
-** v005 Compiling and Linking [10/17]
+** v005 Compiling and Linking [11/17]
 - [ ] F AS : PUSH2 PUSH3 PUSH4 for pushing larger numbers
 - [X] R AS : Cleanup usage of car/first, cdr/rest etc
 - [X] C AS : Remove + special character
@@ -177,7 +177,7 @@ EXPANSIONS
 - [X] F CM : Automatic compiler testing against valid and invalid single-file programs
 - [ ] F CM : Compiler error collection and reporting
 - [ ] F CM : Constants and math : +,-,*,/,(,)
-- [ ] F PR : Automatically scan the assembler dictionary and call the elisp regex builder for hxa-mode
+- [X] F PR : Automatically scan the assembler dictionary and call the elisp regex builder for hxa-mode
 
 ** vFUTURE
 - [ ] F PR : Testing should scan dictionary for macro coverage
