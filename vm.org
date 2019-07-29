@@ -160,11 +160,12 @@ EXPANSIONS
 - [X] F PR : Setup test system using prove
 - [X] C PR : Rewrite test files
 
-** v005 Compiling and Linking [7/16]
+** v005 Compiling and Linking [9/17]
 - [ ] F AS : PUSH2 PUSH3 PUSH4 for pushing larger numbers
-- [ ] R AS : Cleanup usage of car/first, cdr/rest etc
-- [ ] C AS : Remove + special character?
+- [X] R AS : Cleanup usage of car/first, cdr/rest etc
+- [X] C AS : Remove + special character
 - [X] C AS : Make tokens a struct
+- [ ] R AS : Redo mapping to use struct tokens
 - [ ] B CM : Parser - Correctly handle two repeating tokens in a row in a rule
 - [ ] F CM : Write outline for hxc language
 - [X] F CM : Basic lexer
@@ -221,8 +222,6 @@ Pointer = 8nb (1 : nb length, 1 : some other flag? , 3 : page, 3 : location)
 @   : Label, assembler stores its position in a hashmap.
 >   : Label reference, assembler replaces with final address of associated @ or % label
 %   : Local label, the assembler will turn every expanded instance into a unique label 
-+   : Anonymous/unique label, assembler stores its position in a hashmap with a gensym.
-+32 : Stores the anonymous label with the associated offset. Used in calls
 
 ** Opcodes
 B : ∆ : MNMNC  : DESCRIPTION

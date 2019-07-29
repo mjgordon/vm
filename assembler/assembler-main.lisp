@@ -31,11 +31,6 @@ while creating lists of labels and references."
 	      (cond ((char= ch0 #\@) (insert-label-set sym))
 		    ((char= ch0 #\>) (progn (insert-ref-table sym)
 					    (insert-ref-set sym)))
-;;		    ((char= ch0 #\+) (let ((offset 0))
-;;				       (progn (setf sym (gensym))
-;;					      (when (> (length word) 1)
-;;						(setf offset (parse-integer (subseq word 1) :junk-allowed t)))
-;;					      (insert-return-table sym offset))))
 		    ((numberp (parse-integer word :junk-allowed t)) (setf sym (parse-integer word :junk-allowed t))))
 	      (make-token :value sym
 			  :source-id id)))
