@@ -2,7 +2,7 @@
 
 ;;; Addresses
 
-(defun convert-address (address)
+(defun convert-address (address &optional source-id)
   "Custom expansion of address references, converts to 16-bit hex value"
     (make-tokens (list (logand (ash address -12) #xF)
 		       'OPCODES::PUSH
@@ -10,8 +10,23 @@
 		       'OPCODES::PUSH
 		       (logand (ash address -4) #xF)
 		       'OPCODES::PUSH
-		       (logand address #xF))))
+		       (logand address #xF))
+		 source-id))
 
+
+;;; Debugging
+
+(defun print-table (table)
+  "Lists keys and values of a hashtable. Returns the size"
+  (mapcar (lambda (key)
+	    (format t "~a ~a ~%" key (gethash key table)))
+	  (hash-keys table))
+  (hash-table-count table))
+
+
+(defun print-token-list (tokens)
+  (loop for token in tokens do
+       (format t "~5a : ~a ~%" (token-value token) (token-source-id token))))
 
 
 ;;; Hashtables
@@ -41,24 +56,12 @@
   (remove-if #'comment-string-p (remove-if #'empty-string-p lines)))
 
 
-
-
-
-;;; Debugging
-
-(defun print-table (table)
-  "Lists keys and values of a hashtable. Returns the size"
-  (mapcar (lambda (key)
-	    (format t "~a ~a ~%" key (gethash key table)))
-	  (hash-keys table))
-  (hash-table-count table))
-
-
 ;; Trees
 
 (defun hash-keys (hash-table)
   "Returns a list of the keys in a hash table"
   (loop for key being the hash-keys of hash-table collect key))
+
 
 (defun get-gensyms (count)
   "Returns a list of the requested number of gensyms"

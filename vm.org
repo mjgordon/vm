@@ -160,12 +160,12 @@ EXPANSIONS
 - [X] F PR : Setup test system using prove
 - [X] C PR : Rewrite test files
 
-** v005 Compiling and Linking [9/17]
+** v005 Compiling and Linking [10/17]
 - [ ] F AS : PUSH2 PUSH3 PUSH4 for pushing larger numbers
 - [X] R AS : Cleanup usage of car/first, cdr/rest etc
 - [X] C AS : Remove + special character
 - [X] C AS : Make tokens a struct
-- [ ] R AS : Redo mapping to use struct tokens
+- [X] R AS : Redo mapping to use struct tokens
 - [ ] B CM : Parser - Correctly handle two repeating tokens in a row in a rule
 - [ ] F CM : Write outline for hxc language
 - [X] F CM : Basic lexer

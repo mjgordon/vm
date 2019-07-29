@@ -101,9 +101,10 @@ while creating lists of labels and references."
 
   ;; Expands references and call returns to their correct addresses
   (mapcan (lambda (token)
-	    (let ((val (token-value token)))
-	      (cond ((member val *ref-set*) (convert-address (gethash (gethash val *ref-table*) *label-table*)))
-		    ((gethash val *return-table*) (convert-address (gethash val *return-table*)))
+	    (let ((val (token-value token))
+		  (source-id (token-source-id token)))
+	      (cond ((member val *ref-set*) (convert-address (gethash (gethash val *ref-table*) *label-table*) source-id))
+		    ((gethash val *return-table*) (convert-address (gethash val *return-table*) source-id))
 		    (t (list token)))))
 	  tokens))
 		     
@@ -119,26 +120,27 @@ while creating lists of labels and references."
 			    :element-type 'unsigned-byte
 			    :if-exists :supersede)
       (when *verbose-assembly* (format t "Assembled ~a tokens~%" (length tokens)))
-      (mapcar (lambda (token)
-		(let ((val (token-value token)))
-		  (when (symbolp val)
-		    (let ((byte (get-bytecode val)))
-		      (if byte
-			  (setf val byte)
-			  (progn
-			    (format t "Bad token: ~a ~a  ~%" val (symbol-package val))
-			    (setf val 0)
-			    (setf *error-flag* 1)))))
-		(incf (aref bytecode-counts val))
-		(write-byte val stream)))
-	      tokens))
+      (loop for token in tokens do
+	   (let ((val (token-value token)))
+	     (when (symbolp val)
+	       (let ((byte (get-bytecode val)))
+		 (if byte
+		     (setf val byte)
+		     (progn
+		       (format t "Bad token: ~a ~a  ~%" val (symbol-package val))
+		       (setf val 0)
+		       (setf *error-flag* 1)))))
+	     (incf (aref bytecode-counts val))
+	     (write-byte val stream))))
+
+    
     ;; Export the mapping analysis
-;;    (with-open-file (stream filename-mapping
-;;			    :direction :output
-;;			    :element-type '(unsigned-byte 32)
-;;			    :if-exists :supersede)
-;;      (loop for n in *output-map* do
-;;	   (write-byte n stream)))
+    (with-open-file (stream filename-mapping
+			    :direction :output
+			    :element-type '(unsigned-byte 32)
+			    :if-exists :supersede)
+      (loop for token in tokens do
+	   (write-byte (token-source-id token) stream)))
 
     ;; Export the heatmap analysis
     (with-open-file (stream filename-heatmap
