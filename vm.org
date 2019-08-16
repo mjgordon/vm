@@ -166,6 +166,7 @@ EXPANSIONS
 - [X] C AS : Remove + special character
 - [X] C AS : Make tokens a struct
 - [X] R AS : Redo mapping to use struct tokens
+- [ ] R AS : (dictionary-expand) should take full token list and return remaining token list
 - [ ] B CM : Parser - Correctly handle two repeating tokens in a row in a rule
 - [ ] F CM : Write outline for hxc language
 - [X] F CM : Basic lexer
@@ -178,6 +179,11 @@ EXPANSIONS
 - [ ] F CM : Compiler error collection and reporting
 - [ ] F CM : Constants and math : +,-,*,/,(,)
 - [X] F PR : Automatically scan the assembler dictionary and call the elisp regex builder for hxa-mode
+
+*** TEST: test-macros.lisp [0/3]
+- [ ] PUSH2
+- [ ] PUSH3
+- [ ] PUSH4
 
 ** vFUTURE
 - [ ] F PR : Testing should scan dictionary for macro coverage
@@ -382,13 +388,15 @@ RSTK PUSH                       (A B A C) ()
 SWAP                            (A B C A) ()
 _RESULT                         (+1) ()
 
-
 _PEEK3                          (A B C D) ()
 RSTK POP POP                    (A B) (D C)
 PEEK                            (A B A) (D C)
 RSTK PUSH SWAP                  (A B C A) (D)
 RSTK PUSH SWAP                  (A B C D A) ()
 _RESULT                         (+1) ()
+
+_PUSH2                          ()
+PUSH 
 
 
 *** LOGIC AND COMPARISON

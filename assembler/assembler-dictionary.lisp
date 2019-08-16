@@ -59,6 +59,7 @@ Returns a cons of an expansion flag, and a new list which may or may not still c
 		   
 
 
+
 (let ((definitions (make-hash-table :test 'eq)))
   (loop for def in (opcodes:get-dictionary) do
        (setf (gethash (first def) definitions) (rest def)))
@@ -77,7 +78,7 @@ Currently has hella side effects. Might want to put those elsewhere"
 	(setf (expand-flag flags) t))
 
       (cond	
-	;; Insert the next token into the definition
+	;; Insert the next token into the definition as well (expansion occurs)
 	((eq type 'opcodes::next-token)
 	 (progn
 	   (setf (ref-flag flags) t)
@@ -109,9 +110,16 @@ Currently has hella side effects. Might want to put those elsewhere"
 						     val)))
 					     def)
 				     source-id))))
-	(def
-	 (setf result (make-tokens def source-id))
-	    (setf (expand-flag flags) t)))
+	;; Splits larger numbers into a series of nb for LIT PUSH
+	((eq type 'opcodes::next-to-nb)
+	 (let ((nb-count (third value)))
+	   (setf (ref-flag flags) t)
+	   (setf result (make-tokens (append def (convert-number token-next nb-count)) source-id))))
+	   
+
+	;; When theres a normal expansion, use it 
+	(def (setf result (make-tokens def source-id))))
+
 	    
       (cons flags result))))
 	

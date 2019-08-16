@@ -1,18 +1,5 @@
 (in-package :assembler)
 
-;;; Addresses
-
-(defun convert-address (address &optional source-id)
-  "Custom expansion of address references, converts to 16-bit hex value"
-    (make-tokens (list (logand (ash address -12) #xF)
-		       'OPCODES::PUSH
-		       (logand (ash address -8) #xF)
-		       'OPCODES::PUSH
-		       (logand (ash address -4) #xF)
-		       'OPCODES::PUSH
-		       (logand address #xF))
-		 source-id))
-
 
 ;;; Debugging
 
@@ -40,6 +27,43 @@
 (defun iota (n)
   (loop for i below n collect i))
 
+
+;;; NB Conversion
+
+(defun convert-address (address &optional source-id)
+  "Custom expansion of address references, converts to 16-bit hex value"
+    (make-tokens (list (logand (ash address -12) #xF)
+		       'OPCODES::PUSH
+		       (logand (ash address -8) #xF)
+		       'OPCODES::PUSH
+		       (logand (ash address -4) #xF)
+		       'OPCODES::PUSH
+		       (logand address #xF))
+		 source-id))
+
+;; TODO : Make implementation not dumb
+(defun convert-number (input-token size)
+  "Converts larger numbers to series of nb for LIT PUSH.
+Very sloppy implementation right now"
+  (let ((number (token-value input-token)))
+    (case size
+      (2 (list (logand (ash number -4) #xF)
+	       'OPCODES::PUSH
+	       (logand number #xF)))
+      (3 (list (logand (ash number -8) #xF)
+	       'OPCODES::PUSH
+	       (logand (ash number -4) #xF)
+	       'OPCODES::PUSH
+	       (logand number #xF)))
+      (4 (list (logand (ash number -12) #xF)
+	       'OPCODES::PUSH
+	       (logand (ash number -8) #xF)
+	       'OPCODES::PUSH
+	       (logand (ash number -4) #xF)
+	       'OPCODES::PUSH
+	       (logand number #xF))))))
+    
+  
 
 ;;; Predicates
 

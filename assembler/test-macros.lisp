@@ -10,7 +10,10 @@
     (mnemonic-test "Macro DUP" ((:nb 1 1)))
     (mnemonic-test "Macro SWAP" ((:nb 1 2)))
     (mnemonic-test "Macro CONST" ((:int12 0) (:int16 0) (:int12 1) (:int16 1)))
-    (mnemonic-test "Macro PEEK" ((:nb 0 2 1 0) (:nb 0 3 2 1 0)))))
+    (mnemonic-test "Macro PEEK" ((:nb 0 2 1 0) (:nb 0 3 2 1 0)))
+    (mnemonic-test "Macro PUSH" ((:int8 0 1 16 146 255)
+				 (:int12 0 1 7 16 22 241 255 674 2450 4095)
+				 (:int16 0 1 13 16 255 467 1278 43567 65535)))))
 
 (defun test-macros-logic ()
   "Run tests on the macros for logic operations"

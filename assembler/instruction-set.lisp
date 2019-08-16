@@ -46,7 +46,14 @@
     (PEEK3
      (RSTK POP POP PEEK RSTK PUSH SWAP RSTK PUSH SWAP))
     (PUSH2
-     (LIT PUSH A PUSH B))
+     (LIT PUSH)
+     next-to-nb 2)
+    (PUSH3
+     (LIT PUSH)
+     next-to-nb 3)
+    (PUSH4
+     (LIT PUSH)
+     next-to-nb 4)
     ;; LOGIC
     (TRUE
      (LIT PUSH >0 COND
