@@ -42,12 +42,15 @@ while creating lists of labels and references."
   "Recursively expands folded opcodes into their normal forms"
 
   ;; Recursively call expand-tokens until no new expansions reported
-  (let ((expansion (expand-pass tokens)))
-    (if (car expansion)
-	(expand-tokens (rest expansion) (incf depth))
+  (let* ((expansion (recursive-expand-pass tokens () nil))
+	(flag (car expansion))
+	(expansion-result (apply #'append (reverse (cdr expansion)))))
+	  
+    (if flag
+	(expand-tokens expansion-result (incf depth))
 	(progn
 	  (when *verbose-assembly* (format t "Expansion took ~s passes~%" depth))
-	  (rest expansion)))))
+	  expansion-result))))
 
 
 (defun strip-redundant-modes (tokens)

@@ -1,5 +1,12 @@
 (in-package :assembler)
 
+#||
+=== Dictionary Flow === 
+expand-tokens : calls itself recursively to call each expansion pass
+recursive-expand-pass : steps through the token list with tail recursion, returns a cons's list of expansions
+dictionary-expand : returns a list of expanded tokens, given the current and next token. currently has hella side effects.
+||#
+
 (defun expand-flag (flags)
   (first flags))
 
@@ -11,18 +18,6 @@
 
 (defun (setf ref-flag) (value flags)
   (setf (second flags) value))
-
-
-(defun expand-pass (tokens)
-  "Runs a single expansion pass over a token list
-Returns a cons of an expansion flag, and a new list which may or may not still contain expansions"
-  (let* ((expansion (recursive-expand-pass tokens () nil))	 
-	 (expansion-flag (car expansion))
-	 (expansion-content (cdr expansion)))
-    (cons expansion-flag
-	  (apply #'append (reverse expansion-content)))))
-
-
   
 (defun recursive-expand-pass (tokens result pass-flag)
   "Steps through the token list with tail recursion, expanding or skipping as necessary"
@@ -133,11 +128,4 @@ Currently has hella side effects. Might want to put those elsewhere"
       "Returns the associated bytecode for a basic opcode token"
     (gethash token bytecodes)))
 
-(let ((test-a 0))
-  (defun testfun ()
-    (let ((test-b (evenp test-a))
-	  (test-flag nil))
-      (incf test-a)
-      (when test-b
-	(setf test-flag t))
-      (format t "~a ~a ~a ~%" test-a test-b test-flag))))
+

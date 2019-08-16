@@ -160,8 +160,8 @@ EXPANSIONS
 - [X] F PR : Setup test system using prove
 - [X] C PR : Rewrite test files
 
-** v005 Compiling and Linking [11/17]
-- [ ] F AS : PUSH2 PUSH3 PUSH4 for pushing larger numbers
+** v005 Compiling and Linking [12/18]
+- [X] F AS : PUSH2 PUSH3 PUSH4 for pushing larger numbers
 - [X] R AS : Cleanup usage of car/first, cdr/rest etc
 - [X] C AS : Remove + special character
 - [X] C AS : Make tokens a struct
