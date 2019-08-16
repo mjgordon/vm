@@ -7,79 +7,56 @@ recursive-expand-pass : steps through the token list with tail recursion, return
 dictionary-expand : returns a list of expanded tokens, given the current and next token. currently has hella side effects.
 ||#
 
-(defun expand-flag (flags)
-  (first flags))
-
-(defun (setf expand-flag) (value flags)
-  (setf (first flags) value))
-
-(defun ref-flag (flags)
-  (second flags))
-
-(defun (setf ref-flag) (value flags)
-  (setf (second flags) value))
   
 (defun recursive-expand-pass (tokens result pass-flag)
   "Steps through the token list with tail recursion, expanding or skipping as necessary"
-  (let* ((token (first tokens))
-	 (token-next (second tokens))
-	 (expansion-result (dictionary-expand token token-next))
-	 (flags (car expansion-result))
-	 (expansion (cdr expansion-result)))
+  (let* ((expansion-result (dictionary-expand tokens))
+	 (expand-flag (first expansion-result))
+	 (tokens-new (second expansion-result))
+	 (expansion (third expansion-result)))
     
     ;; Mark that an expansion has occurred this pass
-    (when (expand-flag flags)
+    (when expand-flag
       (setf pass-flag t))
 
     ;; Add either the expansion or (token) to the result
     (setf result (cons expansion result))
 
     ;; Call the function again if there are more tokens to process, else return the result and flag
-    (if (rest tokens)
-	(recursive-expand-pass (if (ref-flag flags) (cddr tokens) (rest tokens))
+    (if tokens-new
+	(recursive-expand-pass tokens-new
 			       result
 			       pass-flag)
 	(cons pass-flag result))))
 
-(defmacro get-emacs-regex-function ()
-  "Call this with macroexpand"
-  (let* ((not-included '("CALL" "GOTO" "RET"))
-	 (names (remove-if 'null (mapcar (lambda (item)
-					   (let ((name (symbol-name (first item))))
-					     (unless (member name not-included)
-					       name)))
-					 (opcodes:get-dictionary)))))
-    
-    `(regexp-opt ' (,@names))))
-		   
 
-
-
+		  
 (let ((definitions (make-hash-table :test 'eq)))
   (loop for def in (opcodes:get-dictionary) do
        (setf (gethash (first def) definitions) (rest def)))
-  (defun dictionary-expand (token token-next)
-    "Returns a list of resulting token values, given the current token and the next token
-Currently has hella side effects. Might want to put those elsewhere"
-    (let* ((value (gethash (token-value token) definitions))
+  (defun dictionary-expand (tokens)
+    "Performs a macro expansion based on the first token in the input, returns an expasion flag, the list of 
+remaining tokens, and a list of the expansion
+Returns (expand-flag (remaining-tokens) (expansion))"
+    
+    (let* ((token (pop tokens))
+	   (value (gethash (token-value token) definitions))
 	   (def (first value))
 	   (type (second value))
-	   (flags (list nil nil))
+	   (expand-flag nil)
 	   (result (list token))
 	   (source-id (token-source-id token)))
       
       (when def
 	(setf result (make-tokens def source-id))
-	(setf (expand-flag flags) t))
+	(setf expand-flag t))
 
       (cond	
 	;; Insert the next token into the definition as well (expansion occurs)
 	((eq type 'opcodes::next-token)
-	 (progn
-	   (setf (ref-flag flags) t)
-	   (setf result (append (make-tokens def source-id)
-				(list token-next)
-				(make-tokens (third value) source-id)))))
+	 (setf result (append (make-tokens def source-id)
+			      (list (pop tokens))
+			      (make-tokens (third value) source-id))))
 	
 	;; Sets offset label with its initial offset value in the return table
 	((eq type 'opcodes::offset-label)
@@ -108,15 +85,12 @@ Currently has hella side effects. Might want to put those elsewhere"
 	;; Splits larger numbers into a series of nb for LIT PUSH
 	((eq type 'opcodes::next-to-nb)
 	 (let ((nb-count (third value)))
-	   (setf (ref-flag flags) t)
-	   (setf result (make-tokens (append def (convert-number token-next nb-count)) source-id))))
-	   
-
+	   (setf result (make-tokens (append def (convert-number (pop tokens) nb-count)) source-id))))
 	;; When theres a normal expansion, use it 
 	(def (setf result (make-tokens def source-id))))
 
 	    
-      (cons flags result))))
+      (list expand-flag tokens result))))
 	
 
 
@@ -129,3 +103,13 @@ Currently has hella side effects. Might want to put those elsewhere"
     (gethash token bytecodes)))
 
 
+(defmacro get-emacs-regex-function ()
+  "Call this with macroexpand, copy into and run in scratch buffer"
+  (let* ((not-included '("CALL" "GOTO" "RET"))
+	 (names (remove-if 'null (mapcar (lambda (item)
+					   (let ((name (symbol-name (first item))))
+					     (unless (member name not-included)
+					       name)))
+					 (opcodes:get-dictionary)))))
+    
+    `(regexp-opt ' (,@names))))
