@@ -12,8 +12,18 @@
 
 
 ;;; Generating HXA from AST
+(defun generate-unop (branch-unop)
+  (case (token-type (first (token-value branch-unop)))
+    ;; Negation operator (-)
+    (unop-negation
+     (concatenate 'string "-" (generate-expression (second (token-value branch-unop)))))))
+    
+
 (defun generate-expression (branch-expression)
-  (token-value (first (token-value branch-expression))))
+  (case (token-type (first (token-value branch-expression)))
+    (<unop-exp> (generate-unop (first (token-value branch-expression))))
+    (literal-int (token-value (first (token-value  branch-expression))))))
+		    
 
 (defun generate-statement (branch-statement)
   (let* ((sm-values (token-value branch-statement))

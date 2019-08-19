@@ -49,27 +49,30 @@
     (remove-multiple '(syntax repeat) (first (parse-subtree-new program-tree tokens)))))
 
 
-(defun parse-subtree-new (input-tree-base tokens)
-  (let ((input-tree input-tree-base))
-    (list (loop while input-tree collect
-	       (let ((branch (pop input-tree)))
-		 (cond
-		   ;; Current branch is a repeat
-		   ((eq '& (first input-tree))
-		    (if-branch #'parse-for-branch branch tokens
-			       (push branch input-tree)
-			       (progn
-				 (pop input-tree)
-				 'repeat)))
-		   ;; Current branch is an option list
-		   ((listp branch)
-		    (if-branch #'parse-for-options branch tokens))
-		   ;; Default - Current branch is normal symbol
-		   (t
-		    (if-branch #'parse-for-branch branch tokens
-			       nil
-			       (return-from parse-subtree-new (list nil tokens)))))))
-	  tokens)))
+(defun parse-subtree-new (input-tree tokens)
+  "Parses a list of input tokens (likely from a rule expansion
+These tokens will either be a repeating token, a list of token options, or a normal token.
+Returns  ( list-of-resulting-tokens list-of-remaining-source-tokens"
+  
+  (list (loop while input-tree collect
+	     (let ((branch (pop input-tree)))
+	       (cond
+		 ;; Current branch is a repeat
+		 ((eq '& (first input-tree))
+		  (if-branch #'parse-for-branch branch tokens
+			     (push branch input-tree)
+			     (progn
+			       (pop input-tree)
+			       'repeat)))
+		 ;; Current branch is an option list
+		 ((listp branch)
+		  (if-branch #'parse-for-options branch tokens))
+		 ;; Default - Current branch is normal symbol
+		 (t
+		  (if-branch #'parse-for-branch branch tokens
+			     nil
+			     (return-from parse-subtree-new (list nil tokens)))))))
+	tokens))
 	     
 
 
