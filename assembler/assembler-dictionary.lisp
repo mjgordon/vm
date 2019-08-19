@@ -38,11 +38,10 @@ dictionary-expand : returns a list of expanded tokens, given the current and nex
     "Performs a macro expansion based on the first token in the input, returns an expasion flag, the list of 
 remaining tokens, and a list of the expansion
 Returns (expand-flag (remaining-tokens) (expansion))"
-    
     (let* ((token (pop tokens))
-	   (value (gethash (token-value token) definitions))
-	   (def (first value))
-	   (type (second value))
+	   (dict-entry (gethash (token-value token) definitions))
+	   (def (first dict-entry))
+	   (type (second dict-entry))
 	   (expand-flag nil)
 	   (result (list token))
 	   (source-id (token-source-id token)))
@@ -56,18 +55,18 @@ Returns (expand-flag (remaining-tokens) (expansion))"
 	((eq type 'opcodes::next-token)
 	 (setf result (append (make-tokens def source-id)
 			      (list (pop tokens))
-			      (make-tokens (third value) source-id))))
+			      (make-tokens (third dict-entry) source-id))))
 	
-	;; Sets offset label with its initial offset value in the return table
+	;; Sets offset label with its initial offset dict-entry in the return table
 	((eq type 'opcodes::offset-label)
 	 (let ((sym (gensym)))
-	   (insert-return-table sym (third value))
+	   (insert-return-table sym (third dict-entry))
 	   (setf result (append (make-tokens def source-id)
 				(make-tokens (list sym) source-id)
-				(make-tokens (fourth value) source-id)))))
+				(make-tokens (fourth dict-entry) source-id)))))
 	;; Sets up local labels if applicable
 	((eq type 'opcodes::local-labels)
-	 (let* ((local-count (third value))
+	 (let* ((local-count (third dict-entry))
 		(local-symbols (pair-tree-create (get-gensyms (* local-count 2))))
 		(local-names (get-local-names local-count)))
 	   (mapcar (lambda (local-symbol)
@@ -84,7 +83,7 @@ Returns (expand-flag (remaining-tokens) (expansion))"
 				     source-id))))
 	;; Splits larger numbers into a series of nb for LIT PUSH
 	((eq type 'opcodes::next-to-nb)
-	 (let ((nb-count (third value)))
+	 (let ((nb-count (third dict-entry)))
 	   (setf result (make-tokens (append def (convert-number (pop tokens) nb-count)) source-id))))
 	;; When theres a normal expansion, use it 
 	(def (setf result (make-tokens def source-id))))

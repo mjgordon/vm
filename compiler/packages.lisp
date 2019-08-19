@@ -1,5 +1,5 @@
 (defpackage :compiler
-  (:use :cl :asdf)
+  (:use :cl :asdf :arrows)
   (:export :compile-hxc))
 
 

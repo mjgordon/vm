@@ -20,20 +20,30 @@
 	  tokens))
 
 
-(defun print-token-tree (tree &optional (depth 0))
-  (mapcar (lambda (token)
-	    (format t "~%")
-	    (print-spaces depth)
-	    (format t "~a" (token-type token))
-	    (if (eq (type-of (token-value token)) 'cons)
-		(print-token-tree (token-value token) (+ 1 depth))
-		(format t " (~a)" (token-value token))))
+(defun print-token-tree (tree &optional (depth 0) (prefix ""))
+  (loop for (token token-next) on tree do
+       (format t "~%")
+       (format t "~a" prefix)
+       (when (not (zerop depth))
+	 (format t "~a" (if token-next
+			    #\BOX_DRAWINGS_LIGHT_VERTICAL_AND_RIGHT
+			    #\BOX_DRAWINGS_LIGHT_UP_AND_RIGHT)))
+       (format t "~a" (token-type token))
+						    
+       (if (eq (type-of (token-value token)) 'cons)
+	   (print-token-tree (token-value token)
+			     (+ 1 depth)
+			     (concatenate 'string prefix (if token-next
+							     (string #\BOX_DRAWINGS_LIGHT_VERTICAL)
+							     " ")))
+	   (format t " (~a)" (token-value token)))))
 	    
-	  tree)
-  nil)
 
 (defun print-spaces (amt)
-  (format t "~v@{~A~:*~}" amt " "))
+  (print-chars " " amt))
+
+(defun print-chars (c amt)
+  (format t "~v@{~A~:*~}" amt c))
 
 ;;; Debugging
 
@@ -46,10 +56,28 @@
 
 ;; Lists
 
+(defun ensure-list (var)
+  "Puts the variable in a single-item list if its not already a list"
+  (if (listp var)
+      var
+      (list var)))
+
+;; TODO : name this as a predicate
 (defun list-all-nil (list)
   (loop for e in list never e))
 
 
+(defun remove-multiple (remove-list input-list)
+  (remove-if (lambda (item)
+	       (member item remove-list))
+	     input-list))
+;; Strings
+
+(defmacro pop-string (string)
+  "Returns the first character of a string. Removes that character from the string"
+  `(if (= 0 (length ,string))
+       nil
+       (prog1 (schar ,string 0) (setq ,string (subseq ,string 1)))))
   
 
 ;; Trees

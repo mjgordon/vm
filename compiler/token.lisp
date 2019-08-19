@@ -5,7 +5,3 @@
   type
   value
   semantic)
-
-(defmacro add-token (type value &optional (semantic t))
-  "Adds a new token to a cons list named 'tokens'"
-  `(setf tokens (cons (make-token  :type ,type :value ,value :semantic ,semantic) tokens)))
