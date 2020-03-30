@@ -1,3 +1,7 @@
+(defpackage :tests
+  (:use :cl :asdf :prove)
+  (:export :test-opcodes :test-macros))
+
 (in-package :tests)
 
 (defun get-result (results)

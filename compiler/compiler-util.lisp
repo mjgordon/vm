@@ -4,9 +4,11 @@
 (defun load-file-as-strings (filename)
   "Load a hxc file as a list of strings"
   (with-open-file (stream filename)
-    (loop for line = (read-line stream nil)
-       while line
-       collect line)))
+    (let ((lines (loop for line = (read-line stream nil)
+		    while line
+		    collect line)))
+      lines)))
+	
 
 ;; Printing
 (defun print-list (l)
@@ -21,6 +23,7 @@
 
 
 (defun print-token-tree (tree &optional (depth 0) (prefix ""))
+  "Print the AST with indents and box characters"
   (loop for (token token-next) on tree do
        (format t "~%")
        (format t "~a" prefix)
@@ -36,7 +39,9 @@
 			     (concatenate 'string prefix (if token-next
 							     (string #\BOX_DRAWINGS_LIGHT_VERTICAL)
 							     " ")))
-	   (format t " (~a)" (token-value token)))))
+	   (format t " (~a)" (token-value token))))
+  (when (= depth 0)
+    (format t "~%~%")))
 	    
 
 (defun print-spaces (amt)

@@ -43,10 +43,43 @@
     (gethash token-name rule-table)))
   
 
-(defun parse (tokens)
-  "Parser entry. Accepts a list of tokens and returns an AST"
-  (let ((program-tree '(<program> .())))
-    (remove-multiple '(syntax repeat) (first (parse-subtree-new program-tree tokens)))))
+
+(defmacro if-branch (test-fun branch tokens &optional (success-form nil) (failure-form nil))
+  `(let* ((b-check (funcall ,test-fun ,branch ,tokens))
+	  (b-result (first b-check))
+	  (b-tokens (second b-check)))
+     (if b-result
+	 (progn
+	   (setf ,tokens b-tokens)
+	   ,success-form
+	   b-result)
+	 ,failure-form)))
+
+(defun parse-for-branch (branch tokens)
+  (let ((rule (get-rule branch)))
+    (if rule
+	;; If a rule, call parse subtree again
+	(let ((rule-subtree (parse-subtree-new rule tokens)))
+	  (if (and (first rule-subtree)
+		   (not (list-all-nil (first rule-subtree)))
+		   (not (eq (first rule-subtree) 'repeat)))
+	      (list (make-token :type branch :value (remove-multiple '(repeat syntax) (first rule-subtree)))
+		    (second rule-subtree))
+	      (list nil tokens)))
+	;; Else, check symbol against current token type
+	(if (eq (token-type (first tokens)) branch)
+	    (list (if (token-semantic (first tokens))
+		      (first tokens)
+		      'syntax)
+		  (rest tokens))
+	    (list nil tokens)))))
+	    
+(defun parse-for-options (options tokens)
+  (loop for option in options do
+       (let ((parse-result (parse-for-branch option tokens)))
+	 (when (first parse-result)
+	   (return-from parse-for-options parse-result))))
+  (list nil tokens))
 
 
 (defun parse-subtree-new (input-tree tokens)
@@ -76,50 +109,13 @@ Returns  ( list-of-resulting-tokens list-of-remaining-source-tokens"
 	     
 
 
-(defmacro if-branch (test-fun branch tokens &optional (success-form nil) (failure-form nil))
-  `(let* ((b-check (funcall ,test-fun ,branch ,tokens))
-	  (b-result (first b-check))
-	  (b-tokens (second b-check)))
-     (if b-result
-	 (progn
-	   (setf ,tokens b-tokens)
-	   ,success-form
-	   b-result)
-	 ,failure-form)))
 
 
-(defun parse-for-branch (branch tokens)
-  (let ((rule (get-rule branch)))
-    (if rule
-	;; If a rule, call parse subtree again
-	(let ((rule-subtree (parse-subtree-new rule tokens)))
-	  (if (and (first rule-subtree)
-		   (not (list-all-nil (first rule-subtree)))
-		   (not (eq (first rule-subtree) 'repeat)))
-	      (list (make-token :type branch :value (remove-multiple '(repeat syntax) (first rule-subtree)))
-		    (second rule-subtree))
-	      (list nil tokens)))
-	;; Else, check symbol against current token type
-	(if (eq (token-type (first tokens)) branch)
-	    (list (if (token-semantic (first tokens))
-		      (first tokens)
-		      'syntax)
-		  (rest tokens))
-	    (list nil tokens)))))
-	    
-(defun parse-for-options (options tokens)
-  (loop for option in options do
-       (let ((parse-result (parse-for-branch option tokens)))
-	 (when (first parse-result)
-	   (return-from parse-for-options parse-result))))
-  (list nil tokens))
+
+
 
 	 
-	 
-  
-	
-    
-    
-	       
-  
-
+(defun parse (tokens)
+  "Parser entry. Accepts a list of tokens and returns an AST"
+  (let ((program-tree '(<program> .())))
+    (remove-multiple '(syntax repeat) (first (parse-subtree-new program-tree tokens)))))

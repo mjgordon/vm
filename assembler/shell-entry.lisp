@@ -1,4 +1,5 @@
 ;; Used when running the assembler from a bash script
+
 (load "~/lisp/quicklisp/setup.lisp")
 (load "assembler.asd")
 (with-open-stream (*standard-output* (make-broadcast-stream))

@@ -1,7 +1,10 @@
 (in-package :compiler)
 
+(defparameter *verbose* t)
+
 
 ;;; HXA-writing utilities
+
 (defmacro append-line (line)
   `(setf output (cons ,line output)))
 
@@ -12,17 +15,19 @@
 
 
 ;;; Generating HXA from AST
+
 (defun generate-unop (branch-unop)
   (case (token-type (first (token-value branch-unop)))
     ;; Negation operator (-)
     (unop-negation
-     (concatenate 'string "-" (generate-expression (second (token-value branch-unop)))))))
+     (concatenate 'string (generate-expression (second (token-value branch-unop))) " NEG "))))
     
 
 (defun generate-expression (branch-expression)
-  (case (token-type (first (token-value branch-expression)))
-    (<unop-exp> (generate-unop (first (token-value branch-expression))))
-    (literal-int (token-value (first (token-value  branch-expression))))))
+  (let ((exp-head (first (token-value branch-expression))))
+    (case (token-type exp-head)
+      (<unop-exp> (generate-unop exp-head))
+      (literal-int (token-value exp-head)))))
 		    
 
 (defun generate-statement (branch-statement)
@@ -69,6 +74,7 @@
 	      (write-line line stream))
 	    hxa)))
 
+;;TODO convert this to arrow syntax for clarity?
 (defun compile-hxc (filename-hxc)
   (let* ((path-divisor (search "/" filename-hxc :from-end t))
 	 (filename-stripped (subseq filename-hxc path-divisor (search ".hxc" filename-hxc)))

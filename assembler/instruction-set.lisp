@@ -231,6 +231,9 @@
       %1 RSTK POP
       %2 RSTK PUSH ADD31)
      local-labels 3)
+    ;; MATH : NEGATION
+    (NEG
+     (NOT LIT PUSH 1 ADD POP))
     ;; PROGRAM FLOW
     (GOTO
      (LIT PUSH)

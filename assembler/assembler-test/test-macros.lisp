@@ -54,12 +54,13 @@
     (mnemonic-test "Macro MOD:" ((:nb 15 0 1 0 3 0 3 1 7 6 5 4 3 2 1 0 4)))
     (mnemonic-test "Macro MOD21:" ((:int8 15 0 0 1 3 2 7 3)))
     (mnemonic-test "Macro MOD22:" ((:int8 0 1 14 3 15)))
-    (mnemonic-test "Macro MOD31:" ((:int12 0 15 1 0 1 0)))))
+    (mnemonic-test "Macro MOD31:" ((:int12 0 15 1 0 1 0)))
+    (mnemonic-test "Macro NEG:" ((:nb 0 15 14 13 12 11 10 9 8)))))
 
 
 (defun test-macros ()
   "Run all macro tests in this file"
-  ;;(setf prove:*default-reporter* :dot)
+  ;;(setf prove:*default-reporter* :tap)
   (test-macros-stack)
   (test-macros-logic)
   (test-macros-math))
