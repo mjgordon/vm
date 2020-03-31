@@ -79,8 +79,8 @@
 	 (filename-stripped (subseq filename-hxc path-divisor (search ".hxc" filename-hxc)))
 	 (filepath (subseq filename-hxc 0 path-divisor))
 	 (output-filename (concatenate 'string filepath filename-stripped ".hxa")))
-    
-    (output-assembly output-filename (generate (parse (lex (load-file-as-strings filename-hxc))))))
+    (load-file filename-hxc)
+    (output-assembly output-filename (generate (parse (lex (get-reader (list #'empty-string-p #'comment-string-p)))))))
   *error-list*)
 	
     
