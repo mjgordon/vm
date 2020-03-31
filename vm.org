@@ -160,7 +160,7 @@ EXPANSIONS
 - [X] F PR : Setup test system using prove
 - [X] C PR : Rewrite test files
 
-** v005 Compiling and Linking [14/19]
+** v005 Compiling and Linking [15/20]
 - [ ] B CM : Parser - Correctly handle two repeating tokens in a row in a rule
 - [X] C AS : Remove + special character
 - [X] C AS : Make tokens a struct
@@ -176,7 +176,7 @@ EXPANSIONS
 - [ ] F CM : Automatic compiler testing against valid and invalid single-file programs
 - [ ] F CM : Compiler error collection and reporting
 - [X] F CM : Negation 
-- [ ] F CM : Tokens store their source line number
+- [X] F CM : Tokens store their source line number
 - [X] F PR : Automatically scan the assembler dictionary and call the elisp regex builder for hxa-mode
 - [X] R AS : Cleanup usage of car/first, cdr/rest etc
 - [X] R AS : Redo mapping to use struct tokens

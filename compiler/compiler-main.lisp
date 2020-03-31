@@ -80,7 +80,8 @@
 	 (filepath (subseq filename-hxc 0 path-divisor))
 	 (output-filename (concatenate 'string filepath filename-stripped ".hxa")))
     (load-file filename-hxc)
-    (output-assembly output-filename (generate (parse (lex (get-reader (list #'empty-string-p #'comment-string-p)))))))
+    (output-assembly output-filename (generate (parse (lex (get-reader
+							    (list #'empty-string-p #'comment-string-p)))))))
   *error-list*)
 	
     

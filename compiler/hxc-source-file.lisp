@@ -24,7 +24,7 @@
 			      (mapcar (lambda (fun)
 					(funcall fun line))
 				      strip-predicates))))
-	line))))
+	(values line line-number)))))
 		    
 		 
        

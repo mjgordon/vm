@@ -67,18 +67,20 @@ Returns a token if the string represents one"
 	  (return))))
 |#
 
-(defun lex (reader &optional (tokens ()) (source-string "") (built-string ""))
+(defun lex (reader &optional (tokens ()) (source-string "") (line-number nil) (built-string ""))
   "Takes a list of source line strings. 
 Returns a list of tokens"
   ;; If the source-string is exhausted, pop the next one from the source list
   (when (string-equal source-string "")
-    (setf source-string (funcall reader)))
+    (multiple-value-bind (line-t line-number-t) (funcall reader)
+      (setf source-string line-t)
+      (setf line-number line-number-t)))
 
   ;; source-string will be nil if the file is finished
   (if (not source-string)
       ;; Return the current list of tokens if done reading the source file
       (progn
-	(push (make-token :type 'eof :value "EOF") tokens)
+	(push (make-token :type 'eof :value "EOF" :line-number line-number) tokens)
 	(reverse tokens))
       ;; Otherwise pop the next character and check if its a Token Ending Character (TEC)
       (let* ((c (pop-string source-string))
@@ -89,12 +91,14 @@ Returns a list of tokens"
 	    (let ((s-token (check-regexes built-string)))
 	      (when s-token
 		(setf built-string "")
+		(setf (token-line-number s-token) line-number)
 		(push s-token tokens))
 	      (unless (equal c-token t)
+		(setf (token-line-number c-token) line-number)
 		(push c-token tokens)))
 	    ;; If not a TEC, add the token to the built string
 	    (setf built-string (concatenate 'string built-string (string c))))
-	(lex reader tokens source-string built-string))))
+	(lex reader tokens source-string line-number built-string))))
 	
 ;; TODO : Delete this	    
 ;(defun lex (strings)
