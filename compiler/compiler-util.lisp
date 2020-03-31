@@ -1,13 +1,32 @@
 (in-package :compiler)
 
+(defparameter *verbose* t)
+
 ;; IO
 (defun load-file-as-strings (filename)
-  "Load a hxc file as a list of strings"
+  "Load a hxc file as a list of strings
+Inserts trailing spaces at the end of all lines to normalize lexing later. This may prove unwise?"
   (with-open-file (stream filename)
     (let ((lines (loop for line = (read-line stream nil)
 		    while line
-		    collect line)))
-      lines)))
+		    collect (concatenate 'string line " "))))
+		    ;;collect line)))
+      (remove-lines lines))))
+
+;;; Predicates
+
+(defun empty-string-p (string)
+  "Predicate for whether a string is empty"
+  (string= string ""))
+
+(defun comment-string-p (string)
+  "Predicate for if a string is a comment (begins with '//')"
+  (and (>= (length string) 2)
+       (string= (subseq string 0 2) "//")))
+
+(defun remove-lines (lines)
+  "Remove all comment lines and blank lines from the source file string list"
+  (remove-if #'comment-string-p (remove-if #'empty-string-p lines)))
 	
 
 ;; Printing

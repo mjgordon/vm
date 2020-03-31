@@ -160,20 +160,20 @@ EXPANSIONS
 - [X] F PR : Setup test system using prove
 - [X] C PR : Rewrite test files
 
-** v005 Compiling and Linking [15/19]
+** v005 Compiling and Linking [14/19]
 - [ ] B CM : Parser - Correctly handle two repeating tokens in a row in a rule
 - [X] C AS : Remove + special character
 - [X] C AS : Make tokens a struct
 - [X] F AS : PUSH2 PUSH3 PUSH4 for pushing larger numbers
-- [X] F AS : Macro TCOMP
-- [ ] F AS : Signed operations
+- [X] F AS : Macro NEG
+- [ ] F AS : Macros NEG8 NEG12 NEG16
 - [ ] F CM : Write outline for hxc language
 - [X] F CM : Basic lexer
 - [X] F CM : Basic parser
 - [X] F CM : Basic generation
 - [X] F CM : Parser rule options
 - [X] F CM : Parser rule repeats
-- [X] F CM : Automatic compiler testing against valid and invalid single-file programs
+- [ ] F CM : Automatic compiler testing against valid and invalid single-file programs
 - [ ] F CM : Compiler error collection and reporting
 - [X] F CM : Negation 
 - [X] F PR : Automatically scan the assembler dictionary and call the elisp regex builder for hxa-mode

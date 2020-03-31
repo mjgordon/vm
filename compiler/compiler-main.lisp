@@ -1,8 +1,5 @@
 (in-package :compiler)
 
-(defparameter *verbose* t)
-
-
 ;;; HXA-writing utilities
 
 (defmacro append-line (line)
@@ -53,7 +50,8 @@
     
 
 (defun generate (ast)
-  (print-token-tree ast)
+  (when *verbose*
+    (print-token-tree ast))
   (let ((output ()))
     (append-line "CALL >main")
     (append-line "GOTO >END")
@@ -75,7 +73,8 @@
 	    hxa)))
 
 ;;TODO convert this to arrow syntax for clarity?
-(defun compile-hxc (filename-hxc)
+(defun compile-hxc (filename-hxc &key (verbose t))
+  (setf *verbose* verbose)
   (let* ((path-divisor (search "/" filename-hxc :from-end t))
 	 (filename-stripped (subseq filename-hxc path-divisor (search ".hxc" filename-hxc)))
 	 (filepath (subseq filename-hxc 0 path-divisor))

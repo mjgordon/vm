@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo "=== TESTING COMPILER ==="
+
+pushd . > /dev/null
+
+cd "${0%/*}"
+cd ../compiler
+
+echo "=== NLS TEST SUITE ==="
+sbcl --noinform --load shell-entry-tests.lisp "nls-test-suite"
+
+popd > /dev/null

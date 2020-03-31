@@ -56,15 +56,7 @@ Returns a token if the string represents one"
     (loop for scanner in other-scanners do
 	 (when (ppcre:scan (first scanner) s)
 	   (return (make-token :type (second scanner) :value s :semantic t))))))
-			   
-    
-
-
-					
-  
-
-  
-      
+			
 ;; TODO : Delete this
 #|
 (defmacro check-regexes-old (current)
@@ -78,7 +70,6 @@ Returns a token if the string represents one"
 (defun lex (strings &optional (tokens ()) (source-string "") (built-string ""))
   "Takes a list of source line strings. 
 Returns a list of tokens"
-
   ;; If the source-string is exhausted, pop the next one from the source list
   (when (string-equal source-string "")
     (setf source-string (pop strings)))

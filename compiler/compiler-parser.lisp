@@ -86,7 +86,7 @@
   "Parses a list of input tokens (likely from a rule expansion
 These tokens will either be a repeating token, a list of token options, or a normal token.
 Returns  ( list-of-resulting-tokens list-of-remaining-source-tokens"
-  
+
   (list (loop while input-tree collect
 	     (let ((branch (pop input-tree)))
 	       (cond
@@ -108,14 +108,10 @@ Returns  ( list-of-resulting-tokens list-of-remaining-source-tokens"
 	tokens))
 	     
 
-
-
-
-
-
-
 	 
 (defun parse (tokens)
   "Parser entry. Accepts a list of tokens and returns an AST"
+  (when *verbose*
+    (format t "~a~%" tokens))
   (let ((program-tree '(<program> .())))
     (remove-multiple '(syntax repeat) (first (parse-subtree-new program-tree tokens)))))
