@@ -1,7 +1,7 @@
 Note : This file displays correctly in emacs org mode with org-indent-mode
 
 * TODO
-** Notation:
+** Changelog Notation:
 - B : Bug fix
 - C : Change
 - F : New Feature
@@ -160,7 +160,7 @@ EXPANSIONS
 - [X] F PR : Setup test system using prove
 - [X] C PR : Rewrite test files
 
-** v005 Compiling and Linking [15/20]
+** v005 Compiling and Linking [16/20]
 - [ ] B CM : Parser - Correctly handle two repeating tokens in a row in a rule
 - [X] C AS : Remove + special character
 - [X] C AS : Make tokens a struct
@@ -174,7 +174,7 @@ EXPANSIONS
 - [X] F CM : Parser rule options
 - [X] F CM : Parser rule repeats
 - [ ] F CM : Automatic compiler testing against valid and invalid single-file programs
-- [ ] F CM : Compiler error collection and reporting
+- [X] F CM : Compiler error collection and reporting
 - [X] F CM : Negation 
 - [X] F CM : Tokens store their source line number
 - [X] F PR : Automatically scan the assembler dictionary and call the elisp regex builder for hxa-mode
@@ -191,8 +191,8 @@ EXPANSIONS
 - [ ] F PR : Testing should scan dictionary for macro coverage
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array. (Checked assembly, *may* be doing an internal jump table right now, can't tell. Saving for when I have a more intensive demo program to test with, so differences won't be rounding errors in scale. NVM I've got one now, sierpinski takes 5 minutes to run my god
 - [ ] C PR : Opcode graphing should separate constant numbers in assembly
-- [ ] C VM : Use separate flags for ADD, SUB, RSH, LSH
-- [ ] C AS : Rename opcodes to reflect bit-lengths rather than nb-lengths
+- [ ] C VM : Use separate overflow/underflow flags for ADD, SUB, RSH, LSH
+- [ ] C AS : Rename opcodes and macros reflect bit-lengths rather than word-lengths
 
 
 ** Reminders
@@ -254,7 +254,6 @@ F : 1 : DRAW   : Draws a line of COLOR between the last position and X/Y if the 
 
 Ideas:
 - Jump if carry (ADD PUSH ADDR PUSH COND)
-- Twos Complement? (NOT LIT PUSH 1 ADD POP)
 
 - Rotate L
 - Rotate R

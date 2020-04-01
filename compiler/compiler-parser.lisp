@@ -1,6 +1,17 @@
 (in-package :compiler)
 
+#| 
+=== Terminology ===
+- Subtree : A list of tokens at an arbitrary level of the AST. Usually comes from a rule expansion
 
+
+
+=== Structure ===
+- Most parser operations return a list of 
+a) Some sort of result be it a single successful token or a list of tokens. 
+b) The remaining source tokens after that operation. 
+
+|#
 ;;; === Parser Rule Syntax===
 ;; Each rule is defined as a list taking the form of (<name> (expansion))
 ;; Options are shown as a list within the expansion e.g. (<datatype> ((key-int4 key-int8)))
@@ -20,9 +31,28 @@
 ;; (<example-rule> a b & c (d e f) g)
 ;;
 ;; a, c, and g have criticality
-;; b does not
-;; it is critical that one of d, e, or f, succeed, however individually they do not have criticality
+;; b, being a 'repeat' does not
+;; It is critical that one of d, e, or f, succeed, however individually they do not have criticality
 
+;; This needs to change somewhat. While no particular iteration of a repeat 'needs' to complete, once its started,
+;; we still need to catch relevant errors inside of it
+
+#|
+Instead of the concept of criticality, maybe it should be described as 'structured'
+At any point, the system may know exactly what its looking for or not. Cases with a repeat or 
+an option list (?) are initially unstructured, however as soon as the system *starts* to complete one of these rules,
+they should become structured. e.g. once a return statement is started, the rest of it should be expected regardless
+of the fact that as a statement its technically 'repeat optional
+Not sure what they may be, but there may be situations where two rule expansions look the same up to a point, so 
+you need to check multiple tokens in to set structured-ness? 
+
+Also we need a better word for the 'tag item. Optional? Uncounted?
+
+Also maybe the rules list should be rewritten as a DSL? Seems like the ideal situation for one. 
+
+Can we use (values) and (multiple-value-bind) to get around the constant need for lets and (first/second)ing? 
+
+|#
 
 (let ((rule-table (make-hash-table)))
   (mapcar (lambda (rule)
@@ -39,13 +69,15 @@
 		     literal-int)))
 	    (<unop-exp> (unop-negation <exp>))))
   (defun get-rule (token-name)
-    "Returns the rule expansion list associated with the token name"
+    "Returns the rule expansion list associated with the token name
+Returns nil if token-name is not a rule"
     (gethash token-name rule-table)))
   
 
 
-(defmacro if-branch (test-fun branch tokens &optional (success-form nil) (failure-form nil))
-  `(let* ((b-check (funcall ,test-fun ,branch ,tokens))
+(defmacro if-branch (test-fun branch tokens criticality &optional (success-form nil) (failure-form nil))
+  "Specialized if form. Makes checking for successful branch completions easier"
+  `(let* ((b-check (funcall ,test-fun ,branch ,tokens ,criticality))
 	  (b-result (first b-check))
 	  (b-tokens (second b-check)))
      (if b-result
@@ -55,63 +87,83 @@
 	   b-result)
 	 ,failure-form)))
 
-(defun parse-for-branch (branch tokens)
+;; TODO create macro that assigns *let specific names to the first and second items in a list
+(defun parse-for-branch (branch tokens critical)
+  "Check a single branch in a subtree. This branch may either describe a rule, or be a single normal token"
   (let ((rule (get-rule branch)))
     (if rule
 	;; If a rule, call parse subtree again
-	(let ((rule-subtree (parse-subtree-new rule tokens)))
-	  (if (and (first rule-subtree)
-		   (not (list-all-nil (first rule-subtree)))
-		   (not (eq (first rule-subtree) 'repeat)))
-	      (list (make-token :type branch :value (remove-multiple '(repeat syntax) (first rule-subtree)))
-		    (second rule-subtree))
+	(let* ((rule-subtree (parse-subtree rule tokens critical))
+	       (rule-results (first rule-subtree))
+	       (rule-tokens (second rule-subtree)))
+	  ;; Check that the results of the rule expansion are not an empty list, a list of all nils, or 'repeat?
+	  ;; Wait why would it be just 'repeat? hmmm
+	  (if (and rule-results
+		   (not (list-all-nil rule-results))
+		   (not (eq rule-results 'repeat)))
+	      ;; If the rule is completed, add it as a token with its expansion as its value
+	      (list (make-token :type branch :value (remove-multiple '(repeat syntax) rule-results))
+		    rule-tokens)
+	      ;; Else return nil
 	      (list nil tokens)))
-	;; Else, check symbol against current token type
+	;; Else, check the first token in the list against the requested type
+	;; The logic for every token eventually arrives here. 
 	(if (eq (token-type (first tokens)) branch)
+	    ;; If the matching symbol is found, either return it or a syntax maker
 	    (list (if (token-semantic (first tokens))
 		      (first tokens)
 		      'syntax)
 		  (rest tokens))
-	    (list nil tokens)))))
+	    ;; Else return nil and log an error
+	    (progn
+	      (when critical
+		(print branch)
+		(log-error (get-error-type branch) (first tokens)))
+	      (list nil tokens))))))
 	    
-(defun parse-for-options (options tokens)
+(defun parse-for-options (options tokens critical)
+  "Check the branches in an options list.
+Returns the first options that succeeds. Otherwise returns nil"
   (loop for option in options do
-       (let ((parse-result (parse-for-branch option tokens)))
+       (let ((parse-result (parse-for-branch option tokens nil)))
 	 (when (first parse-result)
 	   (return-from parse-for-options parse-result))))
+  ;; If none of the options succeed and the option list is critical, log an error.
+  ;; Note the individual options never had criticality"
+  (when critical
+    (log-error 'error-options-failed options))
   (list nil tokens))
 
 
-(defun parse-subtree-new (input-tree tokens)
-  "Parses a list of input tokens (likely from a rule expansion
-These tokens will either be a repeating token, a list of token options, or a normal token.
-Returns  ( list-of-resulting-tokens list-of-remaining-source-tokens"
-
-  (list (loop while input-tree collect
-	     (let ((branch (pop input-tree)))
+(defun parse-subtree (subtree tokens critical)
+  "Parses a list of input tokens (usually from a rule expansion)
+These tokens will either be rule name, list of options, or normal token, and may be repeating.
+Returns  (result-tokens remaining-source-tokens)"
+  (list (loop while subtree collect
+	     (let ((branch (pop subtree)))
 	       (cond
 		 ;; Current branch is a repeat
-		 ((eq '& (first input-tree))
-		  (if-branch #'parse-for-branch branch tokens
-			     (push branch input-tree)
+		 ((eq '& (first subtree))
+		  (if-branch #'parse-for-branch branch tokens nil
+			     (push branch subtree)
 			     (progn
-			       (pop input-tree)
+			       (pop subtree)
 			       'repeat)))
 		 ;; Current branch is an option list
 		 ((listp branch)
-		  (if-branch #'parse-for-options branch tokens))
-		 ;; Default - Current branch is normal symbol
+		  (if-branch #'parse-for-options branch tokens critical))
+		 ;; Default - Current branch is normal token or rule name
 		 (t
-		  (if-branch #'parse-for-branch branch tokens
+		  (if-branch #'parse-for-branch branch tokens critical
 			     nil
-			     (return-from parse-subtree-new (list nil tokens)))))))
+			     (return-from parse-subtree (list nil tokens)))))))
 	tokens))
 	     
 
-	 
+;; TODO: May be able to take out the remove-multiple here? 
 (defun parse (tokens)
   "Parser entry. Accepts a list of tokens and returns an AST"
   (when *verbose*
     (format t "~a~%" tokens))
   (let ((program-tree '(<program> .())))
-    (remove-multiple '(syntax repeat) (first (parse-subtree-new program-tree tokens)))))
+    (remove-multiple '(syntax repeat) (first (parse-subtree program-tree tokens t)))))

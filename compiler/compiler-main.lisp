@@ -47,19 +47,20 @@
     (append-line "RET")
     (reverse output)))
     
-    
 
 (defun generate (ast)
+  "Generator entry. Accepts an AST and returns a list of HXA mnemonics"
   (when *verbose*
     (print-token-tree ast))
-  (let ((output ()))
-    (append-line "CALL >main")
-    (append-line "GOTO >END")
-    (mapcar (lambda (branch-function)
-	      (append-lines (generate-function branch-function)))
-	    (token-value (car ast)))
-    (append-line "@END")
-    (reverse output)))
+  (unless *error-list*
+    (let ((output ()))
+      (append-line "CALL >main")
+      (append-line "GOTO >END")
+      (mapcar (lambda (branch-function)
+		(append-lines (generate-function branch-function)))
+	      (token-value (car ast)))
+      (append-line "@END")
+      (reverse output))))
 
 
 ;;; Main functions
@@ -75,6 +76,7 @@
 ;;TODO convert this to arrow syntax for clarity?
 (defun compile-hxc (filename-hxc &key (verbose t))
   (setf *verbose* verbose)
+  (clear-error-list)
   (let* ((path-divisor (search "/" filename-hxc :from-end t))
 	 (filename-stripped (subseq filename-hxc path-divisor (search ".hxc" filename-hxc)))
 	 (filepath (subseq filename-hxc 0 path-divisor))

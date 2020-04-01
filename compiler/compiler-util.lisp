@@ -31,14 +31,14 @@ Inserts trailing spaces at the end of all lines to normalize lexing later. This 
 
 ;; Printing
 (defun print-list (l)
-  (mapcar (lambda (item)
-	    (format t "~a ~%" item))
-	  l))
+  (mapc (lambda (item)
+	  (format t "~a ~%" item))
+	l))
 
 (defun print-tokens (tokens)
-  (mapcar (lambda (token)
-	    (format t "~a ~a~%" (token-type token) (token-value token)))
-	  tokens))
+  (mapc (lambda (token)
+	  (format t "~a ~a~%" (token-type token) (token-value token)))
+	tokens))
 
 
 (defun print-token-tree (tree &optional (depth 0) (prefix ""))
@@ -64,10 +64,13 @@ Inserts trailing spaces at the end of all lines to normalize lexing later. This 
 	    
 
 (defun print-spaces (amt)
+  "Print 'amt' spaces"
   (print-chars " " amt))
 
 (defun print-chars (c amt)
+  "Print character 'c' 'amt' number of times"
   (format t "~v@{~A~:*~}" amt c))
+
 
 ;;; Debugging
 
@@ -78,6 +81,7 @@ Inserts trailing spaces at the end of all lines to normalize lexing later. This 
 	  (hash-keys table))
   (hash-table-count table))
 
+
 ;; Lists
 
 (defun ensure-list (var)
@@ -87,6 +91,7 @@ Inserts trailing spaces at the end of all lines to normalize lexing later. This 
       (list var)))
 
 ;; TODO : name this as a predicate
+;; TODO : maybe use something like (some (lambda (item) (not (null item))) list) instead? Check speed
 (defun list-all-nil (list)
   (loop for e in list never e))
 
@@ -95,10 +100,12 @@ Inserts trailing spaces at the end of all lines to normalize lexing later. This 
   (remove-if (lambda (item)
 	       (member item remove-list))
 	     input-list))
+
+
 ;; Strings
 
 (defmacro pop-string (string)
-  "Returns the first character of a string. Removes that character from the string"
+  "Returns the first character of a string, nil if empty. Removes that character from the string"
   `(if (= 0 (length ,string))
        nil
        (prog1 (schar ,string 0) (setq ,string (subseq ,string 1)))))
@@ -109,11 +116,3 @@ Inserts trailing spaces at the end of all lines to normalize lexing later. This 
 (defun hash-keys (hash-table)
   "Returns a list of the keys in a hash table"
   (loop for key being the hash-keys of hash-table collect key))
-
-
-
-
-
-
-
-
