@@ -98,14 +98,16 @@ Returns nil if token-name is not a rule"
 
 (defmacro if-branch (test-fun branch tokens criticality &optional (success-form nil) (failure-form nil))
   "Specialized if form. Makes checking for successful branch completions easier"
-  `(multiple-value-bind (b-result b-tokens)
-       (funcall ,test-fun ,branch ,tokens ,criticality)
-     (if b-result
-	 (progn
-	   (setf ,tokens b-tokens)
-	   ,success-form
-	   b-result)
-	 ,failure-form)))
+  (let ((b-result (gensym))
+	(b-tokens (gensym)))
+    `(multiple-value-bind (,b-result ,b-tokens)
+	 (funcall ,test-fun ,branch ,tokens ,criticality)
+       (if ,b-result
+	   (progn
+	     (setf ,tokens ,b-tokens)
+	     ,success-form
+	     ,b-result)
+	   ,failure-form))))
 
 
 (defun parse-for-branch (branch tokens critical)
