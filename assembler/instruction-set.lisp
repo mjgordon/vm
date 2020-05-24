@@ -234,6 +234,21 @@
     ;; MATH : NEGATION
     (NEG
      (NOT LIT PUSH 1 ADD POP))
+    (NEG8
+     (RSTK POP NOT
+      RSTK PUSH NOT
+      LIT PUSH 1 ADD21))
+    (NEG12
+     (RSTK POP POP NOT
+      RSTK PUSH NOT
+      RSTK PUSH NOT
+      ADDC3_1))
+    (NEG16
+     (RSTK POP POP POP NOT
+      RSTK PUSH NOT
+      RSTK PUSH NOT
+      RSTK PUSH NOT
+      ADDC4_1))
     ;; PROGRAM FLOW
     (GOTO
      (LIT PUSH)

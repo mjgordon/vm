@@ -160,20 +160,18 @@ EXPANSIONS
 - [X] F PR : Setup test system using prove
 - [X] C PR : Rewrite test files
 
-** v005 Compiling and Linking [16/20]
-- [ ] B CM : Parser - Correctly handle two repeating tokens in a row in a rule
+** v005 Basic Compiling [18/18]
 - [X] C AS : Remove + special character
 - [X] C AS : Make tokens a struct
 - [X] F AS : PUSH2 PUSH3 PUSH4 for pushing larger numbers
 - [X] F AS : Macro NEG
-- [ ] F AS : Macros NEG8 NEG12 NEG16
-- [ ] F CM : Write outline for hxc language
+- [X] F AS : Macros NEG8 NEG12 NEG16
 - [X] F CM : Basic lexer
 - [X] F CM : Basic parser
 - [X] F CM : Basic generation
 - [X] F CM : Parser rule options
 - [X] F CM : Parser rule repeats
-- [ ] F CM : Automatic compiler testing against valid and invalid single-file programs
+- [X] F CM : Automatic compiler testing against valid and invalid single-file programs
 - [X] F CM : Compiler error collection and reporting
 - [X] F CM : Negation 
 - [X] F CM : Tokens store their source line number
@@ -182,13 +180,22 @@ EXPANSIONS
 - [X] R AS : Redo mapping to use struct tokens
 - [X] R AS : (dictionary-expand) should take full token list and return remaining token list
 
-*** TEST: test-macros.lisp [0/3]
-- [ ] PUSH2
-- [ ] PUSH3
-- [ ] PUSH4
+*** TEST: test-macros.lisp [5/5]
+- [X] PEEK2
+- [X] PEEK3
+- [X] PUSH2
+- [X] PUSH3
+- [X] PUSH4
+
+** v006 Compiling [/]
+- [ ] B CM : Parser - Correctly handle two repeating tokens in a row in a rule
+
+
 
 ** vFUTURE
+- [ ] F CM : Write outline for hxc language
 - [ ] F PR : Testing should scan dictionary for macro coverage
+- [ ] F PR : Automatically scan dictionary and generate elisp snippet for creating regexp
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array. (Checked assembly, *may* be doing an internal jump table right now, can't tell. Saving for when I have a more intensive demo program to test with, so differences won't be rounding errors in scale. NVM I've got one now, sierpinski takes 5 minutes to run my god
 - [ ] C PR : Opcode graphing should separate constant numbers in assembly
 - [ ] C VM : Use separate overflow/underflow flags for ADD, SUB, RSH, LSH
@@ -206,7 +213,7 @@ https://github.com/qeedquan/turtle/blob/master/src/util.c
 ** Editor
 *** .hxa
 elisp snippet for generating the hxa-mode emacs rule for expansions:
-(regexp-opt '("DROP" "DROP1" "DUP" "SWAP" "CONST3_0" "CONST4_0" "CONST3_1" "CONST4_1" "AND" "OR" "NOT" "TRUE" "BIN" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADD31" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB31" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "DIV31" "MOD" "MOD21" "MOD22" "MOD31" "NEG" "OUT" "OUT8" "OUT12" "OUT16" "PEEK2" "PEEK3"))
+(regexp-opt '("DROP" "DROP1" "DUP" "SWAP" "CONST3_0" "CONST4_0" "CONST3_1" "CONST4_1" "AND" "OR" "NOT" "TRUE" "BIN" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADD31" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB31" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "DIV31" "MOD" "MOD21" "MOD22" "MOD31" "NEG" "NEG8" "NEG12" "NEG16" "OUT" "OUT8" "OUT12" "OUT16" "PEEK2" "PEEK3" "PUSH2" "PUSH3" "PUSH4"))
 
 ** General
 Screen Storage:
@@ -313,13 +320,16 @@ DIV22          : (-2) (0)  : Divides a 2-digit number by a 2-digit number. Sets 
 DIV31          : (-1) (0)  : Divides a 3-digit number by a 1-digit number. Sets FLAG if /0
 
 *** MATH : MODULO
-MOD            : (-1) (0)  : Takes the modulo of a 1-digit number and a 1-digit number
+MOD            : (-1) (0)  : Takes the modulo of two 4-bit numbers
 MOD21          : (-1) (0)  : Takes the modulo of a 2-digit number and a 1-digit number
 MOD22          : (-2) (0)  : Takes the modulo of a 2-digit number and a 2-digit number
 MOD31          : (-1) (0)  : Takes the modulo of a 3-digit number and a 2-digit number
 
 *** MATH : NEGATIVES
 NEG            : (0)  (0)  : Sets the top word to it's twos complement negation
+NEG8           : (0)  (0)  : Sets the top 8-bit number to it's twos complement negation
+NEG12          : (0)  (0)  : Sets the top 12-bit number to it's twos complement negation
+NEG16          : (0)  (0)  : Sets the top 16-bit number to it's twos complement negation
 
 *** PROGRAM FLOW
 GOTO >ADDR     : (0)  (0)  : Moves PC directly to >ADDR
@@ -429,13 +439,13 @@ _RESULT                         (-1) (0)
 
 _EQUAL3                         (A B C D E F) ()
 
-PEEK3 SUB POP                  (A B C D E F-C) ()
+PEEK3 SUB POP                   (A B C D E F-C) ()
 TRUE NOT                        (A B C D E !F-C) ()
 LIT PUSH >0 COND                (A B C D E) ()
-PEEK3 SUB POP                  (A B C D E-B) ()
+PEEK3 SUB POP                   (A B C D E-B) ()
 TRUE NOT                        (A B C D !E-B) ()
 LIT PUSH >1 COND                (A B C D) ()
-PEEK3 SUB POP                  (A B C D-A) ()
+PEEK3 SUB POP                   (A B C D-A) ()
 TRUE NOT                        (A B C !D-A) ()
 LIT PUSH >2 COND                (A B C) ()
 DROP DROP DROP                  () ()

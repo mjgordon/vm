@@ -5,23 +5,27 @@
 (in-package :compiler-tests)
 
 (defun get-filetype (filename)
+  "Naive way to get file extension, just returns last three characters"
   (subseq filename (- (length filename) 3 )))
 
 (defun is-hxc-file (filename)
   (string-equal (get-filetype filename) "hxc"))
 
 (defun run-nls-test-suite ()
+  "Test the suite of programs adapted from nlsandler's 'write a c compiler' guide"
   (diag "stage_1")
   
   (diag "valid")
   (test-files "../programs/aux/write_a_c_compiler/stage_1/valid" t)
-  
+
   (diag "invalid")
-  (plan 4)
+  (plan 6)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/missing_paren.hxc" 'compiler::error-missing-paren)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/missing_retval.hxc" 'compiler::error-missing-close-brace)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/no_brace.hxc" 'compiler::error-missing-close-brace)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/no_semicolon.hxc" 'compiler::error-missing-semicolon)
+  (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/no_space.hxc" 'compiler::error-missing-close-brace) ;; TODO : Wrong
+  (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/wrong_case.hxc" 'compiler::error-missing-close-brace) ;; TODO : Also wrong
   (prove:finalize)
   (diag "what"))
 
@@ -41,6 +45,7 @@
     (prove:finalize)))
 
 (defun test-invalid (filepath expected-error)
+  "Supply a file and the error that should be reported"
   (let ((error-list (compiler:compile-hxc filepath :verbose nil)))
     (is (caar error-list) expected-error)))
 

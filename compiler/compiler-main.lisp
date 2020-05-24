@@ -65,6 +65,7 @@
 
 ;;; Main functions
 (defun output-assembly (filename hxa)
+  "Writes HXA mnemonics as text file"
   (with-open-file (stream filename
 			  :direction :output
 			  :if-exists :supersede
@@ -75,6 +76,7 @@
 
 ;;TODO convert this to arrow syntax for clarity?
 (defun compile-hxc (filename-hxc &key (verbose t))
+  "Main entry function. Reads an hxc file and attempts to output an hxa file"
   (setf *verbose* verbose)
   (clear-error-list)
   (let* ((path-divisor (search "/" filename-hxc :from-end t))

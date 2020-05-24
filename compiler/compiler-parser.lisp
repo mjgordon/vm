@@ -23,10 +23,6 @@
      +---- |PARSE-FOR-OPTIONS|
            +-----------------+
                               
-                              
-                              
-
-
 === Structure ===
 - Most parser operations return a list of 
 a) Some sort of result be it a single successful token or a list of tokens. 
@@ -71,9 +67,10 @@ Also we need a better word for the 'tag item. Optional? Uncounted?
 
 Also maybe the rules list should be rewritten as a DSL? Seems like the ideal situation for one. 
 
-Can we use (values) and (multiple-value-bind) to get around the constant need for lets and (first/second)ing? 
-
 |#
+
+;;; This is very ugly. 
+(defparameter *parser-error-flag* nil)
 
 (let ((rule-table (make-hash-table)))
   (mapcar (lambda (rule)
@@ -96,12 +93,12 @@ Returns nil if token-name is not a rule"
   
 
 
-(defmacro if-branch (test-fun branch tokens criticality &optional (success-form nil) (failure-form nil))
-  "Specialized if form. Makes checking for successful branch completions easier"
+(defmacro if-branch (test-fun branch tokens structured &optional (success-form nil) (failure-form nil))
+  "Specialized if form. Makes checking for successful branch completions easier."
   (let ((b-result (gensym))
 	(b-tokens (gensym)))
     `(multiple-value-bind (,b-result ,b-tokens)
-	 (funcall ,test-fun ,branch ,tokens ,criticality)
+	 (funcall ,test-fun ,branch ,tokens ,structured)
        (if ,b-result
 	   (progn
 	     (setf ,tokens ,b-tokens)
@@ -110,13 +107,13 @@ Returns nil if token-name is not a rule"
 	   ,failure-form))))
 
 
-(defun parse-for-branch (branch tokens critical)
+(defun parse-for-branch (branch tokens structured)
   "Check a single branch in a subtree. This branch may either describe a rule, or be a single normal token"
   (let ((rule (get-rule branch)))
     (if rule
 	;; If a rule, call parse subtree again
 	(multiple-value-bind (rule-results rule-tokens)
-	    (parse-subtree rule tokens critical)
+	    (parse-subtree rule tokens structured)
 	  ;; Check that the results of the rule expansion are not an empty list, a list of all nils, or 'repeat?
 	  ;; Wait why would it be just 'repeat? hmmm
 	  (if (and rule-results
@@ -128,21 +125,23 @@ Returns nil if token-name is not a rule"
 	      ;; Else return nil
 	      (values nil tokens)))
 	;; Else, check the first token in the list against the requested type
-	;; The logic for every token eventually arrives here. 
-	(if (eq (token-type (first tokens)) branch)
-	    ;; If the matching symbol is found, either return it or a syntax maker
-	    (values (if (token-semantic (first tokens))
-			(first tokens)
-			'syntax)
-		    (rest tokens))
-	    ;; Else return nil and log an error
-	    (progn
-	      (when critical
-		(print branch)
-		(log-error (get-error-type branch) (first tokens)))
-	      (values nil tokens))))))
+	;; The logic for every token eventually arrives here.
+	(let ((next-token (first tokens)))
+	  (if (eq (token-type next-token) branch)
+	      ;; If the matching symbol is found, either return it or a syntax maker
+	      (values (if (token-semantic next-token)
+			  next-token
+			  'syntax)
+		      (rest tokens))
+	      ;; Else return nil and log an error
+	      (progn
+		(when structured
+		  ;;(format t "Error : ~a~%Found :  ~a~%" (get-error-type branch) next-token)
+		  (setf *parser-error-flag* t)
+		  (log-error (get-error-type branch) next-token))
+		(values nil tokens)))))))
 	    
-(defun parse-for-options (options tokens critical)
+(defun parse-for-options (options tokens structured)
   "Check the branches in an options list.
 Returns the first options that succeeds. Otherwise returns nil"
   (loop for option in options do
@@ -152,17 +151,19 @@ Returns the first options that succeeds. Otherwise returns nil"
 	   (return-from parse-for-options (values option-result option-tokens)))))
   ;; If none of the options succeed and the option list is critical, log an error.
   ;; Note the individual options never had criticality"
-  (when critical
+  (when structured
     (log-error 'error-options-failed options))
   (values nil tokens))
 
 
-(defun parse-subtree (subtree tokens critical)
+(defun parse-subtree (subtree tokens structured)
   "Parses a list of input tokens (usually from a rule expansion)
 These tokens will either be rule name, list of options, or normal token, and may be repeating.
 Returns  (result-tokens remaining-source-tokens)"
-  (values (loop while subtree collect
+  (values (loop while (and subtree (not *parser-error-flag*)) for n from 0 collect
 	       (let ((branch (pop subtree)))
+		 (when (> n 0)
+		   (setf structured t))
 		 (cond
 		   ;; Current branch is a repeat
 		   ((eq '& (first subtree))
@@ -173,10 +174,10 @@ Returns  (result-tokens remaining-source-tokens)"
 				 'repeat)))
 		   ;; Current branch is an option list
 		   ((listp branch)
-		    (if-branch #'parse-for-options branch tokens critical))
+		    (if-branch #'parse-for-options branch tokens structured))
 		   ;; Default - Current branch is normal token or rule name
 		   (t
-		    (if-branch #'parse-for-branch branch tokens critical
+		    (if-branch #'parse-for-branch branch tokens structured
 			       nil
 			       (return-from parse-subtree (values nil tokens)))))))
 	  tokens))
@@ -185,7 +186,8 @@ Returns  (result-tokens remaining-source-tokens)"
 ;; TODO: May be able to take out the remove-multiple here? 
 (defun parse (tokens)
   "Parser entry. Accepts a list of tokens and returns an AST"
+  (setf *parser-error-flag* nil)
   (when *verbose*
-    (format t "~a~%" tokens))
+    (format t "Parser Received :~%~a~%" tokens))
   (let ((program-tree '(<program> .())))
     (remove-multiple '(syntax repeat) (parse-subtree program-tree tokens t))))

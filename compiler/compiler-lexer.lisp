@@ -1,20 +1,5 @@
 (in-package :compiler)
 
-;; TODO : delete this
-#|
-(defun get-token-regexes ()
-  "Return a list of regex pairs to current language features"
-  (mapcar (lambda (arg)
-	    (list (ppcre:create-scanner (second arg))
-		  (first arg)))
-	  '((key-int4 "int4$")
-	    (key-int8 "int8$")
-	    (key-return "return")
-	    (identifier "[a-zA-Z]\w*")
-	    (literal-int "[0-9]+")
-	    (op-negation "-"))))
-|#
-
 ;; TODO: simplify the character scanners, it doesn't need the mapcar and lambda etc as its now just a list
 (let ((character-scanners (mapcar (lambda (args)
 				    (let ((char (first args))
@@ -36,7 +21,7 @@
 					sym)))
 			      '((key-int4 "int4$")
 				(key-int8 "int8$")
-				(key-return "return")
+				(key-return "return$")
 				(identifier "[a-zA-Z]\w*")
 				(literal-int "[0-9]+")))))
   (defun check-character-regexes (c)
@@ -56,16 +41,7 @@ Returns a token if the string represents one"
     (loop for scanner in other-scanners do
 	 (when (ppcre:scan (first scanner) s)
 	   (return (make-token :type (second scanner) :value s :semantic t))))))
-			
-;; TODO : Delete this
-#|
-(defmacro check-regexes-old (current)
-  `(loop for regex in regexes do
-	(when (ppcre:scan (first regex) ,current)
-	  (add-token (second regex) ,current)
-	  (setf ,current "")
-	  (return))))
-|#
+
 
 (defun lex (reader &optional (tokens ()) (source-string "") (line-number nil) (built-string ""))
   "Takes a list of source line strings. 
