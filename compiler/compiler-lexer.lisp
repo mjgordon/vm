@@ -1,19 +1,11 @@
 (in-package :compiler)
 
-;; TODO: simplify the character scanners, it doesn't need the mapcar and lambda etc as its now just a list
-(let ((character-scanners (mapcar (lambda (args)
-				    (let ((char (first args))
-					  (sym (second args))
-					  (tok (third args)))
-				      (list char
-					    sym
-					    tok)))
-				  '((#\{ open-brace nil)
-				    (#\} close-brace nil)
-				    (#\( open-paren nil)
-				    (#\) close-paren nil)
-				    (#\; semicolon nil)
-				    (#\- unop-negation t))))
+(let ((character-scanners '((#\{ open-brace nil)
+			    (#\} close-brace nil)
+			    (#\( open-paren nil)
+			    (#\) close-paren nil)
+			    (#\; semicolon nil)
+			    (#\- unop-negation t)))
       (other-scanners (mapcar (lambda (args)
 				(let ((regex (second args))
 				      (sym (first args)))

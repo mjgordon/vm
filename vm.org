@@ -189,6 +189,8 @@ EXPANSIONS
 
 ** v006 Compiling [/]
 - [ ] B CM : Parser - Correctly handle two repeating tokens in a row in a rule
+- [ ] F CM : Bitwise Complement (~)
+- [ ] F Cm : Logical Negation (!)
 
 
 
