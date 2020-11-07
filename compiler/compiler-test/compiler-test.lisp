@@ -31,6 +31,8 @@
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/no_semicolon.hxc" 'compiler::error-missing-semicolon)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/no_space.hxc" 'compiler::error-missing-close-brace) ;; TODO : Wrong
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/wrong_case.hxc" 'compiler::error-missing-close-brace) ;; TODO : Also wrong
+
+  
   (prove:finalize)
 
   (diag "~%== stage_2 ==")
@@ -59,6 +61,17 @@
 
   )
 
+
+(defun run-program (filename)
+  (let ((process (sb-ext:run-program "/home/matt/projects/vm/bin/vm"
+				     (list "-f" "/home/matt/projects/vm/programs/aux/write_a_c_compiler/stage_1/valid/return_2.hxb" "-t")
+				     :output :stream
+				     :wait t)))
+    (let* ((stream (sb-ext:process-output process))
+	   (output (loop for line = (read-line stream nil nil)
+		      while line collect line)))
+      (sb-ext:process-close process)
+      output)))
 
 
 (defun test-files (folder &optional (valid t))

@@ -198,6 +198,7 @@ void finish() {
   free(filenameOutput);
   free(filenameHeatmapOpcodes);
   free(filenameHeatmapProgram);
+  // If being run normally (not from an automatic testing script)
   if (! flagTest) {
     printf("=== RESULTS ===\n");
     printf("Execution took %lu ms\n",endTime - startTime);
@@ -226,6 +227,13 @@ void finish() {
       }
       printf("\n");
     }
+  }
+  // Testing script, only print data stack (should only contain return value of main function)
+  else {
+    while(!stackIsEmpty(stack)) {
+      printf(" %i",stackPop(stack));
+    }
+    printf("\n");
   }
   // Loop forever after execution is complete; respond to quit events and redraw the window as needed
   // Don't loop if in test mode
