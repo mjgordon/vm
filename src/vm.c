@@ -67,10 +67,6 @@ uint16_t REG_Y;
 // Combined carry and underflow flag for addition and subtraction operations
 uint8_t FLAG;
 
-// Current position of the pen, point to draw from
-uint16_t PEN_X = 0;
-uint16_t PEN_Y = 0;
-
 // How many operations the VM has executed
 unsigned long cycles = 0;
 

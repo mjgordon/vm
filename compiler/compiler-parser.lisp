@@ -69,7 +69,7 @@ Also maybe the rules list should be rewritten as a DSL? Seems like the ideal sit
 
 |#
 
-;;; This is very ugly. 
+;;; This being global is ugly
 (defparameter *parser-error-flag* nil)
 
 (let ((rule-table (make-hash-table)))
@@ -83,9 +83,15 @@ Also maybe the rules list should be rewritten as a DSL? Seems like the ideal sit
 	    (<datatype> ((key-int4
 			  key-int8)))
 	    (<statement> (key-return <exp> semicolon))
-	    (<exp> ((<unop-exp>
-		     literal-int)))
-	    (<unop-exp> ((unop-negation unop-bitwise-complement unop-bitwise-negation) <exp>))))
+	    (<exp> ( <term> <exp-end> & ))
+	    (<exp-end> ( (binop-addition unop-negation) <term>))
+	    (<term> ( <factor> <term-end> & ))
+	    (<term-end> ( (binop-multiplication binop-division) <factor> ))
+	    (<factor> ( (<paren-exp> <unop-exp> literal-int) ))
+	    (<paren-exp> ( open-paren <exp> close-paren ))
+	    (<unop-exp> ((unop-negation unop-bitwise-complement unop-bitwise-negation) <factor>))
+	    (<binop-term> (<term> (binop-multiplication binop-division) <term))
+	    (<binop-exp (<term> (binop-addition unop-negation) <exp>))))
   
   (defun get-rule (token-name)
     "Returns the rule expansion list associated with the token name

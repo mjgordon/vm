@@ -41,8 +41,23 @@
   (test-invalid "../programs/aux/write_a_c_compiler/stage_2/invalid/missing_const.hxc" 'compiler::error-unexpected-token)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_2/invalid/missing_semicolon.hxc" 'compiler::error-missing-semicolon)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_2/invalid/nested_missing_const.hxc" 'compiler::error-unexpected-token)
-  (test-invalid "../programs/aux/write_a_c_compiler/stage_2/invalid/wrong_order.hxc" 'compiler::error-missing-semicolon)
-  (prove:finalize))
+  (test-invalid "../programs/aux/write_a_c_compiler/stage_2/invalid/wrong_order.hxc" 'compiler::error-unexpected-token)
+  (prove:finalize)
+  
+  (diag "~%== stage_3 ==")
+  (diag "valid")
+  (test-files "../programs/aux/write_a_c_compiler/stage_3/valid" t)
+  (diag "invalid")
+  (plan 4)
+  (test-invalid "../programs/aux/write_a_c_compiler/stage_3/invalid/malformed_paren.hxc" 'compiler::error-missing-semicolon)
+  (test-invalid "../programs/aux/write_a_c_compiler/stage_3/invalid/missing_first_op.hxc" 'compiler::error-unexpected-token)
+  (test-invalid "../programs/aux/write_a_c_compiler/stage_3/invalid/missing_second_op.hxc" 'compiler::error-unexpected-token)
+  (test-invalid "../programs/aux/write_a_c_compiler/stage_3/invalid/no_semicolon.hxc" 'compiler::error-missing-semicolon)
+  (prove:finalize)
+
+
+
+  )
 
 
 
