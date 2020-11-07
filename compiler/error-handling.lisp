@@ -2,10 +2,10 @@
 
 (defparameter *error-list* ())
 
-(defun get-error-type (token)
-  (cond ((equal token 'close-paren) 'error-missing-paren)
-	((equal token 'close-brace) 'error-missing-close-brace)
-	((equal token 'semicolon) 'error-missing-semicolon)))
+(defun get-error-type (expected-token received-token)
+  (cond ((equal expected-token 'close-paren) 'error-missing-paren)
+	((equal expected-token 'close-brace) 'error-missing-close-brace)
+	((equal expected-token 'semicolon) 'error-missing-semicolon)))
 
 (defun clear-error-list ()
   (setf *error-list* ()))

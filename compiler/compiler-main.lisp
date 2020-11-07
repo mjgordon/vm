@@ -17,7 +17,13 @@
   (case (token-type (first (token-value branch-unop)))
     ;; Negation operator (-)
     (unop-negation
-     (concatenate 'string (generate-expression (second (token-value branch-unop))) " NEG "))))
+     (concatenate 'string (generate-expression (second (token-value branch-unop))) " NEG "))
+    (unop-bitwise-negation
+     (concatenate 'string (generate-expression (second (token-value branch-unop))) " TRUE NOT "))
+    (unop-bitwise-complement
+     (concatenate 'string (generate-expression (second (token-value branch-unop))) " NOT "))
+    ))
+
     
 
 (defun generate-expression (branch-expression)
@@ -50,18 +56,38 @@
 
 (defun generate (ast)
   "Generator entry. Accepts an AST and returns a list of HXA mnemonics"
-  (when *verbose*
-    (print-token-tree ast))
-  (unless *error-list*
-    (let ((output ()))
-      (append-line "CALL >main")
-      (append-line "GOTO >END")
-      (mapcar (lambda (branch-function)
-		(append-lines (generate-function branch-function)))
-	      (token-value (car ast)))
-      (append-line "@END")
-      (reverse output))))
+  (if *error-list*
+      (progn
+	(when *verbose*
+	  (print-error-list *error-list*))
+	(list))
+      (progn	
+	(when *verbose*
+	  (print-token-tree ast))
+	(let ((output ()))
+	  (append-line "CALL >main")
+	  (append-line "GOTO >END")
+	  (mapcar (lambda (branch-function)
+		    (append-lines (generate-function branch-function)))
+		  (token-value (car ast)))
+	  (append-line "@END")
+	  (reverse output)))))
 
+
+(defun print-error-list (error-list)
+  (format t "COMPILATION ERRORS~%")
+  (format t "LINE   : ISSUE~%")
+  
+  (mapcar (lambda (e)
+	    (let* ((token (cadadr e))
+		   (line-number (token-line-number token))
+		   (error-type (car e))
+		   (expected-type (caadr e))
+		   (actual-type (token-type token)))
+	      (format t "~6d : ~a : Expected ~a, got ~a~%" line-number error-type expected-type actual-type)))
+	  error-list))
+
+  
 
 ;;; Main functions
 (defun output-assembly (filename hxa)

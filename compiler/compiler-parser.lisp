@@ -85,7 +85,8 @@ Also maybe the rules list should be rewritten as a DSL? Seems like the ideal sit
 	    (<statement> (key-return <exp> semicolon))
 	    (<exp> ((<unop-exp>
 		     literal-int)))
-	    (<unop-exp> (unop-negation <exp>))))
+	    (<unop-exp> ((unop-negation unop-bitwise-complement unop-bitwise-negation) <exp>))))
+  
   (defun get-rule (token-name)
     "Returns the rule expansion list associated with the token name
 Returns nil if token-name is not a rule"
@@ -136,9 +137,8 @@ Returns nil if token-name is not a rule"
 	      ;; Else return nil and log an error
 	      (progn
 		(when structured
-		  ;;(format t "Error : ~a~%Found :  ~a~%" (get-error-type branch) next-token)
 		  (setf *parser-error-flag* t)
-		  (log-error (get-error-type branch) next-token))
+		  (log-error (get-error-type branch next-token) (list branch next-token)))
 		(values nil tokens)))))))
 	    
 (defun parse-for-options (options tokens structured)
@@ -152,7 +152,8 @@ Returns the first options that succeeds. Otherwise returns nil"
   ;; If none of the options succeed and the option list is critical, log an error.
   ;; Note the individual options never had criticality"
   (when structured
-    (log-error 'error-options-failed options))
+    (setf *parser-error-flag* t)
+    (log-error 'error-unexpected-token (list options (first tokens))))
   (values nil tokens))
 
 
@@ -174,7 +175,9 @@ Returns  (result-tokens remaining-source-tokens)"
 				 'repeat)))
 		   ;; Current branch is an option list
 		   ((listp branch)
-		    (if-branch #'parse-for-options branch tokens structured))
+		    (if-branch #'parse-for-options branch tokens structured
+			       nil
+			       (return-from parse-subtree (values nil tokens))))
 		   ;; Default - Current branch is normal token or rule name
 		   (t
 		    (if-branch #'parse-for-branch branch tokens structured

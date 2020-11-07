@@ -187,10 +187,11 @@ EXPANSIONS
 - [X] PUSH3
 - [X] PUSH4
 
-** v006 Compiling [/]
+** v006 Compiling [2/3]
 - [ ] B CM : Parser - Correctly handle two repeating tokens in a row in a rule
-- [ ] F CM : Bitwise Complement (~)
-- [ ] F Cm : Logical Negation (!)
+- [X] F CM : Bitwise Complement (~)
+- [X] F CM : Logical Negation (!)
+- [ ] F CM : Binary Operators (+, -, *, /)
 
 
 
