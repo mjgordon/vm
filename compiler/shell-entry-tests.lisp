@@ -1,6 +1,7 @@
 ;; Calling tests from bash script
 (load "~/lisp/quicklisp/setup.lisp")
 (load "compiler.asd")
+(load "../assembler/assembler.asd")
 (load "compiler-test/compiler-test.asd")
 
 (with-open-stream (*standard-output* (make-broadcast-stream))

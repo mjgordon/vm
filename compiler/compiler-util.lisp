@@ -2,6 +2,22 @@
 
 (defparameter *verbose* t)
 
+;; Datatypes
+
+(let ((type-values (make-hash-table :test 'eq)))
+  (mapcar (lambda (def)
+	    (setf (gethash (car def) type-values) (cadr def)))
+	  '((int4 4)
+	    (int8 8)
+	    (int12 12)
+	    (int16 16)))
+	  
+  (defun compare-types (a b)
+    (if (> (gethash a type-values)
+	   (gethash b type-values))
+	a
+	b)))
+
 ;; IO
 (defun load-file-as-strings (filename)
   "Load a hxc file as a list of strings
@@ -12,6 +28,10 @@ Inserts trailing spaces at the end of all lines to normalize lexing later. This 
 		    collect (concatenate 'string line " "))))
 		    ;;collect line)))
       (remove-lines lines))))
+
+(defun remove-lines (lines)
+  "Remove all comment lines and blank lines from the source file string list"
+  (remove-if #'comment-string-p (remove-if #'empty-string-p lines)))
 
 ;;; Predicates
 
@@ -24,9 +44,7 @@ Inserts trailing spaces at the end of all lines to normalize lexing later. This 
   (and (>= (length string) 2)
        (string= (subseq string 0 2) "//")))
 
-(defun remove-lines (lines)
-  "Remove all comment lines and blank lines from the source file string list"
-  (remove-if #'comment-string-p (remove-if #'empty-string-p lines)))
+
 	
 
 ;; Printing

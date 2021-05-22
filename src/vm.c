@@ -231,7 +231,10 @@ void finish() {
   // Testing script, only print data stack (should only contain return value of main function)
   else {
     while(!stackIsEmpty(stack)) {
-      printf(" %i",stackPop(stack));
+      printf("%i",stackPop(stack));
+      if (!stackIsEmpty(stack)) {
+	printf(" ");
+      }
     }
     printf("\n");
   }

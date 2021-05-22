@@ -1,5 +1,9 @@
 Note : This file displays correctly in emacs org mode with org-indent-mode
 
+* Current
+- Adding datatype virality during generation, currently at the term level
+- Need to ensure there are assembler macros for all needed permutations, and well as swap macros, to cut down on the number of total macros e.g. ADD21 vs ADD12
+
 * TODO
 ** Changelog Notation:
 - B : Bug fix
@@ -535,10 +539,10 @@ _RESULT                         (-1) (0)
 _RESULT
 
 _SUB33                          (A B C D E G) ()
-PEEK2 RSTK POP POP POP DROP    (A B C) (D G E)
+PEEK2 RSTK POP POP POP DROP     (A B C) (D G E)
 RSTK PUSH PUSH                  (A B C E G) (D)
 SUB22                           (A B-E C-G) (D)
-RSTK PUSH PEEK2 PEEK2         (A B-E C-G D B-E C-G) ()
+RSTK PUSH PEEK2 PEEK2           (A B-E C-G D B-E C-G) ()
 RSTK POP POP POP DROP DROP      (A) (C-G B-E D)
 SUB PUSH POP                    (A-F) (C-G B-E D)
 RSTK PUSH                       (A-F D) (C-G B-E)

@@ -2,6 +2,7 @@
 
 ;;; HXA-writing utilities
 
+;; TODO sanitize these
 (defmacro append-line (line)
   `(setf output (cons ,line output)))
 
@@ -10,34 +11,95 @@
 	     (append-line line))
 	   ,lines))
 
+(defmacro pass-datatype (parent generator branch)
+  "Run the branch through the supplied generator, then set the parent datatype to match the branch"
+  `(let ((output (funcall ,generator ,branch)))
+     (setf (token-datatype ,parent) (token-datatype ,branch))
+     output))
+     
+
 
 ;;; Generating HXA from AST
 
-(defun generate-unop (branch-unop)
-  (case (token-type (first (token-value branch-unop)))
-    ;; Negation operator (-)
-    (unop-negation
-     (concatenate 'string (generate-expression (second (token-value branch-unop))) " NEG "))
-    (unop-bitwise-negation
-     (concatenate 'string (generate-expression (second (token-value branch-unop))) " TRUE NOT "))
-    (unop-bitwise-complement
-     (concatenate 'string (generate-expression (second (token-value branch-unop))) " NOT "))
-    ))
+(defun generate-unop (branch)
+  (let* ((values (token-value branch))
+	 (factor (second values)))
+    (concatenate 'string
+		 (pass-datatype branch #'generate-factor factor)
+		 (case (token-type (first values))
+		   (unop-negation "NEG ")
+		   (unop-logical-negation "TRUE NOT ")
+		   (unop-bitwise-complement "NOT ")))))
 
-    
 
-(defun generate-expression (branch-expression)
-  (let ((exp-head (first (token-value branch-expression))))
-    (case (token-type exp-head)
-      (<unop-exp> (generate-unop exp-head))
-      (literal-int (token-value exp-head)))))
-		    
 
-(defun generate-statement (branch-statement)
-  (let* ((sm-values (token-value branch-statement))
-	 (sm-type (token-type (first sm-values))))
-    (cond ((eq sm-type 'key-return) (list (concatenate 'string "LIT PUSH " (generate-expression (second sm-values)))))
-	  (t (format t sm-type)))))
+
+(defun generate-factor (branch)
+  (let ((values (token-value branch)))
+    (case (token-type (first values))
+      (literal-int (let* ((lit (token-value (first values)))
+			  (lit-numeric (parse-integer lit)))
+		      (concatenate 'string
+				   (cond ((< lit-numeric 16)
+					  (setf (token-datatype branch) 'int4)
+					  "LIT PUSH ")
+					 ((< lit-numeric 256)
+					  (setf (token-datatype branch) 'int8)
+					  "LIT PUSH2 ")
+					 ((< lit-numeric 4096)
+					  (setf (token-datatype branch) 'int12)
+					  "LIT PUSH3 ")
+					 ((< lit-numeric 65536)
+					  (setf (token-datatype branch) 'int16)
+					  "LIT PUSH4 "))
+				   lit
+				   " ")))
+      ;;(<paren-exp> (generate-expression (first (token-value (first values)))))
+      (<paren-exp> (pass-datatype branch
+				 #'generate-expression
+				 (first (token-value (first values)))))
+      (<unop-exp> (pass-datatype branch
+				#'generate-unop
+				(first values))))))
+
+(defun generate-term-body(parent branch)
+  (let ((values (token-value branch)))
+    (concatenate 'string
+		 (generate-factor (second values))
+		 (case (token-type (first values))
+		   (binop-multiplication "MULT ")
+		   (binop-division "DIV ")))))
+
+
+(defun generate-term (branch)
+  (let ((values (token-value branch)))
+    (format nil "~{~a~}"
+	    (cons (pass-datatype branch #'generate-factor (first values))
+		  (mapcar (lambda (value)
+			    (generate-term-body branch value))
+			  (rest values))))))
+
+(defun generate-expression-body (branch)
+  (let ((values (token-value branch)))
+    (concatenate 'string
+		 (generate-term (second values))
+		 (case (token-type (first values))
+		   (binop-addition "ADD ")
+		   (unop-negation "SUB "))
+		 "POP ")))
+
+(defun generate-expression (branch)
+  (let ((values (token-value branch)))
+    (format nil "~{~a~}"
+	    (cons (generate-term (first values))
+		  (mapcar #'generate-expression-body (rest values))))))
+
+	       
+(defun generate-statement (branch)
+  (let ((values (token-value branch)))
+    (case (token-type (first values))
+      (key-return (list  (generate-expression (second values)))))))
+
 			     
 
 (defun generate-function (branch-function)

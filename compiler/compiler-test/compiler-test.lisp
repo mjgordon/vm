@@ -16,13 +16,24 @@
 
   ;;(setf prove:*default-reporter* :dot)
   ;;(setf prove:*default-reporter* :tap) ;; No
-  (setf prove:*default-reporter* :fiveam)
+  ;;(setf prove:*default-reporter* :fiveam)
   
   
   (diag "~%== stage_1 ==")
   
-  (diag "valid")
+  (diag "valid : compilation")
   (test-files "../programs/aux/write_a_c_compiler/stage_1/valid" t)
+  
+  (diag "valid : execution")
+  (plan 6)
+  (test-valid "../programs/aux/write_a_c_compiler/stage_1/valid/multi_digit" "4 6")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_1/valid/newlines" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_1/valid/no_newlines" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_1/valid/return_0" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_1/valid/return_2" "2")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_1/valid/spaces" "0")
+  (prove:finalize)
+  
   (diag "invalid")
   (plan 6)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/missing_paren.hxc" 'compiler::error-missing-paren)
@@ -31,13 +42,24 @@
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/no_semicolon.hxc" 'compiler::error-missing-semicolon)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/no_space.hxc" 'compiler::error-missing-close-brace) ;; TODO : Wrong
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/wrong_case.hxc" 'compiler::error-missing-close-brace) ;; TODO : Also wrong
-
-  
   (prove:finalize)
 
+  
   (diag "~%== stage_2 ==")
-  (diag "valid")
+  
+  (diag "valid : compilation")
   (test-files "../programs/aux/write_a_c_compiler/stage_2/valid" t)
+
+  (plan 7)
+  (test-valid "../programs/aux/write_a_c_compiler/stage_2/valid/bitwise" "3")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_2/valid/bitwise_zero" "15")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_2/valid/neg" "11")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_2/valid/nested_ops_2" "1")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_2/valid/nested_ops" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_2/valid/not_five" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_2/valid/not_zero" "15")
+  (prove:finalize)
+  
   (diag "invalid")
   (plan 4)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_2/invalid/missing_const.hxc" 'compiler::error-unexpected-token)
@@ -45,10 +67,24 @@
   (test-invalid "../programs/aux/write_a_c_compiler/stage_2/invalid/nested_missing_const.hxc" 'compiler::error-unexpected-token)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_2/invalid/wrong_order.hxc" 'compiler::error-unexpected-token)
   (prove:finalize)
+
   
   (diag "~%== stage_3 ==")
-  (diag "valid")
+  
+  (diag "valid : compilation")
   (test-files "../programs/aux/write_a_c_compiler/stage_3/valid" t)
+
+  (diag "valid : execution")
+  (plan 6)
+  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/add" "3")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/associativity_2" "1")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/associativity" "12")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/div" "2")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/mult" "6 0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/parens" "14 0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/precedence" "140")
+  (prove:finalize)
+  
   (diag "invalid")
   (plan 4)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_3/invalid/malformed_paren.hxc" 'compiler::error-missing-semicolon)
@@ -64,7 +100,7 @@
 
 (defun run-program (filename)
   (let ((process (sb-ext:run-program "/home/matt/projects/vm/bin/vm"
-				     (list "-f" "/home/matt/projects/vm/programs/aux/write_a_c_compiler/stage_1/valid/return_2.hxb" "-t")
+				     (list "-f" filename "-t")
 				     :output :stream
 				     :wait t)))
     (let* ((stream (sb-ext:process-output process))
@@ -73,6 +109,15 @@
       (sb-ext:process-close process)
       output)))
 
+(defun test-valid (filepath expected-return-value)
+  "Tests a single valid program, for parsing validity and for a simple expected output value"
+  (compiler:compile-hxc (format nil "~a.hxc" filepath) :verbose nil)
+  (assembler:assemble-hex (format nil "~a.hxa" filepath) :verbose nil)
+  (let ((output (run-program (format nil "~a.hxb" filepath))))
+    (is (first output)
+	expected-return-value
+	(file-namestring filepath))))
+  
 
 (defun test-files (folder &optional (valid t))
   "Arguments are folder to look for single-file programs in, and whether the program is valid or not"
@@ -91,9 +136,3 @@
     (is (caar error-list)
 	expected-error
 	(file-namestring filepath))))
-
-
-
-
-  
-  

@@ -7,10 +7,12 @@
 			    (#\; semicolon nil)
 			    (#\- unop-negation t)
 			    (#\~ unop-bitwise-complement t)
-			    (#\! unop-bitwise-negation t)
+			    (#\! unop-logical-negation t)
 			    (#\+ binop-addition t)
 			    (#\* binop-multiplication t)
-			    (#\/ binop-division t)))
+			    (#\/ binop-division t)
+			    (#\< comp-less-than t)
+			    (#\< comp-greater-than t)))
       (other-scanners (mapcar (lambda (args)
 				(let ((regex (second args))
 				      (sym (first args)))
@@ -20,7 +22,13 @@
 				(key-int8 "int8$")
 				(key-return "return$")
 				(identifier "[a-zA-Z]\w*")
-				(literal-int "[0-9]+")))))
+				(literal-int "[0-9]+")
+				(logical-and "&&$")
+				(logical-or "\\|\\|$")
+				(equal-to "==$")
+				(not-equal-to "!=$")
+				(comp-less-than-or-equal-to "<=$")
+				(comp-greater-than-or-equal-to ">=$")))))
   (defun check-character-regexes (c)
     "Takes the current character from the source
 Returns a token if applicable
@@ -73,17 +81,4 @@ Returns a list of tokens"
 	    (setf built-string (concatenate 'string built-string (string c))))
 	(lex reader tokens source-string line-number built-string))))
 	
-;; TODO : Delete this	    
-;(defun lex (strings)
-;  "Turns a list of source strings into a list of tokens"
-;  (let ((tokens '())
-;	(current ""))
-;    (loop for string in strings do
-;;	 (loop for c across string do
-;;	      (check-regexes current)
-;;		  (setf current (concatenate 'string current (string c))))) ;TODO this concat isn't great
-;;	 (check-regexes current))
-;;    (add-token 'eof "EOF")
-;;    (format t "~a~%" (reverse tokens))
-;;    (reverse tokens)
 
