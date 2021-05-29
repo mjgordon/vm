@@ -28,7 +28,11 @@
 				(equal-to "==$")
 				(not-equal-to "!=$")
 				(comp-less-than-or-equal-to "<=$")
-				(comp-greater-than-or-equal-to ">=$")))))
+				(comp-greater-than-or-equal-to ">=$")
+				(cast-int4 "\$int4$")
+				(cast-int8 "\$int8$")
+				(cast-int12 "\$int12$")
+				(cast-int16 "\$int16$")))))
   (defun check-character-regexes (c)
     "Takes the current character from the source
 Returns a token if applicable

@@ -1,8 +1,8 @@
 Note : This file displays correctly in emacs org mode with org-indent-mode
 
 * Current
-- Adding datatype virality during generation, currently at the term level
-- Need to ensure there are assembler macros for all needed permutations, and well as swap macros, to cut down on the number of total macros e.g. ADD21 vs ADD12
+- Adding datatype virality during generation, currently at the return level
+- Add implicit casting in return statement
 
 * TODO
 ** Changelog Notation:
@@ -196,6 +196,7 @@ EXPANSIONS
 - [X] F CM : Bitwise Complement (~)
 - [X] F CM : Logical Negation (!)
 - [ ] F CM : Binary Operators (+, -, *, /)
+- [ ] C AS : Rename all operators to bit-length rather than word-length
 
 
 
@@ -206,7 +207,6 @@ EXPANSIONS
 - [ ] T VM : Speed of main opcode branching being switch statement vs function pointer array. (Checked assembly, *may* be doing an internal jump table right now, can't tell. Saving for when I have a more intensive demo program to test with, so differences won't be rounding errors in scale. NVM I've got one now, sierpinski takes 5 minutes to run my god
 - [ ] C PR : Opcode graphing should separate constant numbers in assembly
 - [ ] C VM : Use separate overflow/underflow flags for ADD, SUB, RSH, LSH
-- [ ] C AS : Rename opcodes and macros reflect bit-lengths rather than word-lengths
 
 
 ** Reminders

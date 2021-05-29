@@ -4,6 +4,8 @@
 
 ;; Datatypes
 
+
+
 (let ((type-values (make-hash-table :test 'eq)))
   (mapcar (lambda (def)
 	    (setf (gethash (car def) type-values) (cadr def)))
@@ -11,12 +13,37 @@
 	    (int8 8)
 	    (int12 12)
 	    (int16 16)))
-	  
+
+  (defun get-datatype-size (type)
+    (gethash type type-values))
+
+  (defun add-datatype-sizes (a b)
+    (+ (gethash a type-values)
+       (gethash b type-values)))
+
+  (defun get-type-swap (a b)
+    "Returns the appropiate swap mnemonic for the supplied datatypes"
+    (format nil "SWAP_~a_~a"
+	    (gethash a type-values)
+	    (gethash b type-values)))
+  
   (defun compare-types (a b)
-    (if (> (gethash a type-values)
-	   (gethash b type-values))
-	a
-	b)))
+    "Returns true if type a is larger than type b"
+    (> (gethash a type-values)
+       (gethash b type-values)))
+
+  (defun max-datatype-size (a b)
+    "Returns the maximum bit length of two datatypes"
+    (max (gethash a type-values)
+	 (gethash b type-values)))
+
+  (defun order-datatype-sizes (a b)
+    (mapcar #'get-datatype-size
+	    (if (compare-types a b)
+		(list a b)
+		(reverse (list a b))))))
+
+
 
 ;; IO
 (defun load-file-as-strings (filename)

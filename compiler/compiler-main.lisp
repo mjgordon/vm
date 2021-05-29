@@ -27,7 +27,7 @@
     (concatenate 'string
 		 (pass-datatype branch #'generate-factor factor)
 		 (case (token-type (first values))
-		   (unop-negation "NEG ")
+		   (unop-negation (format nil "NEG_~a " (get-datatype-size (token-datatype branch))))
 		   (unop-logical-negation "TRUE NOT ")
 		   (unop-bitwise-complement "NOT ")))))
 
@@ -45,13 +45,13 @@
 					  "LIT PUSH ")
 					 ((< lit-numeric 256)
 					  (setf (token-datatype branch) 'int8)
-					  "LIT PUSH2 ")
+					  "LIT PUSH_8 ")
 					 ((< lit-numeric 4096)
 					  (setf (token-datatype branch) 'int12)
-					  "LIT PUSH3 ")
+					  "LIT PUSH_12 ")
 					 ((< lit-numeric 65536)
 					  (setf (token-datatype branch) 'int16)
-					  "LIT PUSH4 "))
+					  "LIT PUSH_16 "))
 				   lit
 				   " ")))
       ;;(<paren-exp> (generate-expression (first (token-value (first values)))))
@@ -63,12 +63,23 @@
 				(first values))))))
 
 (defun generate-term-body(parent branch)
-  (let ((values (token-value branch)))
+  (let* ((values (token-value branch))
+	 (factor-b (second values))
+	 (factor-b-result (generate-factor factor-b))
+	 (type-a (token-datatype parent))
+	 (type-b (token-datatype factor-b)))
+    (format t "~a : ~a" type-a type-b)
     (concatenate 'string
-		 (generate-factor (second values))
+		 factor-b-result
+		 (if (compare-types type-b type-a) (get-type-swap type-a type-b) "")
 		 (case (token-type (first values))
-		   (binop-multiplication "MULT ")
-		   (binop-division "DIV ")))))
+		   ;; MULTIPLACTION
+		   (binop-multiplication
+		    (setf (token-datatype branch) (add-datatype-sizes type-a type-b))
+		    (let ((ordered-types (order-datatype-sizes type-a type-b)))
+		      (format nil "MULT_~a_~a " (first ordered-types) (second ordered-types))))
+		   ;; DIVISION
+		   (binop-division "DIV_4_4 ")))))
 
 
 (defun generate-term (branch)
@@ -79,26 +90,47 @@
 			    (generate-term-body branch value))
 			  (rest values))))))
 
-(defun generate-expression-body (branch)
-  (let ((values (token-value branch)))
+(defun generate-expression-body (parent branch)
+  (let* ((values (token-value branch))
+	 (term-b (second values))
+	 (term-b-result (generate-term term-b))
+	 (type-a (token-datatype parent))
+	 (type-b (token-datatype term-b))
+	 (type-order (compare-types type-b type-a)))
     (concatenate 'string
-		 (generate-term (second values))
+		 term-b-result
+		 (if type-order (get-type-swap type-a type-b) "")
 		 (case (token-type (first values))
-		   (binop-addition "ADD ")
-		   (unop-negation "SUB "))
-		 "POP ")))
+		   ;; ADDITION
+		   (binop-addition
+		    (setf (token-datatype branch) (add-datatype-sizes type-a type-b))
+		    (let ((ordered-types (order-datatype-sizes type-a type-b)))
+		      (format nil "ADD_~a_~a " (first ordered-types) (second ordered-types))))
+		   ;; SUBTRACTION
+		   (unop-negation
+		    (setf (token-datatype branch) (max-datatype-size type-a type-b))
+		    (let ((ordered-types (order-datatype-sizes type-a type-b)))
+		      (format nil "~aSUB_~a_~a "
+			      (if type-order
+				  (format nil "NEG_~a " (get-datatype-size type-a))
+				  "")
+			      (first ordered-types)
+			      (second ordered-types))))))))
 
 (defun generate-expression (branch)
   (let ((values (token-value branch)))
     (format nil "~{~a~}"
-	    (cons (generate-term (first values))
-		  (mapcar #'generate-expression-body (rest values))))))
+	    (cons (pass-datatype branch #'generate-term (first values))
+		  (mapcar (lambda (value)
+			    (generate-expression-body branch value))
+			  (rest values))))))
 
 	       
 (defun generate-statement (branch)
   (let ((values (token-value branch)))
     (case (token-type (first values))
-      (key-return (list  (generate-expression (second values)))))))
+      (key-return (let ((branch-exp (second values)))
+		    (list  (generate-expression branch-exp)))))))
 
 			     
 
@@ -109,7 +141,7 @@
 	 (fun-statements (cddr fun-values))
 	 (output ()))
     (append-line (concatenate 'string "@" fun-id))
-    (mapcar (lambda (statement)
+    (mapcar (lambda (statement) ;; TODO this shouldn't be mapcar
 	      (append-lines (generate-statement statement)))
 	    fun-statements)
     (append-line "RET")
