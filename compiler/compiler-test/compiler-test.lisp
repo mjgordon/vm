@@ -75,14 +75,14 @@
   (test-files "../programs/aux/write_a_c_compiler/stage_3/valid" t)
 
   (diag "valid : execution")
-  (plan 6)
+  (plan 7)
   (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/add" "3")
   (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/associativity_2" "1")
   (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/associativity" "12")
   (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/div" "2")
-  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/mult" "6 0")
-  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/parens" "14 0")
-  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/precedence" "140")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/mult" "6")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/parens" "14")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_3/valid/precedence" "14")
   (prove:finalize)
   
   (diag "invalid")
@@ -92,6 +92,8 @@
   (test-invalid "../programs/aux/write_a_c_compiler/stage_3/invalid/missing_second_op.hxc" 'compiler::error-unexpected-token)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_3/invalid/no_semicolon.hxc" 'compiler::error-missing-semicolon)
   (prove:finalize)
+
+  (diag "~%== stage_4 ==")
 
 
 

@@ -2,28 +2,37 @@
 
 (defparameter *verbose* t)
 
+;; Trees
+
+(defun hash-keys (hash-table)
+  "Returns a list of the keys in a hash table"
+  (loop for key being the hash-keys of hash-table collect key))
+
 ;; Datatypes
 
-
-
-(let ((type-values (make-hash-table :test 'eq)))
+(let ((type-values (make-hash-table :test 'eq))
+      (reverse-lookup (make-hash-table :test 'eq)))
   (mapcar (lambda (def)
 	    (setf (gethash (car def) type-values) (cadr def)))
 	  '((int4 4)
 	    (int8 8)
 	    (int12 12)
 	    (int16 16)))
+  (mapcar (lambda (key)
+	    (setf (gethash (gethash key type-values) reverse-lookup) key))
+	  (hash-keys type-values))
 
   (defun get-datatype-size (type)
     (gethash type type-values))
 
   (defun add-datatype-sizes (a b)
-    (+ (gethash a type-values)
-       (gethash b type-values)))
+    (gethash (+ (gethash a type-values)
+		(gethash b type-values))
+	     reverse-lookup))
 
   (defun get-type-swap (a b)
     "Returns the appropiate swap mnemonic for the supplied datatypes"
-    (format nil "SWAP_~a_~a"
+    (format nil "SWAP_~a_~a "
 	    (gethash a type-values)
 	    (gethash b type-values)))
   
@@ -32,20 +41,37 @@
     (> (gethash a type-values)
        (gethash b type-values)))
 
-  (defun max-datatype-size (a b)
+  
+  (defun max-datatype(a b)
     "Returns the maximum bit length of two datatypes"
-    (max (gethash a type-values)
-	 (gethash b type-values)))
+    (gethash (max (gethash a type-values)
+		  (gethash b type-values))
+	     reverse-lookup))
 
+  
   (defun order-datatype-sizes (a b)
     (mapcar #'get-datatype-size
 	    (if (compare-types a b)
 		(list a b)
-		(reverse (list a b))))))
+		(reverse (list a b)))))
+
+  (defun get-cast (a b)
+    "Returns the assembly invocation to cast a->b if it exists"
+    ;;(format t "~a -> ~a" a b)
+    (let ((word-size-a (/ (gethash a type-values) 4))
+	  (word-size-b (/ (gethash b type-values) 4)))
+      (cond ((= word-size-a word-size-b) "")
+	    ((> word-size-a word-size-b)
+	     (format nil "~{~a~}" (make-list (- word-size-a word-size-b) :initial-element "DROP1 ")))
+	    ((< word-size-a word-size-b)
+	     (format nil "~{~a~}" (make-list (- word-size-b word-size-a) :initial-element "RSTK POP LIT PUSH 0 RSTK PUSH ")))))))
+
+
 
 
 
 ;; IO
+
 (defun load-file-as-strings (filename)
   "Load a hxc file as a list of strings
 Inserts trailing spaces at the end of all lines to normalize lexing later. This may prove unwise?"
@@ -56,9 +82,11 @@ Inserts trailing spaces at the end of all lines to normalize lexing later. This 
 		    ;;collect line)))
       (remove-lines lines))))
 
+
 (defun remove-lines (lines)
   "Remove all comment lines and blank lines from the source file string list"
   (remove-if #'comment-string-p (remove-if #'empty-string-p lines)))
+
 
 ;;; Predicates
 
@@ -66,19 +94,20 @@ Inserts trailing spaces at the end of all lines to normalize lexing later. This 
   "Predicate for whether a string is empty"
   (string= string ""))
 
+
 (defun comment-string-p (string)
   "Predicate for if a string is a comment (begins with '//')"
   (and (>= (length string) 2)
        (string= (subseq string 0 2) "//")))
 
 
-	
-
 ;; Printing
+
 (defun print-list (l)
   (mapc (lambda (item)
 	  (format t "~a ~%" item))
 	l))
+
 
 (defun print-tokens (tokens)
   (mapc (lambda (token)
@@ -156,8 +185,4 @@ Inserts trailing spaces at the end of all lines to normalize lexing later. This 
        (prog1 (schar ,string 0) (setq ,string (subseq ,string 1)))))
   
 
-;; Trees
 
-(defun hash-keys (hash-table)
-  "Returns a list of the keys in a hash table"
-  (loop for key being the hash-keys of hash-table collect key))

@@ -191,12 +191,12 @@ EXPANSIONS
 - [X] PUSH3
 - [X] PUSH4
 
-** v006 Compiling [2/3]
+** v006 Compiling [4/5]
 - [ ] B CM : Parser - Correctly handle two repeating tokens in a row in a rule
 - [X] F CM : Bitwise Complement (~)
 - [X] F CM : Logical Negation (!)
-- [ ] F CM : Binary Operators (+, -, *, /)
-- [ ] C AS : Rename all operators to bit-length rather than word-length
+- [X] F CM : Binary Operators (+, -, *, /)
+- [X] C AS : Rename all operators to bit-length rather than word-length
 
 
 
@@ -290,6 +290,12 @@ CONST4_1       : (+4) (0)  : Pushes a 16-bit 1 to the stack
 PEEK2          : (+1) (0)  : Copies the third item of the stack to the top of the stack
 PEEK3          : (+1) (0)  : Copies the fourth item of the stack to the top of the stack
 
+*** DATATYPES AND CASTING
+$INT4          : 
+$INT8          :
+$INT12         :
+$INT16         :
+
 *** LOGIC & COMPARISON
 AND            : (-1) (0)  : Performs a bitwise AND on the top two nb
 OR             : (-1) (0)  : Performs a bitwise OR on the top two nb
@@ -382,6 +388,20 @@ PEEK                            (A B A) ()
 RSTK POP POP                    (A) (A B)
 DROP                            () (A B)
 RSTK PUSH PUSH                  (B A) ()
+_RESULT                         (0) (0)
+
+_SWAP_4_8                       (A BH BL) ()
+PEEK2                           (A BH BL A) ()
+RSTK POP POP POP                (A) (A BL BH)
+DROP                            () (A BL BH)
+RSTK PUSH PUSH PUSH             (BH BL A) ()
+_RESULT                         (0) (0)
+
+_SWAP_4_8                       (A B1 B2 B3) ()
+PEEK3                           (A B1 B2 B3 A) ()
+RSTK POP POP POP POP            (A) (A B3 B2 B1)
+DROP                            () (A B3 B2 B1)
+RSTK PUSH PUSH PUSH PUSH        (B1 B2 B3 A) ()
 _RESULT                         (0) (0)
 
 _CONST3_0                       () ()
