@@ -94,6 +94,8 @@
   (prove:finalize)
 
   (diag "~%== stage_4 ==")
+    (diag "valid : compilation")
+  (test-files "../programs/aux/write_a_c_compiler/stage_4/valid" t)
 
 
 

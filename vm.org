@@ -212,6 +212,7 @@ EXPANSIONS
 ** Reminders
 - C : We don't want to store tokens as (simpler conses) because there's other information such as tree inclusion, line numbers, that is helpful to pull along from the start
   
+
 * Documentation
 ** Links:
 https://www.vttoth.com/CMS/projects/13-4-bit-processor/134-viktors-amazing-4-bit-processor-architecture
@@ -302,7 +303,9 @@ OR             : (-1) (0)  : Performs a bitwise OR on the top two nb
 NOT            : (-1) (0)  : Performs a bitwise NOT on top nb
 TRUE           : (0)  (0)  : Converts the top of the stack to F (logical T) if not 0 (logical F)
 BIN            : (0)  (0)  : Converts the top of the stack to 1 if not 0
-ZERO2          : (-1) (0)  : Returns a one-digit zero if the two-digit number is zero
+ZERO_8         : (-1) (0)  : Returns a one-digit zero if the two-digit number is zero
+CMP_LT_4_4     : (-1) (0)  : Returns 1 if A < B
+
 
 *** MATH : COMPARISON
 EQUAL3         : (-5) (0)  : Compares the top two 3-digit numbers. Returns T if equal, F otherwise
@@ -457,14 +460,51 @@ LIT PUSH 0                      (0) ()
 %1
 _RESULT                         (0) (0)
 
-_ZERO2                          (A B) ()
+_ZERO_8                         (A B) ()
 ADD POP                         (A+B) ()
 ADD PUSH POP                    (A+B+F) ()
 _RESULT                         (-1) (0)
 
+_CMP_LT_4_4                     (A B) ()
+SUB POP                         (C) ()
+DROP SUB PUSH                   (F) ()
+_RESULT                         (-1) ()
+
+_CMP_GT_4_4                     (A B) ()
+SWAP                            (B A) ()
+CMP_LT_4_4                      (F) ()
+_RESULT                         (-1) ()
+
+_CMP_LTE_4_4                    (A B) ()
+SUB POP PUSH                    (C F) ()
+RSTK POP                        (C) (F)
+LIT PUSH 1 SUB POP              (C-1) (F)
+DROP SUB PUSH                   (F2) (F)
+RSTK PUSH                       (F2 F) ()
+ADD POP                         (F) ()
+_RESULT                         (-1) ()
+
+_CMP_GTE_4_4                    (A B) ()
+SWAP                            (B A) ()
+CMP_LTE_4_4                     (F) ()
+_RESULT                         (-1) ()
+
+_CMP_EQ_4_4                     (A B) ()
+SUB POP                         (S) ()
+LIT PUSH 1 SUB POP              (S-1) ()
+DROP SUB PUSH                   (F) ()
+_RESULT                         (-1) ()
+
+_CMP_NEQ_4_4                    (A B) ()
+CMP_EQ_4_4                      (F) ()
+TRUE NOT                        (!F) ()
+_RESULT                         (-1) ()
+
+
+
 *** MATH : COMPARISON
 
-_EQUAL3                         (A B C D E F) ()
+_EQUAL_12                         (A B C D E F) ()
 
 PEEK3 SUB POP                   (A B C D E F-C) ()
 TRUE NOT                        (A B C D E !F-C) ()

@@ -84,20 +84,20 @@ Also maybe the rules list should be rewritten as a DSL? Seems like the ideal sit
 			  key-int8)))
 	    (<statement> (key-return <exp> semicolon))
 
-;;	    (<exp> (<exp-logical-and> <exp-body> &))
-;;	    (<exp-body> (logical-or <exp-logical-and>))
+	    (<exp> (<exp-logical-and> <exp-body> &))
+	    (<exp-body> (logical-or <exp-logical-and>))
 
 	    (<exp-logical-and> ( <exp-equality> <exp-logical-and-body> &))
 	    (<exp-logical-and-body> ( logical-and <exp-equality> ))
 
 	    (<exp-equality> ( <exp-relational> <exp-equality-body> &))
-	    (<exp-equality-body> ( (comp-eq comp-neq) <exp-relation> ))
+	    (<exp-equality-body> ( (comp-eq comp-neq) <exp-relational> ))
 
 	    (<exp-relational> ( <exp-additive> <exp-relational-body> & ))
 	    (<exp-relational-body> ( (comp-lt comp-gt comp-lte comp-gte) <exp-additive> ))
 	    
-	    (<exp> ( <term> <exp-body> & ))
-	    (<exp-body> ( (binop-addition unop-negation) <term>))
+	    (<exp-additive> ( <term> <exp-additive-body> & ))
+	    (<exp-additive-body> ( (binop-addition unop-negation) <term>))
 	    
 	    (<term> ( <factor> <term-body> & ))
 	    (<term-body> ((binop-multiplication binop-division) <factor> ))

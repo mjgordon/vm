@@ -7,12 +7,9 @@
 			    (#\; semicolon nil)
 			    (#\- unop-negation t)
 			    (#\~ unop-bitwise-complement t)
-			    (#\! unop-logical-negation t)
 			    (#\+ binop-addition t)
 			    (#\* binop-multiplication t)
-			    (#\/ binop-division t)
-			    (#\< comp-lt t)
-			    (#\< comp-gt t)))
+			    (#\/ binop-division t)))
       (other-scanners (mapcar (lambda (args)
 				(let ((regex (second args))
 				      (sym (first args)))
@@ -26,13 +23,16 @@
 				(logical-and "&&$")
 				(logical-or "\\|\\|$")
 				(comp-eq "==$")
-				(comp-neq "!=$")
+				(comp-neq "\\!=$")
+				(comp-lt "<$")
+				(comp-gt ">$")
 				(comp-lte "<=$")
 				(comp-gte ">=$")
 				(cast-int4 "\$int4$")
 				(cast-int8 "\$int8$")
 				(cast-int12 "\$int12$")
-				(cast-int16 "\$int16$")))))
+				(cast-int16 "\$int16$")
+				(unop-logical-negation "!$")))))
   (defun check-character-regexes (c)
     "Takes the current character from the source
 Returns a token if applicable
@@ -69,8 +69,10 @@ Returns a list of tokens"
 	(reverse tokens))
       ;; Otherwise pop the next character and check if its a Token Ending Character (TEC)
       (let* ((c (pop-string source-string))
-	    (c-token (check-character-regexes c)))
-	(if c-token
+	     (c-token (check-character-regexes c))
+	     (unop-flag (and (equal (uiop:last-char built-string) #\!) (alphanumericp c))))
+	;; TODO: Refactor this area
+	(if (or c-token unop-flag)
 	    ;; If we have a TEC, add a string token if the built string is token-like
 	    ;; and add a char token if the char is token-like
 	    (let ((s-token (check-regexes built-string)))
@@ -78,7 +80,9 @@ Returns a list of tokens"
 		(setf built-string "")
 		(setf (token-line-number s-token) line-number)
 		(push s-token tokens))
-	      (unless (equal c-token t)
+	      (when unop-flag
+		(setf built-string (concatenate 'string built-string (string c))))
+	      (unless (or (equal c-token t) unop-flag) ;; TEC was not a space
 		(setf (token-line-number c-token) line-number)
 		(push c-token tokens)))
 	    ;; If not a TEC, add the token to the built string

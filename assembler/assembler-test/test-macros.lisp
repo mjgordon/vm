@@ -24,15 +24,22 @@
     (mnemonic-test "Macro NOT" ((:nb 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0)))
     (mnemonic-test "Macro TRUE" ((:nb 15 15 15 0)))
     (mnemonic-test "Macro BIN" ((:nb 1 1 1 0)))
-    (mnemonic-test "Macro ZERO2" ((:nb 0 1 1 1 1 1 1)))))
+    (mnemonic-test "Macro ZERO_8" ((:nb 0 1 1 1 1 1 1)))
+    (mnemonic-test "Macro CMP_LT_4_4" ((:nb 0 0 0 0 0 1 1 1)))
+    (mnemonic-test "Macro CMP_GT_4_4" ((:nb 0 0 1 1 0 0 0 0)))
+    (mnemonic-test "Macro CMP_LTE_4_4" ((:nb 1 1 1 0 0 1 1 1 1)))
+    (mnemonic-test "Macro CMP_GTE_4_4" ((:nb 1 1 0 1 1 1 0 0 0)))
+    (mnemonic-test "Macro CMP_EQ_4_4" ((:nb 1 1 0 0 0 0 0 1)))
+    (mnemonic-test "Macro CMP_NEQ_4_4" ((:nb 0 0 1 1 1 1 1 0)))))
+
 
 (defun test-macros-math ()
   "Run tests on the macros for math operations"
   (with-hxa "test-macros-math"
     (diag "Testing math macros:")
-    (mnemonic-test "Macro EQUAL3:"
+    (mnemonic-test "Macro EQUAL_12:"
 		   ((:nb 15 15 15 0 0 15)))
-    (mnemonic-test "Macro ADDC4_1:"
+    (mnemonic-test "Macro ADDC_16_1:"
 		   ((:int16 1 2 4097 0)))
     (mnemonic-test "Macro SUB21:"
 		   ((:int8 31 30 26 2 15 255)))
