@@ -83,6 +83,7 @@
      (DUP NOR))
     (ZERO_8
      (ADD POP PUSH POP))
+    
     ;; MATH : COMPARISON
     (EQUAL_12
      (PEEK3 SUB POP TRUE NOT LIT PUSH >0 COND

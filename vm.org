@@ -500,6 +500,32 @@ CMP_EQ_4_4                      (F) ()
 TRUE NOT                        (!F) ()
 _RESULT                         (-1) ()
 
+_LOG_AND_4_4                    (A B) ()
+RSTK POP                        (A) (B)
+LIT PUSH >0 COND                () (B)
+RSTK PUSH                       (B) ()
+LIT PUSH >0 COND                () ()
+LIT PUSH 1                      (1) ()
+GOTO >1                
+%0
+LIT PUSH 0                      (0) ()
+%1                              (R) ()
+_RESULT                         (-1) (0)
+
+_LOG_OR_4_4                     (A B) ()
+RSTK POP                        (A) (B)
+LIT PUSH >0 COND                () (B)
+GOTO >1                  
+%0 
+RSTK PUSH !!!!!!!!!!!!!!!!!!!!!1
+LIT PUSH >1 COND
+LIT PUSH 1
+GOTO >2
+%1 
+LIT PUSH 0
+%2
+
+
 
 
 *** MATH : COMPARISON

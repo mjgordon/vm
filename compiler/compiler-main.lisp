@@ -1,6 +1,7 @@
 (in-package :compiler)
 
 (defparameter *function-datatype* nil)
+(defparameter *id-counter* 0)
 
 ;;; HXA-writing utilities
 
@@ -29,6 +30,11 @@
 	   (type-b (token-datatype part-b))
 	   (type-order (compare-types type-b type-a)))
       (values branch-values part-b-result type-a type-b type-order)))
+
+(defun genid ()
+  (prog1 (format nil "LOC_~a" *id-counter*)
+    (incf *id-counter*)))
+  
 
 
 ;;; Macros
@@ -89,7 +95,6 @@
 					  "LIT PUSH_16 "))
 				   lit
 				   " ")))
-      ;;(<paren-exp> (generate-expression (first (token-value (first values)))))
       (<paren-exp> (pass-datatype branch
 				 #'generate-exp
 				 (first (token-value (first values)))))
@@ -112,7 +117,7 @@
 		   ;; DIVISION
 		   (binop-division
 		    (setf (token-datatype branch) (max-datatype type-a type-b))
-		    "DIV_4_4")))))
+		    "DIV_4_4 ")))))
 
 
 (defun-level-head generate-term generate-term-body generate-factor)
@@ -147,21 +152,23 @@
   (multiple-value-bind (values part-b-result type-a type-b)
       (branch-parts parent branch #'generate-exp-additive)
     (setf (token-datatype branch) 'int4)
-    (concatenate 'string
-		 part-b-result
-		 (case (token-type (first values))
-		   ;; LESS THAN
-		   (comp-lt  
-		    (format nil "CMP_LT_~a_~a " type-a type-b))
-		   ;; GREATER THAN
-		   (comp-gt
-		    (format nil "CMP_GT_~a~a " type-a type-b))
-		   ;; LESS THAN OR EQUAL TO
-		   (comp-lte
-		    (format nil "CMP_LTE_~a~a " type-a type-b))
-		   ;; LESS THAN OR EQUAL TO
-		   (comp-gte
-		    (format nil "CMP_GTE_~a~a " type-a type-b))))))
+    (let ((size-a (get-datatype-size type-a))
+	  (size-b (get-datatype-size type-b)))
+      (concatenate 'string
+		   part-b-result
+		   (case (token-type (first values))
+		     ;; LESS THAN
+		     (comp-lt  
+		      (format nil "CMP_LT_~a_~a " size-a size-b))
+		     ;; GREATER THAN
+		     (comp-gt
+		      (format nil "CMP_GT_~a_~a " size-a size-b))
+		     ;; LESS THAN OR EQUAL TO
+		     (comp-lte
+		      (format nil "CMP_LTE_~a_~a " size-a size-b))
+		     ;; LESS THAN OR EQUAL TO
+		     (comp-gte
+		      (format nil "CMP_GTE_~a_~a " size-a size-b)))))))
   
 
 (defun-level-head generate-exp-relational generate-exp-relational-body generate-exp-additive)
@@ -170,15 +177,17 @@
   (multiple-value-bind (values part-b-result type-a type-b)
       (branch-parts parent branch #'generate-exp-relational)
     (setf (token-datatype branch) 'int4)
-    (concatenate 'string
-		 part-b-result
-		 (case (token-type (first values))
-		   ;; EQUAL TO
-		   (comp-lt  
-		    (format nil "CMP_EQ_~a_~a " type-a type-b))
-		   ;; NOT EQUAL TO
-		   (comp-gt
-		    (format nil "CMP_NEQ_~a~a " type-a type-b))))))
+    (let ((size-a (get-datatype-size type-a))
+	  (size-b (get-datatype-size type-b)))
+      (concatenate 'string
+		   part-b-result
+		   (case (token-type (first values))
+		     ;; EQUAL TO
+		     (comp-eq
+		      (format nil "CMP_EQ_~a_~a " size-a size-b))
+		     ;; NOT EQUAL TO
+		     (comp-neq
+		      (format nil "CMP_NEQ_~a_~a " size-a size-b)))))))
 
 (defun-level-head generate-exp-equality generate-exp-equality-body generate-exp-relational)
 
@@ -187,12 +196,17 @@
   (multiple-value-bind (values part-b-result)
       (branch-parts parent branch #'generate-exp-equality)
     (setf (token-datatype branch) 'int4)
-    (concatenate 'string
-		 part-b-result
-		 (case (token-type (first values))
-		   ;; LOGICAL AND
-		   (logical-and
-		    (format nil "AND "))))))
+    (let ((loc0 (genid))
+	  (loc1 (genid)))
+      (concatenate 'string
+		   (format nil "LIT PUSH >~a COND " loc0)
+		   part-b-result
+		   (format nil "LIT PUSH >~a COND " loc0)
+		   "LIT PUSH 1 "
+		   (format nil "GOTO >~a " loc1)
+		   (format nil "@~a " loc0)
+		   "LIT PUSH 0 "
+		   (format nil "@~a " loc1)))))
   
 
 (defun-level-head generate-exp-logical-and generate-exp-logical-and-body generate-exp-equality)
@@ -201,12 +215,22 @@
   (multiple-value-bind (values part-b-result)
       (branch-parts parent branch #'generate-exp-logical-and)
     (setf (token-datatype branch) 'int4)
-    (concatenate 'string
-		 part-b-result
-		 (case (token-type (first values))
-		   ;; LOGICAL OR
-		   (logical-or
-		    (format nil "OR "))))))
+    (let ((loc0 (genid))
+	  (loc1 (genid))
+	  (loc2 (genid))
+	  (loc3 (genid)))
+      (concatenate 'string
+		   (format nil "LIT PUSH >~a COND " loc0)
+		   (format nil "GOTO >~a " loc1)
+		   (format nil "@~a " loc0) ;; Second test
+		   part-b-result
+		   (format nil "LIT PUSH >~a COND " loc2)
+		   (format nil "@~a " loc1) ;; True result
+		   "LIT PUSH 1 "
+		   (format nil "GOTO >~a " loc3)
+		   (format nil "@~a " loc2) ;; False Result
+		   "LIT PUSH 0 "
+		   (format nil "@~a " loc3))))) ;; Exit
 
 
 (defun-level-head generate-exp generate-exp-body generate-exp-logical-and)
@@ -285,6 +309,7 @@
 (defun compile-hxc (filename-hxc &key (verbose t))
   "Main entry function. Reads an hxc file and attempts to output an hxa file"
   (setf *verbose* verbose)
+  (setf *id-counter* 0)
   (clear-error-list)
   (let* ((path-divisor (search "/" filename-hxc :from-end t))
 	 (filename-stripped (subseq filename-hxc path-divisor (search ".hxc" filename-hxc)))

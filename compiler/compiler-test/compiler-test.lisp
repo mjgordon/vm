@@ -19,6 +19,13 @@
   ;;(setf prove:*default-reporter* :fiveam)
   
   
+  ;;(run-nls-stage-1)
+  ;;(run-nls-stage-2)
+  ;;(run-nls-stage-3)
+  (run-nls-stage-4)
+  )
+
+(defun run-nls-stage-1 ()
   (diag "~%== stage_1 ==")
   
   (diag "valid : compilation")
@@ -33,7 +40,7 @@
   (test-valid "../programs/aux/write_a_c_compiler/stage_1/valid/return_2" "2")
   (test-valid "../programs/aux/write_a_c_compiler/stage_1/valid/spaces" "0")
   (prove:finalize)
-  
+
   (diag "invalid")
   (plan 6)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/missing_paren.hxc" 'compiler::error-missing-paren)
@@ -43,8 +50,9 @@
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/no_space.hxc" 'compiler::error-missing-close-brace) ;; TODO : Wrong
   (test-invalid "../programs/aux/write_a_c_compiler/stage_1/invalid/wrong_case.hxc" 'compiler::error-missing-close-brace) ;; TODO : Also wrong
   (prove:finalize)
+  )
 
-  
+(defun run-nls-stage-2 ()
   (diag "~%== stage_2 ==")
   
   (diag "valid : compilation")
@@ -66,9 +74,9 @@
   (test-invalid "../programs/aux/write_a_c_compiler/stage_2/invalid/missing_semicolon.hxc" 'compiler::error-missing-semicolon)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_2/invalid/nested_missing_const.hxc" 'compiler::error-unexpected-token)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_2/invalid/wrong_order.hxc" 'compiler::error-unexpected-token)
-  (prove:finalize)
+  (prove:finalize))
 
-  
+(defun run-nls-stage-3 ()
   (diag "~%== stage_3 ==")
   
   (diag "valid : compilation")
@@ -91,14 +99,45 @@
   (test-invalid "../programs/aux/write_a_c_compiler/stage_3/invalid/missing_first_op.hxc" 'compiler::error-unexpected-token)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_3/invalid/missing_second_op.hxc" 'compiler::error-unexpected-token)
   (test-invalid "../programs/aux/write_a_c_compiler/stage_3/invalid/no_semicolon.hxc" 'compiler::error-missing-semicolon)
+  (prove:finalize))
+
+(defun run-nls-stage-4 ()
+  (diag "~%== stage_4 ==")
+  (diag "valid : compilation")
+  (test-files "../programs/aux/write_a_c_compiler/stage_4/valid" t)
+  (diag "valid : execution")
+  (plan 20)
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/and_false" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/and_true" "1")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/eq_false" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/eq_true" "1")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/ge_false" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/ge_true" "1")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/gt_false" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/gt_true" "1")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/le_false" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/le_true" "1")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/lt_false" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/lt_true" "1")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/ne_false" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/ne_true" "1")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/or_false" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/or_true" "1")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/precedence_2" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/precedence_3" "0")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/precedence_4" "1")
+  (test-valid "../programs/aux/write_a_c_compiler/stage_4/valid/precedence" "1")
+  ;; readd skip-on-failures here
   (prove:finalize)
 
-  (diag "~%== stage_4 ==")
-    (diag "valid : compilation")
-  (test-files "../programs/aux/write_a_c_compiler/stage_4/valid" t)
+  (diag "invalid")
+  (plan 1)
+  (test-invalid "../programs/aux/write_a_c_compiler/stage_4/invalid/missing_first_op.hxc" 'compiler::error-unexpected-token)
+  (test-invalid "../programs/aux/write_a_c_compiler/stage_4/invalid/missing_mid_op.hxc" 'compiler::error-unexpected-token)
+  (test-invalid "../programs/aux/write_a_c_compiler/stage_4/invalid/missing_second_op.hxc" 'compiler::error-unexpected-token)
+  (test-invalid "../programs/aux/write_a_c_compiler/stage_4/invalid/missing_semicolon.hxc" 'compiler::error-missing-semicolon)
 
-
-
+  
   )
 
 
