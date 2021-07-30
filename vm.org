@@ -223,6 +223,18 @@ https://github.com/qeedquan/turtle/blob/master/src/util.c
 elisp snippet for generating the hxa-mode emacs rule for expansions:
 (regexp-opt '("DROP" "DROP1" "DUP" "SWAP" "CONST3_0" "CONST4_0" "CONST3_1" "CONST4_1" "AND" "OR" "NOT" "TRUE" "BIN" "ZERO2" "EQUAL3" "ADD21" "ADD22" "ADD31" "ADDC3_1" "ADDC4_1" "SUB21" "SUB22" "SUB31" "SUB33" "MULT" "MULT21" "MULT22" "DIV" "DIV21" "DIV22" "DIV31" "MOD" "MOD21" "MOD22" "MOD31" "NEG" "NEG8" "NEG12" "NEG16" "OUT" "OUT8" "OUT12" "OUT16" "PEEK2" "PEEK3" "PUSH2" "PUSH3" "PUSH4"))
 
+** Stack frames
+
+- BP : Current Base Pointer, stored in RSTK 
+
+
+*** Stack frame
+- Return position in program
+- SP : End of current frame, only needs to look here when adding a new one 
+- Arguments
+- Local Variables
+
+
 ** General
 Screen Storage:
 80x25char @ 8x12 px = 640 x 300 px
@@ -517,7 +529,7 @@ RSTK POP                        (A) (B)
 LIT PUSH >0 COND                () (B)
 GOTO >1                  
 %0 
-RSTK PUSH !!!!!!!!!!!!!!!!!!!!!1
+RSTK PUSH
 LIT PUSH >1 COND
 LIT PUSH 1
 GOTO >2

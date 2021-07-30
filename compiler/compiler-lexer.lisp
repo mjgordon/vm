@@ -32,7 +32,8 @@
 				(cast-int8 "\$int8$")
 				(cast-int12 "\$int12$")
 				(cast-int16 "\$int16$")
-				(unop-logical-negation "!$")))))
+				(unop-logical-negation "!$")
+				(assignment "=$")))))
   (defun check-character-regexes (c)
     "Takes the current character from the source
 Returns a token if applicable
@@ -70,7 +71,9 @@ Returns a list of tokens"
       ;; Otherwise pop the next character and check if its a Token Ending Character (TEC)
       (let* ((c (pop-string source-string))
 	     (c-token (check-character-regexes c))
-	     (unop-flag (and (equal (uiop:last-char built-string) #\!) (alphanumericp c))))
+	     (unop-flag (and (or (equal (uiop:last-char built-string) #\!)
+				 (equal (uiop:last-char built-string) #\=))
+			     (alphanumericp c))))
 	;; TODO: Refactor this area
 	(if (or c-token unop-flag)
 	    ;; If we have a TEC, add a string token if the built string is token-like

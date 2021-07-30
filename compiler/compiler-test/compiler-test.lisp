@@ -22,7 +22,8 @@
   ;;(run-nls-stage-1)
   ;;(run-nls-stage-2)
   ;;(run-nls-stage-3)
-  (run-nls-stage-4)
+  ;;(run-nls-stage-4)
+  (run-nls-stage-5)
   )
 
 (defun run-nls-stage-1 ()
@@ -139,6 +140,12 @@
 
   
   )
+
+(defun run-nls-stage-5 ()
+  (diag "~%== stage_5 ==")
+  (diag "valid : compilation")
+  (test-files "../programs/aux/write_a_c_compiler/stage_5/valid" t))
+  
 
 
 (defun run-program (filename)

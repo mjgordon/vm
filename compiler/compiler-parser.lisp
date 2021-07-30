@@ -82,10 +82,17 @@ Also maybe the rules list should be rewritten as a DSL? Seems like the ideal sit
 	    (<func> (<datatype> identifier open-paren close-paren open-brace <statement> & close-brace))
 	    (<datatype> ((key-int4
 			  key-int8)))
-	    (<statement> (key-return <exp> semicolon))
+	    (<statement> ( (<statement-declare> <statement-exp> <statement-return>) ))
+	    (<statement-declare> (<datatype> identifier semicolon))
+	    (<statement-exp> (<exp> semicolon))
+	    (<statement-return> (key-return <exp-assignment> semicolon))
 
-	    (<exp> (<exp-logical-and> <exp-body> &))
-	    (<exp-body> (logical-or <exp-logical-and>))
+	    (<exp-assignment> (identifier <exp-assignment-body> &))
+	    (<exp-assignment-body> ( assignment <exp-body >))
+	    
+
+	    (<exp-logical-or> (<exp-logical-and> <exp-body> &))
+	    (<exp-logical-orbody> (logical-or <exp-logical-and>))
 
 	    (<exp-logical-and> ( <exp-equality> <exp-logical-and-body> &))
 	    (<exp-logical-and-body> ( logical-and <exp-equality> ))

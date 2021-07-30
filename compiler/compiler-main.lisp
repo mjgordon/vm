@@ -211,7 +211,7 @@
 
 (defun-level-head generate-exp-logical-and generate-exp-logical-and-body generate-exp-equality)
 
-(defun generate-exp-body (parent branch)
+(defun generate-exp-logical-or-body (parent branch)
   (multiple-value-bind (values part-b-result)
       (branch-parts parent branch #'generate-exp-logical-and)
     (setf (token-datatype branch) 'int4)
@@ -233,7 +233,9 @@
 		   (format nil "@~a " loc3))))) ;; Exit
 
 
-(defun-level-head generate-exp generate-exp-body generate-exp-logical-and)
+(defun-level-head generate-exp-logical-or generate-exp-logical-or-body generate-exp-logical-and)
+
+
 
 	       
 (defun generate-statement (branch)
