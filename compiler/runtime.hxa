@@ -1,0 +1,61 @@
+# === BEGIN RUNTIME ===
+
+@POINT-SF-BASE
+# () (XXX YYY RRRR)
+# Move the return address to the stack
+# (RRRR) (XXX YYY)
+RSTK PUSH PUSH PUSH PUSH 
+# Sets mem page
+# (RRRR) (XXX)
+RSTK PUSH PUSH PUSH Y POP
+# Sets mem position
+# (RRRR) ()
+RSTK PUSH PUSH PUSH X POP
+# Puts copy of mem position back on RSTK
+# (RRRR) (XXX)
+X PUSH RSTK POP POP POP
+# Puts copy of mem position back on RSTK
+# (RRRR) (XXX YYY)
+Y PUSH RSTK POP POP POP
+# Puts return address back on RSTK
+# () (XXX YYY RRRR)
+RSTK POP POP POP POP
+RET
+
+@FIND-NEW-SF-BASE
+RSTK POP X PUSH RSTK PUSH ADD_12_4
+ADD PUSH LIT PUSH >RT-NSB0 COND
+LIT PUSH 0 PUSH 0 PUSH 0 X POP
+Y PUSH  ADDC_12_1 Y POP
+X PUSH RSTK POP POP POP
+Y PUSH RSTK POP POP POP
+@RT-NSB0
+RET
+
+
+@FIND-NEW-SF-END
+# With the 4-bit variable-total already on the stack
+# Add to the current X position
+RSTK POP X PUSH RSTK PUSH ADD_12_4 X POP
+# If overflow, add 1 to the Y position
+Y PUSH ADD PUSH ADD_12_4 Y POP
+# Save the new frame-base on the RSTK
+X PUSH RSTK POP POP POP
+Y PUSH RSTK POP POP POP
+RET
+
+@MEMWRITE-16
+# With a 16-bit number on the stack
+# Uncover the highest nb
+RSTK POP POP POP MEM POP
+X PUSH LIT PUSH 1 ADD_12_4 X POP
+RSTK PUSH MEM POP
+X PUSH LIT PUSH 1 ADD_12_4 X POP
+RSTK PUSH MEM POP
+X PUSH LIT PUSH 1 ADD_12_4 X POP
+RSTK PUSH MEM POP
+
+
+
+
+# === END RUNTIME ===

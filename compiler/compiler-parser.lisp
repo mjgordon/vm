@@ -84,11 +84,11 @@ Also maybe the rules list should be rewritten as a DSL? Seems like the ideal sit
 			  key-int8)))
 	    (<statement> ( (<statement-declare> <statement-exp> <statement-return>) ))
 	    (<statement-declare> (<datatype> identifier semicolon))
-	    (<statement-exp> (<exp> semicolon))
+	    (<statement-exp> (<exp-assignment> semicolon))
 	    (<statement-return> (key-return <exp-assignment> semicolon))
 
 	    (<exp-assignment> (identifier <exp-assignment-body> &))
-	    (<exp-assignment-body> ( assignment <exp-body >))
+	    (<exp-assignment-body> ( assignment <exp-logical-or>))
 	    
 
 	    (<exp-logical-or> (<exp-logical-and> <exp-body> &))
@@ -110,7 +110,7 @@ Also maybe the rules list should be rewritten as a DSL? Seems like the ideal sit
 	    (<term-body> ((binop-multiplication binop-division) <factor> ))
 	    
 	    (<factor> ( (<paren-exp> <unop-exp> literal-int) ))
-	    (<paren-exp> ( open-paren <exp> close-paren ))
+	    (<paren-exp> ( open-paren <exp-assignment> close-paren ))
 	    (<unop-exp> ((unop-negation unop-bitwise-complement unop-logical-negation) <factor>))
 	    ))
   

@@ -161,7 +161,7 @@
 
 (defun test-valid (filepath expected-return-value)
   "Tests a single valid program, for parsing validity and for a simple expected output value"
-  (compiler:compile-hxc (format nil "~a.hxc" filepath) :verbose nil)
+  (compiler:compile-hxc (format nil "~a.hxc" filepath) :verbose nil :use-runtime t)
   (assembler:assemble-hex (format nil "~a.hxa" filepath) :verbose nil)
   (let ((output (run-program (format nil "~a.hxb" filepath))))
     (is (first output)
@@ -175,14 +175,14 @@
   (let ((filenames (directory (concatenate 'string folder "/*.hxc"))))
     (plan (length filenames))
     (loop for filename in filenames do
-	 (is (compiler:compile-hxc (format nil "~a" filename) :verbose nil)
+	 (is (compiler:compile-hxc (format nil "~a" filename) :verbose nil :use-runtime t)
 	     (not valid)
 	     (file-namestring filename)))
     (prove:finalize)))
 
 (defun test-invalid (filepath expected-error)
   "Supply a file and the error that should be reported"
-  (let ((error-list (compiler:compile-hxc filepath :verbose nil)))
+  (let ((error-list (compiler:compile-hxc filepath :verbose nil :use-runtime t)))
     (is (caar error-list)
 	expected-error
 	(file-namestring filepath))))

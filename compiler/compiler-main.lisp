@@ -2,6 +2,7 @@
 
 (defparameter *function-datatype* nil)
 (defparameter *id-counter* 0)
+(defparameter *use-runtime* nil)
 
 ;;; HXA-writing utilities
 
@@ -34,9 +35,8 @@
 (defun genid ()
   (prog1 (format nil "LOC_~a" *id-counter*)
     (incf *id-counter*)))
+
   
-
-
 ;;; Macros
 
 (defmacro pass-datatype (parent generator branch)
@@ -96,7 +96,7 @@
 				   lit
 				   " ")))
       (<paren-exp> (pass-datatype branch
-				 #'generate-exp
+				 #'generate-exp-assignment
 				 (first (token-value (first values)))))
       (<unop-exp> (pass-datatype branch
 				#'generate-unop
@@ -235,6 +235,14 @@
 
 (defun-level-head generate-exp-logical-or generate-exp-logical-or-body generate-exp-logical-and)
 
+(defun generate-exp-assignment-body (parent branch)
+  (multiple-value-bind (values part-b-result)
+      (branch-parts parent branch #'generate-exp-logical-or)
+
+    ))
+
+(defun-level-head generate-exp-assignment generate-exp-assignment-body generate-exp-logical-or)
+
 
 
 	       
@@ -254,6 +262,59 @@
 	 (fun-statements (cddr values)))
     (setf *function-datatype* fun-type)
     (append-line (concatenate 'string "@" fun-id))
+
+    
+    
+
+	 
+
+    ;; Setup stack
+    (let ((return-loc (genid))
+	  (argument-names ())
+	  (argument-sizes ())
+	  (argument-total ())
+	  (variable-names ())
+	  (variable-sizes ())
+	  (variable-total 0)
+	  (frame-size 0))
+
+      ;; Determine size of arguments
+
+      (setf argument-sizes (loop for x in argument-sizes sum x into y collect y))
+      (setf argument-total (last argument-sizes))
+      
+      ;; Scan for declarations
+      (loop for statement in fun-statements do
+	   (if (equal (token-type (ftv statement)) '<STATEMENT-DECLARE>)
+	       (let* ((datatype (intern-datatype (tv (ftv (ftv (ftv statement))))))
+		      (id (tv (stv (ftv statement)))))
+		 (setf variable-names (cons id variable-names))
+		 (setf variable-sizes (cons (floor (get-datatype-size datatype) 4) variable-sizes)))))
+
+      ;; Set variable-sizes to be the progressive-addition of the list
+      (setf variable-sizes (loop for x in variable-sizes sum x into y collect y))
+      (setf variable-total (last variable-sizes))
+      (setf frame-size (+ 4 3 3 argument-total variable-total))
+
+	  
+      ;; TK we only support up to 4 bits of frame-size count currently
+
+      (format t "Names : ~a~%" variable-names)
+      (format t "Sizes : ~a~%" variable-sizes)
+
+      
+      (concatenate 'string
+		   "CALL >POINT-SF-BASE " ;; Go to current base pointer
+		   (format nil "LIT PUSH ~a " (write-to-string frame-size)) ;; Push the current frame-size
+		   "CALL >FIND-NEW-SF-BASE " ;; Find and store new base pointer
+		   (format nil ">~a " (return-loc))
+		   "LIT PUSH 15 PUSH 15 PUSH 15 PUSH 15 MEMWRITE-16 " ;; Store return-loc, bs for now
+		   (format nil "LIT PUSH ~a " (write-to-string frame-size)) ;; Push the current frame-size
+		   "CALL >FIND-NEW-SF-END " ;; Store end-of-frame
+		   ;; Store arguments
+		   ;; Store local variables
+		   (format nil ">~a " return-loc)))
+    
     (mapc (lambda (statement)
 	    (append-lines (generate-statement statement)))
 	  fun-statements)
@@ -263,6 +324,8 @@
 (defun generate (ast)
   "Generator entry. Accepts an AST and returns a list of HXA mnemonics"
   (output-list-reset)
+  (when *use-runtime*
+    (append-lines (load-file-as-strings "runtime.hxa")))
   (if *error-list*
       (progn
 	(when *verbose*
@@ -308,11 +371,12 @@
 	    hxa)))
 
 ;;TODO convert this to arrow syntax for clarity?
-(defun compile-hxc (filename-hxc &key (verbose t))
+(defun compile-hxc (filename-hxc &key (verbose t) (use-runtime nil))
   "Main entry function. Reads an hxc file and attempts to output an hxa file"
   (setf *verbose* verbose)
   (setf *id-counter* 0)
   (clear-error-list)
+  (setf *use-runtime* use-runtime)
   (let* ((path-divisor (search "/" filename-hxc :from-end t))
 	 (filename-stripped (subseq filename-hxc path-divisor (search ".hxc" filename-hxc)))
 	 (filepath (subseq filename-hxc 0 path-divisor))

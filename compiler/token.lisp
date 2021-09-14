@@ -11,3 +11,17 @@ Semantic is whether the token should survive into the AST (i.e. vs 'syntactic')"
   value
   datatype
   semantic)
+
+(defun tv (token)
+  "Returns the token-value of a token"
+  (token-value token))
+
+(defun ftv (token)
+  "Returns the first token-value of a token"
+  (first (token-value token)))
+
+(defun stv (token)
+  "Returns the second token-value of a token"
+  (second (token-value token)))
+
+
